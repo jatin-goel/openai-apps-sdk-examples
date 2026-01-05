@@ -26,33 +26,23 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Shopify API endpoint
-    const shopifyUrl = 'https://apoorva-devstore.myshopify.com/admin/api/2025-10/products.json';
-    const token = import.meta.env.VITE_SH_TOKEN || '';
+    // Use backend API instead of calling Shopify directly to avoid CORS
+    const apiUrl = `${baseUrl}/api/shopify/products?query=${encodeURIComponent(query)}&skip=${skip}&limit=${limit}`;
     
-    fetch(shopifyUrl, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Access-Token': token
-      }
-    })
+    fetch(apiUrl)
       .then(res => res.json())
       .then(data => {
-        // Transform Shopify products to match our component structure
-        const transformedProducts = (data.products || []).map(product => ({
-          id: product.id,
-          title: product.title,
-          price: product.variants && product.variants[0] ? parseFloat(product.variants[0].price) : 0,
-          thumbnail: product.image ? product.image.src : (product.images && product.images[0] ? product.images[0].src : ''),
-          rating: 4.5, // Shopify doesn't have ratings by default
-          category: product.product_type || product.vendor || 'General'
-        }));
-        
-        setProducts(transformedProducts);
-        setTotal(transformedProducts.length);
+        if (data.success) {
+          setProducts(data.products || []);
+          setTotal(data.total || 0);
+        } else {
+          console.error('Error fetching products:', data.error);
+          setProducts([]);
+          setTotal(0);
+        }
       })
       .catch(err => {
-        console.error('Error fetching Shopify products:', err);
+        console.error('Error fetching products:', err);
         setProducts([]);
         setTotal(0);
       });

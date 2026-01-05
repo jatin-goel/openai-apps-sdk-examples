@@ -32,6 +32,7 @@ import RazorpayRoutes from "./routes/razorpay.routes.js";
 import OrderRoutes from "./routes/order.routes.js";
 import StaticRoutes from "./routes/static.routes.js";
 import EnvRoutes from "./routes/env.routes.js";
+import ShopifyRoutes from "./routes/shopify.routes.js";
 
 // Initialize database on startup
 initDatabase().catch(console.error);
@@ -277,6 +278,20 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
 
   if (req.method === "GET" && url.pathname === "/api/admin/orders") {
     await OrderRoutes.getAllOrders(req, res);
+    return;
+  }
+
+  // ==========================================
+  // Shopify Products Endpoints
+  // ==========================================
+  
+  if (req.method === "OPTIONS" && url.pathname.startsWith("/api/shopify/")) {
+    handleCorsOptions(res);
+    return;
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/shopify/products") {
+    await ShopifyRoutes.getProducts(req, res, url);
     return;
   }
 
