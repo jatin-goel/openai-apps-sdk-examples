@@ -186,7 +186,7 @@ export class RazorpayService {
       'checkout[name]': customer?.name || 'Customer',
       'checkout[prefill][contact]': customer?.phone || '',
       'checkout[prefill][email]': customer?.email || '',
-      'checkout[notes][mode]': 'live',
+      'checkout[notes][mode]': 'test',
       'url[callback]': callbacks?.success || 'https://google.com',
       'url[cancel]': callbacks?.cancel || 'https://yahoo.com'
     });
