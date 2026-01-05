@@ -34,64 +34,20 @@ function App() {
       });
   }, [query, skip]);
 
-  const handleAddToCart = async (product) => {
-    try {
-      const sessionId = window.openai?.widgetSessionId || Date.now().toString();
-      
-      const response = await fetch(`${baseUrl}/api/cart/add`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: null,
-          productId: product.id,
-          title: product.title,
-          price: product.price,
-          thumbnail: product.thumbnail,
-          sessionId: sessionId
-        })
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        // Update local cart state
-        const dbCart = data.cart.map(item => ({
-          id: item.product_id,
-          title: item.title,
-          price: parseFloat(item.price),
-          thumbnail: item.thumbnail
-        }));
-        setCart(dbCart);
-      }
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-    }
+  const handleAddToCart = (product) => {
+    // Add product to cart in memory
+    const newItem = {
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      thumbnail: product.thumbnail
+    };
+    setCart(prevCart => [...prevCart, newItem]);
   };
 
-  const handleRemoveFromCart = async (productId) => {
-    try {
-      const response = await fetch(`${baseUrl}/api/cart/remove`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: null,
-          productId: productId
-        })
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        // Update local cart state
-        const dbCart = data.cart.map(item => ({
-          id: item.product_id,
-          title: item.title,
-          price: parseFloat(item.price),
-          thumbnail: item.thumbnail
-        }));
-        setCart(dbCart);
-      }
-    } catch (error) {
-      console.error('Error removing from cart:', error);
-    }
+  const handleRemoveFromCart = (productId) => {
+    // Remove product from cart in memory
+    setCart(prevCart => prevCart.filter(item => item.id !== productId));
   };
 
   const isProductInCart = (productId) => {
@@ -154,12 +110,7 @@ function App() {
       if (data.success) {
         console.log('Order created successfully:', data);
         
-        // Clear cart after successful order creation
-        await fetch(`${baseUrl}/api/cart/clear`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: null })
-        });
+        // Clear cart in memory after successful order creation
         setCart([]);
         
         // Open magic checkout URL directly
