@@ -26,15 +26,40 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Use backend API instead of calling Shopify directly to avoid CORS
-    const apiUrl = `${baseUrl}/api/shopify/products?query=${encodeURIComponent(query)}&skip=${skip}&limit=${limit}`;
+    // Use Razorpay parse-store API
+    const apiUrl = `${baseUrl}/api/razorpay/parse-store?url=https://pages.razorpay.com/stores/st_RvP3FIXbUltGLM`;
     
     fetch(apiUrl)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          setProducts(data.products || []);
-          setTotal(data.total || 0);
+          // Map Razorpay product structure to expected format
+          const mappedProducts = (data.products || []).map(product => ({
+            id: product.id,
+            title: product.name,
+            price: product.discounted_price / 100, // Convert from paise to rupees
+            thumbnail: product.images && product.images.length > 0 
+              ? product.images[0] 
+              : 'https://via.placeholder.com/100',
+            rating: 4.5, // Default rating since Razorpay doesn't provide it
+            category: product.categories && product.categories.length > 0 
+              ? product.categories[0].name 
+              : 'Uncategorized'
+          }));
+          
+          // Filter products based on search query
+          const filteredProducts = query 
+            ? mappedProducts.filter(p => 
+                p.title.toLowerCase().includes(query.toLowerCase()) ||
+                p.category.toLowerCase().includes(query.toLowerCase())
+              )
+            : mappedProducts;
+          
+          // Apply pagination
+          const paginatedProducts = filteredProducts.slice(skip, skip + limit);
+          
+          setProducts(paginatedProducts);
+          setTotal(filteredProducts.length);
         } else {
           console.error('Error fetching products:', data.error);
           setProducts([]);
