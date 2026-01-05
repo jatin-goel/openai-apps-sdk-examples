@@ -11,21 +11,6 @@ function App() {
   const [searchInput, setSearchInput] = useState("phone");
   const [skip, setSkip] = useState(0);
   const [total, setTotal] = useState(0);
-  const [showAddressForm, setShowAddressForm] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showSignup, setShowSignup] = useState(false);
-  const [userId, setUserId] = useState(null);
-  const [userEmail, setUserEmail] = useState("");
-  const [loginError, setLoginError] = useState("");
-  const [loginForm, setLoginForm] = useState({ username: "", password: "" });
-  const [signupForm, setSignupForm] = useState({ username: "", email: "", password: "", confirmPassword: "" });
-  const [address, setAddress] = useState({
-    name: "",
-    phone: "",
-    street: "",
-    city: "",
-    zip: ""
-  });
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const limit = 100;
@@ -34,48 +19,6 @@ function App() {
   const baseUrl = "https://openai-apps-sdk-examples-2-7lml.onrender.com";
 
   useEffect(() => {
-    // Check for stored auth token
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      // Verify token with backend
-      fetch(`${baseUrl}/api/auth/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            setIsLoggedIn(true);
-            setUserId(data.user.id);
-            setUserEmail(data.user.email);
-            
-            // Load cart from database
-            return fetch(`${baseUrl}/api/cart?userId=${data.user.id}`);
-          } else {
-            // Token invalid, clear it
-            localStorage.removeItem('authToken');
-          }
-        })
-        .then(res => res && res.json())
-        .then(cartData => {
-          if (cartData && cartData.success) {
-            // Convert DB cart to widget format
-            const dbCart = cartData.cart.map(item => ({
-              id: item.product_id,
-              title: item.title,
-              price: parseFloat(item.price),
-              thumbnail: item.thumbnail
-            }));
-            setCart(dbCart);
-          }
-        })
-        .catch(err => {
-          console.error('Token verification failed:', err);
-          localStorage.removeItem('authToken');
-        });
-    }
-    
     // Get search parameters from tool output
     const toolOutput = window.openai?.toolOutput || {};
     if (toolOutput.query) setQuery(toolOutput.query);
@@ -99,7 +42,7 @@ function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: userId,
+          userId: null,
           productId: product.id,
           title: product.title,
           price: product.price,
@@ -130,7 +73,7 @@ function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: userId,
+          userId: null,
           productId: productId
         })
       });
@@ -157,125 +100,6 @@ function App() {
 
   const getTotalItems = () => cart.length;
   const getTotalPrice = () => cart.reduce((sum, item) => sum + item.price, 0).toFixed(2);
-  
-  const isAddressComplete = () => {
-    return address.name && address.phone && address.street && address.city && address.zip;
-  };
-
-  const handleAddressChange = (field, value) => {
-    const updatedAddress = { ...address, [field]: value };
-    setAddress(updatedAddress);
-    
-    // Save address to widget state with user ID
-    if (userId) {
-      const widgetState = window.openai?.widgetState || {};
-      const addresses = widgetState.addresses || {};
-      addresses[userId] = updatedAddress;
-      
-      window.openai.widgetState = {
-        ...widgetState,
-        addresses
-      };
-    }
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoginError("");
-    
-    try {
-      const response = await fetch(`${baseUrl}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: loginForm.username,
-          password: loginForm.password
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Store token
-        localStorage.setItem('authToken', data.token);
-        
-        // Update state
-        setIsLoggedIn(true);
-        setUserId(data.user.id);
-        setUserEmail(data.user.email);
-        
-        // Store user ID in widget state
-        window.openai.widgetState = {
-          ...window.openai.widgetState,
-          userId: data.user.id
-        };
-      } else {
-        setLoginError(data.error || "Login failed");
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      setLoginError("Network error. Please try again.");
-    }
-  };
-
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setLoginError("");
-
-    // Validate passwords match
-    if (signupForm.password !== signupForm.confirmPassword) {
-      setLoginError("Passwords do not match");
-      return;
-    }
-
-    try {
-      const response = await fetch(`${baseUrl}/api/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: signupForm.username,
-          email: signupForm.email,
-          password: signupForm.password
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Store token
-        localStorage.setItem('authToken', data.token);
-        
-        // Update state
-        setIsLoggedIn(true);
-        setUserId(data.user.id);
-        setUserEmail(data.user.email);
-        
-        // Store user ID in widget state
-        window.openai.widgetState = {
-          ...window.openai.widgetState,
-          userId: data.user.id
-        };
-      } else {
-        setLoginError(data.error || "Signup failed");
-      }
-    } catch (error) {
-      console.error('Signup error:', error);
-      setLoginError("Network error. Please try again.");
-    }
-  };
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserId(null);
-    setUserEmail("");
-    setShowAddressForm(false);
-    localStorage.removeItem('authToken');
-    
-    // Clear user ID from widget state but keep cart
-    const widgetState = window.openai?.widgetState || {};
-    delete widgetState.userId;
-    window.openai.widgetState = widgetState;
-  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -283,7 +107,7 @@ function App() {
     setSkip(0); // Reset to first page when searching
   };
 
-  const handleProceedToCheckout = async () => {
+  const handlePayNow = async () => {
     setIsProcessingCheckout(true);
     setCheckoutError("");
     
@@ -304,9 +128,15 @@ function App() {
 
       const requestBody = {
         cart: cartData,
-        userId: userId,
+        userId: null,
         sessionId: sessionId,
-        address: address
+        address: {
+          name: "Guest User",
+          phone: "0000000000",
+          street: "N/A",
+          city: "N/A",
+          zip: "000000"
+        }
       };
 
       console.log('Creating Razorpay order...', requestBody);
@@ -328,13 +158,9 @@ function App() {
         await fetch(`${baseUrl}/api/cart/clear`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: userId })
+          body: JSON.stringify({ userId: null })
         });
         setCart([]);
-        
-        // Reset address form
-        setShowAddressForm(false);
-        setAddress({ name: "", phone: "", street: "", city: "", zip: "" });
         
         // Open magic checkout URL directly
         const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${data.order.id}`;
@@ -351,269 +177,6 @@ function App() {
       setIsProcessingCheckout(false);
     }
   };
-
-  // Login/Signup page
-  if (!isLoggedIn) {
-    return (
-      <div className="antialiased w-full text-black px-4 pb-4 border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
-        <div className="max-w-md mx-auto">
-          <div className="flex flex-col items-center gap-2 border-b border-black/5 py-6">
-            <ShoppingCart className="h-12 w-12 text-blue-600" strokeWidth={1.5} />
-            <div className="text-xl sm:text-2xl font-semibold">Product Search</div>
-            <div className="text-sm text-black/60">
-              {showSignup ? "Create your account" : "Login to continue"}
-            </div>
-          </div>
-
-          {!showSignup ? (
-            <form onSubmit={handleLogin} className="py-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Username</label>
-                <input
-                  type="text"
-                  value={loginForm.username}
-                  onChange={(e) => setLoginForm(prev => ({ ...prev, username: e.target.value }))}
-                  className="w-full px-3 py-2 border border-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter your username"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Password</label>
-                <input
-                  type="password"
-                  value={loginForm.password}
-                  onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
-                  className="w-full px-3 py-2 border border-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter your password"
-                  required
-                />
-              </div>
-              {loginError && (
-                <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
-                  {loginError}
-                </div>
-              )}
-              <Button color="primary" variant="solid" size="md" block type="submit">
-                Login
-              </Button>
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowSignup(true);
-                    setLoginError("");
-                    setLoginForm({ username: "", password: "" });
-                  }}
-                  className="text-sm text-blue-600 hover:underline"
-                >
-                  Don't have an account? Sign up
-                </button>
-              </div>
-            </form>
-          ) : (
-            <form onSubmit={handleSignup} className="py-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Username</label>
-                <input
-                  type="text"
-                  value={signupForm.username}
-                  onChange={(e) => setSignupForm(prev => ({ ...prev, username: e.target.value }))}
-                  className="w-full px-3 py-2 border border-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Choose a username"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
-                <input
-                  type="email"
-                  value={signupForm.email}
-                  onChange={(e) => setSignupForm(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full px-3 py-2 border border-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="your.email@example.com"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Password</label>
-                <input
-                  type="password"
-                  value={signupForm.password}
-                  onChange={(e) => setSignupForm(prev => ({ ...prev, password: e.target.value }))}
-                  className="w-full px-3 py-2 border border-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Minimum 6 characters"
-                  required
-                  minLength="6"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Confirm Password</label>
-                <input
-                  type="password"
-                  value={signupForm.confirmPassword}
-                  onChange={(e) => setSignupForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                  className="w-full px-3 py-2 border border-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Re-enter your password"
-                  required
-                />
-              </div>
-              {loginError && (
-                <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
-                  {loginError}
-                </div>
-              )}
-              <Button color="primary" variant="solid" size="md" block type="submit">
-                Sign Up
-              </Button>
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowSignup(false);
-                    setLoginError("");
-                    setSignupForm({ username: "", email: "", password: "", confirmPassword: "" });
-                  }}
-                  className="text-sm text-blue-600 hover:underline"
-                >
-                  Already have an account? Login
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-
-  if (showAddressForm) {
-    return (
-      <div className="antialiased w-full text-black px-4 pb-4 border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
-        <div className="max-w-full">
-          <div className="flex flex-row items-center gap-4 border-b border-black/5 py-4">
-            <div className="flex-1">
-              <div className="text-base sm:text-xl font-medium">Delivery Address</div>
-              <div className="text-sm text-black/60">Enter your delivery details</div>
-            </div>
-            <Button 
-              color="secondary" 
-              variant="ghost" 
-              size="sm"
-              onClick={() => {
-                setShowAddressForm(false);
-                setCheckoutError("");
-              }}
-              disabled={isProcessingCheckout}
-            >
-              Back
-            </Button>
-          </div>
-          <div className="py-4 space-y-3">
-            <div>
-              <label className="block text-sm font-medium mb-1">Full Name</label>
-              <input
-                type="text"
-                value={address.name}
-                onChange={(e) => handleAddressChange('name', e.target.value)}
-                className="w-full px-3 py-2 border border-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="John Doe"
-                disabled={isProcessingCheckout}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Phone Number</label>
-              <input
-                type="tel"
-                value={address.phone}
-                onChange={(e) => handleAddressChange('phone', e.target.value)}
-                className="w-full px-3 py-2 border border-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="+1 234 567 8900"
-                disabled={isProcessingCheckout}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Street Address</label>
-              <input
-                type="text"
-                value={address.street}
-                onChange={(e) => handleAddressChange('street', e.target.value)}
-                className="w-full px-3 py-2 border border-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="123 Main Street"
-                disabled={isProcessingCheckout}
-              />
-            </div>
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="block text-sm font-medium mb-1">City</label>
-                <input
-                  type="text"
-                  value={address.city}
-                  onChange={(e) => handleAddressChange('city', e.target.value)}
-                  className="w-full px-3 py-2 border border-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="New York"
-                  disabled={isProcessingCheckout}
-                />
-              </div>
-              <div className="w-32">
-                <label className="block text-sm font-medium mb-1">ZIP Code</label>
-                <input
-                  type="text"
-                  value={address.zip}
-                  onChange={(e) => handleAddressChange('zip', e.target.value)}
-                  className="w-full px-3 py-2 border border-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="10001"
-                  disabled={isProcessingCheckout}
-                />
-              </div>
-            </div>
-          </div>
-          
-          {checkoutError && (
-            <div className="mb-3 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
-              {checkoutError}
-            </div>
-          )}
-          
-          <div className="border-t border-black/5 pt-3">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium">Order Total</span>
-              <span className="text-lg font-bold">${getTotalPrice()}</span>
-            </div>
-            {isAddressComplete() ? (
-              <Button 
-                color="primary" 
-                variant="solid" 
-                size="md" 
-                block
-                onClick={handleProceedToCheckout}
-                disabled={isProcessingCheckout}
-              >
-                {isProcessingCheckout ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Creating Order...
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Proceed to Checkout
-                  </>
-                )}
-              </Button>
-            ) : (
-              <Button color="primary" variant="solid" size="md" block disabled>
-                Please complete all fields
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="antialiased w-full text-black px-4 pb-2 border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
@@ -640,14 +203,6 @@ function App() {
               <span className="font-medium">{getTotalItems()} items</span>
             </div>
           )}
-          <Button 
-            color="secondary" 
-            variant="ghost" 
-            size="sm"
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
         </div>
         <div className="py-3 border-b border-black/5">
           <form onSubmit={handleSearch} className="flex gap-2">
@@ -774,6 +329,11 @@ function App() {
           )}
           {cart.length > 0 && (
             <div className="pt-2 border-t border-black/5">
+              {checkoutError && (
+                <div className="mb-3 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
+                  {checkoutError}
+                </div>
+              )}
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Cart Summary</span>
                 <span className="text-sm font-medium">${getTotalPrice()}</span>
@@ -783,11 +343,24 @@ function App() {
                 variant="solid" 
                 size="md" 
                 block
-                onClick={() => setShowAddressForm(true)}
+                onClick={handlePayNow}
+                disabled={isProcessingCheckout}
               >
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Proceed to Checkout ({getTotalItems()} items)
-          </Button>
+                {isProcessingCheckout ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    Pay Now ({getTotalItems()} items)
+                  </>
+                )}
+              </Button>
             </div>
           )}
         </div>
