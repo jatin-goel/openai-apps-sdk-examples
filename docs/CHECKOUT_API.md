@@ -204,7 +204,7 @@ Make sure to set these environment variables in your `.env` file:
 
 ```bash
 # Razorpay Configuration
-RAZORPAY_KEY_ID=rzp_live_I51bxdyuOOsDA7
+RAZORPAY_KEY_ID=rzp_test_S08jlGlhldPITZ
 RAZORPAY_KEY_SECRET=your_secret_key_here
 ```
 

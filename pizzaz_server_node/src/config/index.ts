@@ -31,7 +31,7 @@ export const config = {
   
   // Razorpay Configuration
   razorpay: {
-    keyId: process.env.RAZORPAY_KEY_ID || "rzp_live_I51bxdyuOOsDA7",
+    keyId: process.env.RAZORPAY_KEY_ID || "rzp_test_S08jlGlhldPITZ",
     keySecret: process.env.RAZORPAY_KEY_SECRET || ""
   },
   

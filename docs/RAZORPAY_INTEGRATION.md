@@ -36,7 +36,7 @@ PORT=8000
 BASE_URL=http://localhost:8000
 
 # Razorpay Configuration
-RAZORPAY_KEY_ID=rzp_live_I51bxdyuOOsDA7
+RAZORPAY_KEY_ID=rzp_test_S08jlGlhldPITZ
 RAZORPAY_KEY_SECRET=your_actual_secret_here
 ```
 

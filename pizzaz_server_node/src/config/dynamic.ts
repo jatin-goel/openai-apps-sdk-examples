@@ -100,7 +100,7 @@ export async function getConfig() {
       
       // Razorpay Configuration
       razorpay: {
-        keyId: await getConfigValue('RAZORPAY_KEY_ID', 'rzp_live_I51bxdyuOOsDA7'),
+        keyId: await getConfigValue('RAZORPAY_KEY_ID', 'rzp_test_S08jlGlhldPITZ'),
         keySecret: await getConfigValue('RAZORPAY_KEY_SECRET', '')
       },
       
@@ -137,7 +137,7 @@ function getDefaultConfig() {
       expiry: '7d'
     },
     razorpay: {
-      keyId: process.env.RAZORPAY_KEY_ID || 'rzp_live_I51bxdyuOOsDA7',
+      keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_S08jlGlhldPITZ',
       keySecret: process.env.RAZORPAY_KEY_SECRET || ''
     },
     cors: {

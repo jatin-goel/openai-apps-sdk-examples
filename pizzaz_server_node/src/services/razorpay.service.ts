@@ -8,7 +8,7 @@ export class RazorpayService {
 
   async initRazorpay() {
     if (!this.razorpay) {
-      const keyId = await getConfigValue('RAZORPAY_KEY_ID', 'rzp_live_I51bxdyuOOsDA7');
+      const keyId = await getConfigValue('RAZORPAY_KEY_ID', 'rzp_test_S08jlGlhldPITZ');
       const keySecret = await getConfigValue('RAZORPAY_KEY_SECRET', '');
       
       this.razorpay = new Razorpay({

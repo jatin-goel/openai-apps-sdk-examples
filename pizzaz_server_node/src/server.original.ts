@@ -453,7 +453,7 @@ const port = Number.isFinite(portEnv) ? portEnv : 8000;
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || "rzp_live_I51bxdyuOOsDA7",
+  key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_S08jlGlhldPITZ",
   key_secret: process.env.RAZORPAY_KEY_SECRET || "",
 });
 

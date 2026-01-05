@@ -114,7 +114,7 @@ export async function initDatabase() {
         ('HOST', '0.0.0.0', 'Server host', false, 'server'),
         ('JWT_SECRET', 'your-super-secret-jwt-key-change-in-production', 'JWT secret key for token signing', true, 'auth'),
         ('JWT_EXPIRY', '7d', 'JWT token expiry time', false, 'auth'),
-        ('RAZORPAY_KEY_ID', 'rzp_live_I51bxdyuOOsDA7', 'Razorpay API Key ID', false, 'payment'),
+        ('RAZORPAY_KEY_ID', 'rzp_test_S08jlGlhldPITZ', 'Razorpay API Key ID', false, 'payment'),
         ('RAZORPAY_KEY_SECRET', '', 'Razorpay API Key Secret', true, 'payment'),
         ('DB_CONNECT_URL', 'postgresql://n8n_db_m3i6_user:rQ5Npj6UW6MswIiceNFYN4gFJLxr8rnL@dpg-d4o02mvgi27c73drclb0-a.oregon-postgres.render.com/n8n_db_m3i6', 'Database connection string', true, 'database'),
         ('CORS_ALLOW_ORIGIN', '*', 'CORS allowed origins', false, 'server'),
