@@ -176,7 +176,7 @@ function App() {
             className="sm:w-18 w-16 aspect-square rounded-xl bg-cover bg-center"
             style={{
               backgroundImage:
-                "url(https://persistent.oaistatic.com/pizzaz/title.png)",
+                "url(https://cdn.dummyjson.com/product-images/smartphones/iphone-6/thumbnail.webp)",
             }}
           ></div>
           <div className="flex-1">
