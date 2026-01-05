@@ -26,11 +26,35 @@ function App() {
   }, []);
 
   useEffect(() => {
-    fetch(`https://dummyjson.com/products/search?q=${query}&limit=${limit}&skip=${skip}`)
+    // Shopify API endpoint
+    const shopifyUrl = 'https://apoorva-devstore.myshopify.com/admin/api/2025-10/products.json';
+    const token = import.meta.env.VITE_SH_TOKEN || '';
+    
+    fetch(shopifyUrl, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Access-Token': token
+      }
+    })
       .then(res => res.json())
       .then(data => {
-        setProducts(data.products || []);
-        setTotal(data.total || 0);
+        // Transform Shopify products to match our component structure
+        const transformedProducts = (data.products || []).map(product => ({
+          id: product.id,
+          title: product.title,
+          price: product.variants && product.variants[0] ? parseFloat(product.variants[0].price) : 0,
+          thumbnail: product.image ? product.image.src : (product.images && product.images[0] ? product.images[0].src : ''),
+          rating: 4.5, // Shopify doesn't have ratings by default
+          category: product.product_type || product.vendor || 'General'
+        }));
+        
+        setProducts(transformedProducts);
+        setTotal(transformedProducts.length);
+      })
+      .catch(err => {
+        console.error('Error fetching Shopify products:', err);
+        setProducts([]);
+        setTotal(0);
       });
   }, [query, skip]);
 
@@ -210,7 +234,7 @@ function App() {
                           <span>{product.rating?.toFixed(1)}</span>
                         </div>
                         <div className="whitespace-nowrap font-medium">
-                          ${product.price}
+                         ₹{product.price}
                         </div>
                       </div>
                     </div>
