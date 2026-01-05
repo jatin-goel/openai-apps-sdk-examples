@@ -1,6 +1,7 @@
 import Razorpay from "razorpay";
 import crypto from "node:crypto";
 import { getConfigValue } from "../config/dynamic.js";
+import config from "../config/index.js";
 
 export class RazorpayService {
   private razorpay: Razorpay | null = null;
