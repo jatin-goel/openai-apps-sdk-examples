@@ -1,6 +1,6 @@
 import { IncomingMessage, ServerResponse } from "node:http";
 import ShopifyService from "../services/shopify.service.js";
-import { sendSuccessResponse, sendErrorResponse } from "../utils/response.js";
+import { sendSuccessResponse, sendErrorResponse } from "../utils/helpers.js";
 
 const shopifyService = new ShopifyService();
 
