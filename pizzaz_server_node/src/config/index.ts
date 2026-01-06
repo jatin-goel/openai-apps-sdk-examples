@@ -37,7 +37,7 @@ export const config = {
   
   // MCP Configuration
   mcp: {
-    ssePath: "/abcd/mcp",
+    ssePath: "/mcp",
     postPath: "/mcp/messages"
   },
   
