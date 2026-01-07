@@ -10,7 +10,7 @@ COPY widgets/package.json widgets/pnpm-lock.yaml ./widgets/
 RUN cd widgets && pnpm install 
 
 COPY widgets/ ./widgets/
-RUN cd widgets && pnpm run build
+RUN cd widgets && BASE_URL=https://openai-apps-sdk-examples-production-1084.up.railway.app pnpm run build
 
 # Copy razorpay_server_node and install dependencies
 COPY razorpay_server_node/package.json razorpay_server_node/pnpm-lock.yaml ./razorpay_server_node/
