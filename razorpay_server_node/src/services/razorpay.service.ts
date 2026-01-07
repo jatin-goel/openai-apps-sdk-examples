@@ -16,31 +16,59 @@ export class RazorpayService {
   }
 
   /**
-   * Create a Razorpay order
+   * Create a cart/order using Razorpay public cart API
+   * This API creates an order from line items in a Razorpay store
    */
-  async createOrder(
-    amount: number,
-    currency: string,
-    cart: any[],
-    userId: string,
-    sessionId: string,
-    address: any
-  ) {
-    const razorpay = this.initRazorpay();
-    const options = {
-      amount: Math.round(amount * 100), // amount in paise
-      currency: currency || "INR",
-      receipt: `receipt_${sessionId}_${Date.now()}`,
-      notes: {
-        user_id: userId,
-        session_id: sessionId,
-        cart_items: JSON.stringify(cart),
-        address: JSON.stringify(address),
-      },
+  async createCart(params: {
+    lineItems: Array<{ quantity: number; line_item_id: string }>;
+    entityId: string;
+    notes?: Record<string, any>;
+  }) {
+    const { lineItems, entityId, notes = {} } = params;
+
+    if (!lineItems || !Array.isArray(lineItems) || lineItems.length === 0) {
+      throw new Error("lineItems array is required");
+    }
+
+    if (!entityId) {
+      throw new Error("entityId (store ID) is required");
+    }
+
+    const payload = {
+      line_items: lineItems.map(item => ({
+        quantity: item.quantity || 1,
+        line_item_id: item.line_item_id
+      })),
+      notes,
+      entity_id: entityId,
+      entity_type: "payment_store"
     };
 
-    return razorpay.orders.create(options);
+    const response = await fetch('https://api.razorpay.com/v1/stores/public/carts', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json',
+        'Origin': 'https://pages.razorpay.com',
+        'Referer': 'https://pages.razorpay.com/'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(`Razorpay Cart API Error: ${response.status} - ${errorData}`);
+    }
+
+    const cartData = await response.json();
+    
+    return {
+      cart: cartData,
+      order_id: cartData.order_id,
+      entity_id: entityId
+    };
   }
+
 
   /**
    * Verify payment signature

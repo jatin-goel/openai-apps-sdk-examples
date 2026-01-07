@@ -7,12 +7,18 @@ const razorpayService = new RazorpayService();
 export class RazorpayRoutes {
   /**
    * POST /api/razorpay/create-order
+   * Creates an order using Razorpay public cart API
+   * 
+   * Request body:
+   * - lineItems: Array of { quantity: number, line_item_id: string }
+   * - entityId: Store ID (e.g., "st_S0ycYwzFMLGY6s")
+   * - notes: Optional notes object
    */
   static async createOrder(req: IncomingMessage, res: ServerResponse) {
     try {
-      const { amount, currency, cart, userId, sessionId, address } = await parseJsonBody(req);
-      const order = await razorpayService.createOrder(amount, currency, cart, userId, sessionId, address);
-      sendSuccessResponse(res, { order });
+      const { lineItems, entityId, notes } = await parseJsonBody(req);
+      const result = await razorpayService.createCart({ lineItems, entityId, notes });
+      sendSuccessResponse(res, result);
     } catch (error: any) {
       console.error("Error creating Razorpay order:", error);
       sendErrorResponse(res, 500, error.message);
