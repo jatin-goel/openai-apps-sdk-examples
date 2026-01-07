@@ -1,7 +1,7 @@
 FROM node:20-alpine
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN npm install -g pnpm@10.24.0
 
 WORKDIR /app
 
