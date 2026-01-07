@@ -1,19 +1,15 @@
 import Razorpay from "razorpay";
 import crypto from "node:crypto";
-import { getConfigValue } from "../config/dynamic.js";
 import config from "../config/index.js";
 
 export class RazorpayService {
   private razorpay: Razorpay | null = null;
 
-  async initRazorpay() {
+  initRazorpay() {
     if (!this.razorpay) {
-      const keyId = await getConfigValue('RAZORPAY_KEY_ID', 'rzp_test_S08jlGlhldPITZ');
-      const keySecret = await getConfigValue('RAZORPAY_KEY_SECRET', '');
-      
       this.razorpay = new Razorpay({
-        key_id: keyId,
-        key_secret: keySecret,
+        key_id: config.razorpay.keyId || '',
+        key_secret: config.razorpay.keySecret || '',
       });
     }
     return this.razorpay;
@@ -30,7 +26,7 @@ export class RazorpayService {
     sessionId: string,
     address: any
   ) {
-    const razorpay = await this.initRazorpay();
+    const razorpay = this.initRazorpay();
     const options = {
       amount: Math.round(amount * 100), // amount in paise
       currency: currency || "INR",
@@ -49,12 +45,12 @@ export class RazorpayService {
   /**
    * Verify payment signature
    */
-  async verifyPaymentSignature(
+  verifyPaymentSignature(
     razorpayOrderId: string,
     razorpayPaymentId: string,
     razorpaySignature: string
-  ): Promise<boolean> {
-    const keySecret = await getConfigValue('RAZORPAY_KEY_SECRET', '');
+  ): boolean {
+    const keySecret = config.razorpay.keySecret || '';
     const sign = razorpayOrderId + "|" + razorpayPaymentId;
     const expectedSign = crypto
       .createHmac("sha256", keySecret)
@@ -181,7 +177,7 @@ export class RazorpayService {
 
     // Generate Magic Checkout URL form data
     const checkoutParams = new URLSearchParams({
-      'checkout[key]': config.razorpay.keyId,
+      'checkout[key]': config.razorpay.keyId || '',
       'checkout[order_id]': orderData.id,
       'checkout[name]': customer?.name || 'Customer',
       'checkout[prefill][contact]': customer?.phone || '',
@@ -357,4 +353,3 @@ export class RazorpayService {
 }
 
 export default RazorpayService;
-

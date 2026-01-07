@@ -5,12 +5,12 @@ import type { PizzazWidget } from "../types/index.js";
 
 /**
  * Read widget HTML from assets directory
+ * Returns placeholder HTML if widget not found
  */
 export function readWidgetHtml(componentName: string): string {
   if (!fs.existsSync(config.assetsDir)) {
-    throw new Error(
-      `Widget assets not found. Expected directory ${config.assetsDir}. Run "pnpm run build" before starting the server.`
-    );
+    console.warn(`Widget assets directory not found: ${config.assetsDir}`);
+    return getPlaceholderHtml(componentName);
   }
 
   const directPath = path.join(config.assetsDir, `${componentName}.html`);
@@ -32,12 +32,33 @@ export function readWidgetHtml(componentName: string): string {
   }
 
   if (!htmlContents) {
-    throw new Error(
-      `Widget HTML for "${componentName}" not found in ${config.assetsDir}. Run "pnpm run build" to generate the assets.`
-    );
+    console.warn(`Widget HTML for "${componentName}" not found, using placeholder`);
+    return getPlaceholderHtml(componentName);
   }
 
   return htmlContents;
+}
+
+/**
+ * Generate placeholder HTML for missing widgets
+ */
+function getPlaceholderHtml(componentName: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <title>${componentName}</title>
+  <style>
+    body { font-family: system-ui; padding: 20px; }
+    .placeholder { background: #f5f5f5; padding: 20px; border-radius: 8px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="placeholder">
+    <h3>Widget: ${componentName}</h3>
+    <p>Widget assets not built. Run "pnpm run build" in the root directory to generate assets.</p>
+  </div>
+</body>
+</html>`;
 }
 
 /**
@@ -84,4 +105,3 @@ widgets.forEach((widget) => {
   widgetsById.set(widget.id, widget);
   widgetsByUri.set(widget.templateUri, widget);
 });
-
