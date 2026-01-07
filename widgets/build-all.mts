@@ -158,7 +158,7 @@ console.groupEnd();
 
 console.log("new hash: ", h);
 
-const defaultBaseUrl = "http://openai-apps-sdk-examples-production-2dd9.up.railway.app";
+const defaultBaseUrl = "https://openai-apps-sdk-examples-production-2dd9.up.railway.app";
 const baseUrlCandidate = process.env.BASE_URL?.trim() ?? "";
 const baseUrlRaw = baseUrlCandidate.length > 0 ? baseUrlCandidate : defaultBaseUrl;
 const normalizedBaseUrl = baseUrlRaw.replace(/\/+$/, "") || defaultBaseUrl;
