@@ -22,5 +22,5 @@ WORKDIR /app/razorpay_server_node
 
 EXPOSE 8000
 
-CMD ["pnpm", "start"]
+CMD ["pnpm", "exec", "tsx", "src/server.ts"]
 
