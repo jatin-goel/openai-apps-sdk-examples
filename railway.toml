@@ -1,6 +1,6 @@
 [build]
 builder = "RAILPACK"
-buildCommand = "cd widgets && pnpm install && BASE_URL=https://openai-apps-sdk-examples.railway.internal pnpm run build && cd ../razorpay_server_node && pnpm install"
+buildCommand = "npm i -g pnpm && cd widgets && pnpm install && BASE_URL=https://openai-apps-sdk-examples.railway.internal pnpm run build && cd ../razorpay_server_node && pnpm install"
 
 [deploy]
 startCommand = "cd razorpay_server_node && pnpm run start"
