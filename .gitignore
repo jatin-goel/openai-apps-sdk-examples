@@ -3,7 +3,7 @@ node_modules/
 .pnpm-store/
 
 # Build outputs
-/assets
+/widgets/assets
 dist/
 build/
 .vite/
@@ -33,6 +33,7 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
+
 
 # Ruff
 .ruff_cache/

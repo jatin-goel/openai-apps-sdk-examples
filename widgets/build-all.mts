@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { build, type InlineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import fg from "fast-glob";
