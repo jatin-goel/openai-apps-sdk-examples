@@ -85,11 +85,9 @@ Comprehensive documentation is available in the [`docs/`](./docs/) folder:
 ### Orders
 - `POST /api/checkout/proceed` - Proceed to checkout
 - `GET /api/orders/:orderId` - Get order details
-- `GET /api/admin/orders` - Admin order list
 
 ### Pages
 - `GET /checkout` - Checkout page
-- `GET /admin` - Admin dashboard
 
 ## 🏗️ Architecture
 

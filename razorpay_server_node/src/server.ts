@@ -98,26 +98,6 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
     return;
   }
 
-  if (req.method === "OPTIONS" && url.pathname === "/api/admin/users") {
-    handleCorsOptions(res);
-    return;
-  }
-
-  if (req.method === "GET" && url.pathname === "/api/admin/users") {
-    await AuthRoutes.getAllUsers(req, res);
-    return;
-  }
-
-  if (req.method === "OPTIONS" && url.pathname === "/api/admin/users/reset-password") {
-    handleCorsOptions(res);
-    return;
-  }
-
-  if (req.method === "POST" && url.pathname === "/api/admin/users/reset-password") {
-    await AuthRoutes.resetUserPassword(req, res);
-    return;
-  }
-
   // ==========================================
   // Cart Endpoints
   // ==========================================
@@ -200,11 +180,6 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
     return;
   }
 
-  if (req.method === "GET" && url.pathname === "/api/admin/orders") {
-    await OrderRoutes.getAllOrders(req, res);
-    return;
-  }
-
   // ==========================================
   // Shopify Products Endpoints
   // ==========================================
@@ -225,16 +200,6 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
   
   if (req.method === "GET" && url.pathname === "/checkout") {
     StaticRoutes.serveCheckoutPage(req, res);
-    return;
-  }
-
-  if (req.method === "GET" && url.pathname === "/admin") {
-    StaticRoutes.serveAdminPage(req, res);
-    return;
-  }
-
-  if (req.method === "GET" && url.pathname === "/admin/users") {
-    StaticRoutes.serveAdminUsersPage(req, res);
     return;
   }
 
@@ -280,10 +245,6 @@ httpServer.listen(port, () => {
   console.log(`   Signup:        POST http://localhost:${port}/api/auth/signup`);
   console.log(`   Login:         POST http://localhost:${port}/api/auth/login`);
   console.log(`   Verify:        POST http://localhost:${port}/api/auth/verify`);
-  console.log(`\n👥 Admin Endpoints:`);
-  console.log(`   Get Users:     GET  http://localhost:${port}/api/admin/users`);
-  console.log(`   Reset Password: POST http://localhost:${port}/api/admin/users/reset-password`);
-  console.log(`   Get Orders:    GET  http://localhost:${port}/api/admin/orders`);
   console.log(`\n🛒 Cart Endpoints:`);
   console.log(`   Get Cart:      GET  http://localhost:${port}/api/cart?userId=...`);
   console.log(`   Add to Cart:   POST http://localhost:${port}/api/cart/add`);
@@ -298,10 +259,7 @@ httpServer.listen(port, () => {
   console.log(`\n📦 Order Endpoints:`);
   console.log(`   Checkout:      POST http://localhost:${port}/api/checkout/proceed`);
   console.log(`   Get Order:     GET  http://localhost:${port}/api/orders/:orderId`);
-  console.log(`   Admin Orders:  GET  http://localhost:${port}/api/admin/orders`);
   console.log(`\n📄 Pages:`);
   console.log(`   Checkout:      http://localhost:${port}/checkout`);
-  console.log(`   Admin Orders:  http://localhost:${port}/admin`);
-  console.log(`   Admin Users:   http://localhost:${port}/admin/users`);
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
 });

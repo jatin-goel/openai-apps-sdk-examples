@@ -39,19 +39,6 @@ export class OrderRoutes {
       sendErrorResponse(res, statusCode, error.message || "Failed to fetch order");
     }
   }
-
-  /**
-   * GET /api/admin/orders
-   */
-  static async getAllOrders(req: IncomingMessage, res: ServerResponse) {
-    try {
-      const orders = await OrderService.getAllOrders();
-      sendSuccessResponse(res, { orders });
-    } catch (error: any) {
-      console.error("Error fetching orders:", error);
-      sendErrorResponse(res, 500, error.message || "Failed to fetch orders");
-    }
-  }
 }
 
 export default OrderRoutes;

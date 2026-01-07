@@ -112,28 +112,6 @@ export class OrderService {
       line_items: order.line_items
     };
   }
-
-  /**
-   * Get all orders (Admin)
-   */
-  static async getAllOrders() {
-    const allOrders = [];
-    for (const order of orders.values()) {
-      allOrders.push({
-        id: order.id,
-        razorpay_order_id: order.id,
-        amount: order.amount,
-        currency: order.currency,
-        receipt: order.receipt,
-        status: order.status,
-        notes: order.notes,
-        created_at: order.created_at,
-        line_items: order.line_items,
-        session_id: order.session_id
-      });
-    }
-    return allOrders;
-  }
 }
 
 export default OrderService;
