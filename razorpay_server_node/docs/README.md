@@ -1,6 +1,6 @@
-# 📚 Pizzaz Server Documentation Index
+# 📚 Razorpay Server Documentation Index
 
-Welcome to the comprehensive documentation for the Pizzaz MCP Server backend.
+Welcome to the comprehensive documentation for the Razorpay MCP Server backend.
 
 ## 📖 Documentation Overview
 

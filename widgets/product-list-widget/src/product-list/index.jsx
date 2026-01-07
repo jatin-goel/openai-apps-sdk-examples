@@ -16,8 +16,9 @@ function App() {
   const [isSearching, setIsSearching] = useState(false);
   const limit = 100;
 
-  // API base URL
-  const baseUrl = "https://openai-apps-sdk-examples-2-7lml.onrender.com";
+  // API base URL and store ID from env
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  const storeId = import.meta.env.VITE_RAZORPAY_STORE_ID;
 
   useEffect(() => {
     // Get search parameters from tool output
@@ -28,7 +29,7 @@ function App() {
 
   useEffect(() => {
     // Use Razorpay parse-store API
-    const apiUrl = `${baseUrl}/api/razorpay/parse-store?url=https://pages.razorpay.com/stores/st_RvP3FIXbUltGLM`;
+    const apiUrl = `${baseUrl}/api/razorpay/parse-store?url=https://pages.razorpay.com/stores/${storeId}`;
     
     setIsSearching(true);
     
@@ -376,4 +377,4 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("pizzaz-list-root")).render(<App />);
+createRoot(document.getElementById("product-list-root")).render(<App />);

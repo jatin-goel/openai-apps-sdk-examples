@@ -1,4 +1,4 @@
-# Pizzaz MCP Server (Node)
+# Razorpay MCP Server (Node)
 
 Enterprise-grade Model Context Protocol (MCP) server with modular architecture, featuring complete e-commerce backend with authentication, cart management, Razorpay payment integration, and order management.
 
@@ -92,7 +92,7 @@ Comprehensive documentation is available in the [`docs/`](./docs/) folder:
 ## 🏗️ Architecture
 
 ```
-pizzaz_server_node/
+razorpay_server_node/
 ├── src/
 │   ├── config/              # Configuration & environment
 │   ├── database/            # Database connection & schema

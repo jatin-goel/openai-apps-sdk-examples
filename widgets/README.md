@@ -34,17 +34,16 @@ The MCP servers in this demo highlight how each tool can light up widgets by com
 - `src/` – Source for each widget example.
 - `assets/` – Generated HTML, JS, and CSS bundles after running the build step.
 - `shopping_cart_python/` – Python MCP server that demonstrates how `_meta["widgetSessionId"]` keeps `widgetState` in sync across turns for a shopping-cart widget.
-- `pizzaz_server_node/` – MCP server implemented with the official TypeScript SDK.
-- `pizzaz_server_python/` – Python MCP server that returns the Pizzaz widgets.
+- `razorpay_server_node/` – MCP server implemented with the official TypeScript SDK for Razorpay integration.
 - `solar-system_server_python/` – Python MCP server for the 3D solar system widget.
 - `kitchen_sink_server_node/` – Node MCP server for the kitchen-sink-lite widget.
 - `kitchen_sink_server_python/` – Python MCP server for the kitchen-sink-lite widget.
 - `authenticated_server_python/` – Python MCP server that demonstrates authenticated tool calls.
 - `build-all.mts` – Vite build orchestrator that produces hashed bundles for every widget entrypoint.
 
-### Pizzaz overview
+### Razorpay Product List overview
 
-This example contains multiple components showing multiple types of views and interactions: a list view, a carousel view, a map view. It also contains a "pizzaz shop" showing interactive flows and a checkout page.
+This example contains a product list widget that integrates with Razorpay stores. It shows product listings, cart management, and checkout flows using Razorpay's payment gateway.
 
 This example uses the [Apps SDK UI library](https://github.com/openai/apps-sdk-ui) for simple components such as images, buttons, and badges.
 
@@ -103,32 +102,23 @@ pnpm run serve
 
 The assets are exposed at [`http://localhost:4444`](http://localhost:4444) with CORS enabled so that local tooling (including MCP inspectors) can fetch them.
 
-> **Note:** The Python Pizzaz server caches widget HTML with `functools.lru_cache`. If you rebuild or manually edit files in `assets/`, restart the MCP server so it picks up the updated markup.
+> **Note:** If you rebuild or manually edit files in `assets/`, restart the MCP server so it picks up the updated markup.
 
 ## Run the MCP servers
 
 The repository ships several demo MCP servers that highlight different widget bundles:
 
-- **Pizzaz (Node & Python)** – pizza-inspired collection of tools and components
+- **Razorpay (Node)** – Razorpay store integration with product listing and checkout
 - **Solar system (Python)** – 3D solar system viewer
 - **Authenticated (Python)** – set of tools that require different levels of OAuth
 - **Kitchen sink lite (Node & Python)** – minimal widget + server pairing that demonstrates tool output, widget state, `callTool`, and host helpers
 - **Shopping cart (Python)** – simple shopping cart widget that demonstrates how to use `widgetSessionId` to keep state between tool calls
 
-### Pizzaz Node server
+### Razorpay Node server
 
 ```bash
-cd pizzaz_server_node
+cd razorpay_server_node
 pnpm start
-```
-
-### Pizzaz Python server
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r pizzaz_server_python/requirements.txt
-uvicorn pizzaz_server_python.main:app --port 8000
 ```
 
 ### Authenticated Python server
@@ -204,11 +194,11 @@ You can add your app to the conversation context by selecting it in the "More" o
 
 ![more-chatgpt](https://github.com/user-attachments/assets/26852b36-7f9e-4f48-a515-aebd87173399)
 
-You can then invoke tools by asking something related. For example, for the Pizzaz app, you can ask "What are the best pizzas in town?".
+You can then invoke tools by asking something related. For example, for the Razorpay app, you can ask "Show me products from the store".
 
 ## Next steps
 
-- Customize the widget data: edit the handlers in `pizzaz_server_node/src`, `pizzaz_server_python/main.py`, or the solar system server to fetch data from your systems.
+- Customize the widget data: edit the handlers in `razorpay_server_node/src` or the solar system server to fetch data from your systems.
 - Create your own components and add them to the gallery: drop new entries into `src/` and they will be picked up automatically by the build script.
 
 ### Deploy your MCP server

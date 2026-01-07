@@ -1,3 +1,2 @@
 packages:
-  - pizzaz_server_node
-  - kitchen_sink_server_node
+  - ../razorpay_server_node

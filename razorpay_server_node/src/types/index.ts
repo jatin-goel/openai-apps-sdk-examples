@@ -61,7 +61,7 @@ export interface Payment {
   createdAt: string;
 }
 
-export interface PizzazWidget {
+export interface Widget {
   id: string;
   title: string;
   templateUri: string;

@@ -84,12 +84,12 @@ const resourceTemplates: ResourceTemplate[] = widgets.map((widget) => ({
 }));
 
 /**
- * Create a new Pizzaz MCP server instance
+ * Create a new Razorpay MCP server instance
  */
-export function createPizzazServer(): Server {
+export function createMcpServer(): Server {
   const server = new Server(
     {
-      name: "pizzaz-node",
+      name: "razorpay-mcp-server",
       version: "0.1.0",
     },
     {
@@ -181,7 +181,7 @@ export const sessions = new Map<string, SessionRecord>();
  */
 export async function handleSseRequest(res: any, postPath: string) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  const server = createPizzazServer();
+  const server = createMcpServer();
   const transport = new SSEServerTransport(postPath, res);
   const sessionId = transport.sessionId;
 

@@ -8,15 +8,15 @@ import crypto from "crypto";
 import pkg from "./package.json" with { type: "json" };
 import tailwindcss from "@tailwindcss/vite";
 
-const entries = fg.sync("src/**/index.{tsx,jsx}");
-const outDir = "assets";
+const entries = fg.sync("product-list-widget/src/**/index.{tsx,jsx}");
+const outDir = "product-list-widget/assets";
 
 const PER_ENTRY_CSS_GLOB = "**/*.{css,pcss,scss,sass}";
 const PER_ENTRY_CSS_IGNORE = "**/*.module.*".split(",").map((s) => s.trim());
-const GLOBAL_CSS_LIST = [path.resolve("src/index.css")];
+const GLOBAL_CSS_LIST = [path.resolve("shared/index.css")];
 
 const targets: string[] = [
-  "pizzaz-list",
+  "product-list",
 ];
 const builtNames: string[] = [];
 
@@ -133,9 +133,9 @@ for (const file of entries) {
 }
 
 const outputs = fs
-  .readdirSync("assets")
+  .readdirSync(outDir)
   .filter((f) => f.endsWith(".js") || f.endsWith(".css"))
-  .map((f) => path.join("assets", f))
+  .map((f) => path.join(outDir, f))
   .filter((p) => fs.existsSync(p));
 
 const h = crypto
@@ -158,7 +158,7 @@ console.groupEnd();
 
 console.log("new hash: ", h);
 
-const defaultBaseUrl = "https://openai-apps-sdk-examples-production-2dd9.up.railway.app";
+const defaultBaseUrl = process.env.DEFAULT_BASE_URL || "https://localhost:4444";
 const baseUrlCandidate = process.env.BASE_URL?.trim() ?? "";
 const baseUrlRaw = baseUrlCandidate.length > 0 ? baseUrlCandidate : defaultBaseUrl;
 const normalizedBaseUrl = baseUrlRaw.replace(/\/+$/, "") || defaultBaseUrl;

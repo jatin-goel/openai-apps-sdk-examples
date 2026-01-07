@@ -5,6 +5,8 @@
  */
 
 const SERVER_URL = process.env.SERVER_URL || 'http://localhost:8000';
+const RAZORPAY_STORE_ID = process.env.RAZORPAY_STORE_ID;
+const STORE_URL = `https://pages.razorpay.com/stores/${RAZORPAY_STORE_ID}`;
 
 // ==================== EXAMPLE 1: Basic Usage ====================
 async function basicExample() {
@@ -14,7 +16,7 @@ async function basicExample() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      url: 'https://pages.razorpay.com/stores/st_RvP3FIXbUltGLM'
+      url: STORE_URL
     })
   });
 
@@ -32,7 +34,7 @@ async function filterByCategory(categoryName) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      url: 'https://pages.razorpay.com/stores/st_RvP3FIXbUltGLM'
+      url: STORE_URL
     })
   });
 
@@ -59,7 +61,7 @@ async function findByPriceRange(minPrice, maxPrice) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      url: 'https://pages.razorpay.com/stores/st_RvP3FIXbUltGLM'
+      url: STORE_URL
     })
   });
 
@@ -89,7 +91,7 @@ async function checkStockStatus() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      url: 'https://pages.razorpay.com/stores/st_RvP3FIXbUltGLM'
+      url: STORE_URL
     })
   });
 
@@ -122,7 +124,7 @@ async function getMostExpensive(count = 5) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      url: 'https://pages.razorpay.com/stores/st_RvP3FIXbUltGLM'
+      url: STORE_URL
     })
   });
 
@@ -147,7 +149,7 @@ async function exportToCSV() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      url: 'https://pages.razorpay.com/stores/st_RvP3FIXbUltGLM'
+      url: STORE_URL
     })
   });
 
@@ -173,7 +175,7 @@ async function getStoreSummary() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      url: 'https://pages.razorpay.com/stores/st_RvP3FIXbUltGLM'
+      url: STORE_URL
     })
   });
 

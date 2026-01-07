@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import config from "../config/index.js";
-import type { PizzazWidget } from "../types/index.js";
+import type { Widget } from "../types/index.js";
 
 /**
  * Read widget HTML from assets directory
@@ -65,7 +65,7 @@ function getPlaceholderHtml(componentName: string): string {
 /**
  * Widget descriptor metadata
  */
-export function widgetDescriptorMeta(widget: PizzazWidget) {
+export function widgetDescriptorMeta(widget: Widget) {
   return {
     "openai/outputTemplate": widget.templateUri,
     "openai/toolInvocation/invoking": widget.invoking,
@@ -77,7 +77,7 @@ export function widgetDescriptorMeta(widget: PizzazWidget) {
 /**
  * Widget invocation metadata
  */
-export function widgetInvocationMeta(widget: PizzazWidget) {
+export function widgetInvocationMeta(widget: Widget) {
   return {
     "openai/toolInvocation/invoking": widget.invoking,
     "openai/toolInvocation/invoked": widget.invoked,
@@ -87,20 +87,20 @@ export function widgetInvocationMeta(widget: PizzazWidget) {
 /**
  * Define all available widgets
  */
-export const widgets: PizzazWidget[] = [
+export const widgets: Widget[] = [
   {
     id: "product-search",
     title: "Search Products",
     templateUri: "ui://widget/product-search.html",
     invoking: "Searching products",
     invoked: "Products found",
-    html: readWidgetHtml("pizzaz-list"),
+    html: readWidgetHtml("product-list"),
     responseText: "Product search results displayed!",
   },
 ];
 
-export const widgetsById = new Map<string, PizzazWidget>();
-export const widgetsByUri = new Map<string, PizzazWidget>();
+export const widgetsById = new Map<string, Widget>();
+export const widgetsByUri = new Map<string, Widget>();
 
 widgets.forEach((widget) => {
   widgetsById.set(widget.id, widget);
