@@ -1,5 +1,7 @@
-import pool from "../database/pool.js";
 import config from "../config/index.js";
+
+// In-memory order storage
+const orders = new Map<string, any>();
 
 export class OrderService {
   /**
@@ -74,34 +76,13 @@ export class OrderService {
     const orderData = await orderResponse.json();
     console.log('Razorpay order created successfully:', orderData);
 
-    // Store order in database
-    try {
-      const client = await pool.connect();
-      try {
-        await client.query(`
-          INSERT INTO orders (
-            user_id, razorpay_order_id, amount, currency, receipt, 
-            status, line_items, notes, session_id, created_at
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-        `, [
-          userId,
-          orderData.id,
-          orderData.amount,
-          orderData.currency,
-          orderData.receipt,
-          orderData.status,
-          JSON.stringify(lineItems),
-          JSON.stringify(orderData.notes),
-          sessionId,
-          orderData.created_at
-        ]);
-      } finally {
-        client.release();
-      }
-    } catch (dbError) {
-      console.error('Error storing order in database:', dbError);
-      // Continue even if DB storage fails
-    }
+    // Store order in memory
+    orders.set(orderData.id, {
+      ...orderData,
+      user_id: userId,
+      session_id: sessionId,
+      line_items: lineItems
+    });
 
     return orderData;
   }
@@ -114,61 +95,33 @@ export class OrderService {
       throw new Error("Order ID is required");
     }
 
-    const client = await pool.connect();
-    try {
-      const result = await client.query(`
-        SELECT 
-          o.*,
-          u.username,
-          u.email as user_email
-        FROM orders o
-        LEFT JOIN users u ON o.user_id = u.id
-        WHERE o.razorpay_order_id = $1
-      `, [orderId]);
+    const order = orders.get(orderId);
 
-      if (result.rows.length === 0) {
-        throw new Error("Order not found");
-      }
-
-      const order = result.rows[0];
-      
-      // Transform to match expected format
-      return {
-        id: order.razorpay_order_id,
-        amount: order.amount,
-        currency: order.currency,
-        receipt: order.receipt,
-        status: order.status,
-        notes: order.notes,
-        created_at: order.created_at,
-        line_items: order.line_items,
-        username: order.username,
-        user_email: order.user_email
-      };
-    } finally {
-      client.release();
+    if (!order) {
+      throw new Error("Order not found");
     }
+
+    return {
+      id: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      receipt: order.receipt,
+      status: order.status,
+      notes: order.notes,
+      created_at: order.created_at,
+      line_items: order.line_items
+    };
   }
 
   /**
    * Get all orders (Admin)
    */
   static async getAllOrders() {
-    const client = await pool.connect();
-    try {
-      const result = await client.query(`
-        SELECT 
-          o.*,
-          u.username,
-          u.email as user_email
-        FROM orders o
-        LEFT JOIN users u ON o.user_id = u.id
-        ORDER BY o.created_at DESC
-      `);
-
-      return result.rows.map(order => ({
+    const allOrders = [];
+    for (const order of orders.values()) {
+      allOrders.push({
         id: order.id,
-        razorpay_order_id: order.razorpay_order_id,
+        razorpay_order_id: order.id,
         amount: order.amount,
         currency: order.currency,
         receipt: order.receipt,
@@ -176,15 +129,11 @@ export class OrderService {
         notes: order.notes,
         created_at: order.created_at,
         line_items: order.line_items,
-        username: order.username,
-        user_email: order.user_email,
         session_id: order.session_id
-      }));
-    } finally {
-      client.release();
+      });
     }
+    return allOrders;
   }
 }
 
 export default OrderService;
-

@@ -7,40 +7,31 @@ const ASSETS_DIR = path.resolve(ROOT_DIR, "assets");
 
 export const config = {
   // Server Configuration
-  port: Number(process.env.PORT ?? 8000),
-  host: process.env.HOST || "0.0.0.0",
-  
+  port: Number(process.env.PORT),
+  host: process.env.HOST,
+
   // Paths
   rootDir: ROOT_DIR,
   assetsDir: ASSETS_DIR,
-  
-  // Database Configuration
-  database: {
-    connectionString: process.env.DB_CONNECT_URL || 
-      "postgresql://n8n_db_m3i6_user:rQ5Npj6UW6MswIiceNFYN4gFJLxr8rnL@dpg-d4o02mvgi27c73drclb0-a.oregon-postgres.render.com/n8n_db_m3i6",
-    ssl: {
-      rejectUnauthorized: false
-    }
-  },
-  
+
   // JWT Configuration
   jwt: {
-    secret: process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production",
+    secret: process.env.JWT_SECRET,
     expiry: "7d"
   },
-  
+
   // Razorpay Configuration
   razorpay: {
-    keyId: process.env.RAZORPAY_KEY_ID || "rzp_test_S08jlGlhldPITZ",
-    keySecret: process.env.RAZORPAY_KEY_SECRET || ""
+    keyId: process.env.RAZORPAY_KEY_ID,
+    keySecret: process.env.RAZORPAY_KEY_SECRET
   },
-  
+
   // MCP Configuration
   mcp: {
     ssePath: "/mcp",
     postPath: "/mcp/messages"
   },
-  
+
   // CORS Configuration
   cors: {
     allowOrigin: "*",

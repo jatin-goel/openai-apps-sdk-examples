@@ -1,15 +1,11 @@
 /**
- * Main exports for the Pizzaz Server
+ * Main exports for the Razorpay Server
  * 
  * This file provides a clean API for importing server components
  */
 
 // Configuration
 export { default as config } from "./config/index.js";
-
-// Database
-export { pool } from "./database/pool.js";
-export { initDatabase } from "./database/init.js";
 
 // Services
 export { AuthService } from "./services/auth.service.js";
@@ -51,4 +47,3 @@ export type {
   SessionRecord,
   ApiResponse,
 } from "./types/index.js";
-
