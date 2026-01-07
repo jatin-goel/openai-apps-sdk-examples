@@ -114,31 +114,17 @@ function App() {
     setCheckoutError("");
     
     try {
-      const sessionId = window.openai?.widgetSessionId || Date.now().toString();
-      
-      // Prepare cart data with proper structure for line items
-      const cartData = cart.map(item => ({
-        product_id: item.id,
-        title: item.title,
-        price: item.price,
-        quantity: 1,
-        thumbnail: item.thumbnail,
-        description: item.title,
-        offer_price: item.price,
-        tax_amount: 0
+      // Prepare line items with proper structure for Razorpay cart API
+      // The product.id is the line_item_id (e.g., "li_S0ycZ0t0WKqjio")
+      const lineItems = cart.map(item => ({
+        line_item_id: item.id,
+        quantity: 1
       }));
 
       const requestBody = {
-        cart: cartData,
-        userId: null,
-        sessionId: sessionId,
-        address: {
-          name: "Guest User",
-          phone: "0000000000",
-          street: "N/A",
-          city: "N/A",
-          zip: "000000"
-        }
+        lineItems: lineItems,
+        entityId: storeId,
+        notes: {}
       };
 
       console.log('Creating Razorpay order...', requestBody);
@@ -159,8 +145,8 @@ function App() {
         // Clear cart in memory after successful order creation
         setCart([]);
         
-        // Open magic checkout URL directly
-        const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${data.order.id}`;
+        // Open magic checkout URL directly using order_id from response
+        const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${data.order_id}`;
         window.open(magicCheckoutUrl, '_blank');
         
       } else {
