@@ -20,6 +20,10 @@ COPY razorpay_server_node/ ./razorpay_server_node/
 
 WORKDIR /app/razorpay_server_node
 
+
+# print env
+CMD ["env"]
+
 EXPOSE 8000
 
 CMD ["pnpm", "exec", "tsx", "src/server.ts"]
