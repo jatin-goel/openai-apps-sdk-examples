@@ -14,6 +14,7 @@ export function readWidgetHtml(componentName: string): string {
   }
 
   const directPath = path.join(config.assetsDir, `${componentName}.html`);
+  console.log("asset path is " + directPath);
   let htmlContents: string | null = null;
 
   if (fs.existsSync(directPath)) {
