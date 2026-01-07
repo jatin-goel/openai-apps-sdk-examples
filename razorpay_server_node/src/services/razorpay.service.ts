@@ -242,114 +242,27 @@ export class RazorpayService {
       showCoupons = 'true',
       address = ''
     } = params;
+return 
+    `<button id="rzp-button1">Pay</button>
+<script src="https://checkout.razorpay.com/v1/magic-checkout.js"></script>
+<script>
+var options = {
+    "key": "${config.razorpay.keyId}", // Enter the Key ID generated from the Dashboard
+    "one_click_checkout": true,
+    "name": "ABCD", // your business name
+    "order_id": "${orderId}", // This is a sample Order ID. Pass the `id` obtained in the response of Step 1; mandatory
+    "show_coupons": true, // default true; false if coupon widget should be hidden
+    "callback_url": "https://eneqd3r9zrjok.x.pipedream.net/",
+    "redirect": "true"
+};
+var rzp1 = new Razorpay(options);
+document.getElementById('rzp-button1').onclick = function(e){
+    rzp1.open();
+    e.preventDefault();
+}
+</script>`
 
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${name}</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .container {
-            text-align: center;
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            max-width: 400px;
-        }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        h2 {
-            color: #333;
-            margin-bottom: 1rem;
-        }
-        p {
-            color: #666;
-            margin-bottom: 1.5rem;
-        }
-        .fallback-link {
-            display: inline-block;
-            padding: 12px 24px;
-            background: #667eea;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 500;
-            transition: background 0.3s;
-        }
-        .fallback-link:hover {
-            background: #5568d3;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="spinner"></div>
-        <h2>Redirecting to Payment...</h2>
-        <p>Please wait while we redirect you to the secure payment page.</p>
-        <p style="font-size: 14px; color: #999;">If the payment page doesn't open automatically,</p>
-        <a href="#" id="rzp-button1" class="fallback-link">Click Here to Pay</a>
-    </div>
 
-    <script src="https://checkout.razorpay.com/v1/magic-checkout.js"></script>
-    <script>
-        var options = {
-            "key": "${config.razorpay.keyId}",
-            "one_click_checkout": true,
-            "name": "${businessName}",
-            "order_id": "${orderId}",
-            "show_coupons": ${showCoupons},
-            "callback_url": "${callbackUrl}",
-            "redirect": "true",
-            "prefill": {
-                "name": "${customerName}",
-                "email": "${customerEmail}",
-                "contact": "${customerPhone}"${couponCode ? `,\n                "coupon_code": "${couponCode}"` : ''}
-            },
-            "notes": {
-                "address": "${address}"
-            }
-        };
-        
-        var rzp1 = new Razorpay(options);
-        
-        // Automatically open payment on page load
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                rzp1.open();
-            }, 500);
-        });
-        
-        // Fallback manual trigger
-        document.getElementById('rzp-button1').onclick = function(e){
-            rzp1.open();
-            e.preventDefault();
-        }
-    </script>
-</body>
-</html>`;
   }
 }
-
 export default RazorpayService;
