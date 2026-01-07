@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { RazorpayService } from "../services/razorpay.service.js";
+import { OrderService } from "../services/order.service.js";
 import { parseJsonBody, sendSuccessResponse, sendErrorResponse } from "../utils/helpers.js";
 
 const razorpayService = new RazorpayService();
@@ -17,7 +18,7 @@ export class RazorpayRoutes {
   static async createOrder(req: IncomingMessage, res: ServerResponse) {
     try {
       const { lineItems, entityId, notes } = await parseJsonBody(req);
-      const result = await razorpayService.createCart({ lineItems, entityId, notes });
+      const result = await OrderService.createCheckoutOrder(lineItems, entityId, notes);
       sendSuccessResponse(res, result);
     } catch (error: any) {
       console.error("Error creating Razorpay order:", error);

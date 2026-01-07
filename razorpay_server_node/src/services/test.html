@@ -1,0 +1,18 @@
+<button id="rzp-button1">Pay</button>
+<script src="https://checkout.razorpay.com/v1/magic-checkout.js"></script>
+<script>
+var options = {
+    "key": "rzp_test_S08jlGlhldPITZ", // Enter the Key ID generated from the Dashboard
+    "one_click_checkout": true,
+    "name": "ABCD", // your business name
+    "order_id": "order_S0zS1wf2wlDp62", // This is a sample Order ID. Pass the `id` obtained in the response of Step 1; mandatory
+    "show_coupons": true, // default true; false if coupon widget should be hidden
+    "callback_url": "https://eneqd3r9zrjok.x.pipedream.net/",
+    "redirect": "true"
+};
+var rzp1 = new Razorpay(options);
+document.getElementById('rzp-button1').onclick = function(e){
+    rzp1.open();
+    e.preventDefault();
+}
+</script>

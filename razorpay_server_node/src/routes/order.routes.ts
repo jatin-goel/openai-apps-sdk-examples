@@ -5,14 +5,19 @@ import { parseJsonBody, sendSuccessResponse, sendErrorResponse } from "../utils/
 export class OrderRoutes {
   /**
    * POST /api/checkout/proceed
+   * 
+   * Request body:
+   * - lineItems: Array of { quantity: number, line_item_id: string }
+   * - entityId: Store ID (e.g., "st_S0ycYwzFMLGY6s")
+   * - notes: Optional notes object
    */
   static async proceedToCheckout(req: IncomingMessage, res: ServerResponse) {
     try {
-      const { cart, userId, sessionId, address } = await parseJsonBody(req);
-      const order = await OrderService.createCheckoutOrder(cart, userId, sessionId, address);
+      const { lineItems, entityId, notes } = await parseJsonBody(req);
+      const result = await OrderService.createCheckoutOrder(lineItems, entityId, notes);
       sendSuccessResponse(res, {
-        order,
-        message: "Razorpay order created successfully with line items"
+        ...result,
+        message: "Razorpay order created successfully"
       });
     } catch (error: any) {
       console.error("Error creating Razorpay order for checkout:", error);

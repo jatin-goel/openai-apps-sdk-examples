@@ -1,90 +1,73 @@
-import config from "../config/index.js";
-
 // In-memory order storage
 const orders = new Map<string, any>();
 
 export class OrderService {
   /**
-   * Create a checkout order with Razorpay
+   * Create a checkout order using Razorpay public cart API
+   * 
+   * @param lineItems - Array of { quantity: number, line_item_id: string }
+   * @param entityId - Store ID (e.g., "st_S0ycYwzFMLGY6s")
+   * @param notes - Optional notes object
    */
-  static async createCheckoutOrder(cart: any[], userId: string, sessionId: string, address: any) {
-    if (!cart || !Array.isArray(cart) || cart.length === 0) {
-      throw new Error("Cart items are required");
+  static async createCheckoutOrder(
+    lineItems: Array<{ quantity: number; line_item_id: string }>,
+    entityId: string,
+    notes: Record<string, any> = {}
+  ) {
+    if (!lineItems || !Array.isArray(lineItems) || lineItems.length === 0) {
+      throw new Error("lineItems array is required");
     }
 
-    // Calculate line items total
-    const lineItemsTotal = cart.reduce((sum: number, item: any) => {
-      const itemPrice = Math.round((item.price || 0) * (item.quantity || 1) * 100); // Convert to paise
-      return sum + itemPrice;
-    }, 0);
+    if (!entityId) {
+      throw new Error("entityId (store ID) is required");
+    }
 
-    // Format line items for Razorpay
-    const lineItems = cart.map((item: any) => ({
-      sku: item.product_id?.toString() || item.id?.toString() || "unknown",
-      variant_id: item.variant_id?.toString() || item.product_id?.toString() || "",
-      other_product_codes: item.other_product_codes || {},
-      price: Math.round((item.price || 0) * 100), // Convert to paise
-      offer_price: Math.round((item.offer_price || item.price || 0) * 100), // Convert to paise
-      tax_amount: Math.round((item.tax_amount || 0) * 100), // Convert to paise
-      quantity: item.quantity || 1,
-      name: item.title || item.name || "Product",
-      description: item.description || item.title || "Product",
-      weight: item.weight || 0,
-      dimensions: item.dimensions || {},
-      image_url: item.thumbnail || item.image_url || "",
-      product_url: item.product_url || "",
-      notes: item.notes || {}
-    }));
-
-    // Create order payload
-    const orderPayload = {
-      amount: lineItemsTotal,
-      currency: "INR",
-      receipt: `receipt_${sessionId}_${Date.now()}`,
-      notes: {
-        user_id: userId || "",
-        session_id: sessionId || "",
-        address: JSON.stringify(address || {})
-      },
-      line_items_total: lineItemsTotal,
-      line_items: lineItems
+    const payload = {
+      line_items: lineItems.map(item => ({
+        quantity: item.quantity || 1,
+        line_item_id: item.line_item_id
+      })),
+      notes,
+      entity_id: entityId,
+      entity_type: "payment_store"
     };
 
-    console.log('Creating Razorpay order with payload:', JSON.stringify(orderPayload, null, 2));
+    console.log('Creating Razorpay cart with payload:', JSON.stringify(payload, null, 2));
 
-    // Create Basic Auth header
-    const razorpayAuth = Buffer.from(
-      `${config.razorpay.keyId}:${config.razorpay.keySecret}`
-    ).toString('base64');
-
-    // Call Razorpay API
-    const orderResponse = await fetch('https://api.razorpay.com/v1/orders', {
+    const response = await fetch('https://api.razorpay.com/v1/stores/public/carts', {
       method: 'POST',
       headers: {
+        'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${razorpayAuth}`
+        'Origin': 'https://pages.razorpay.com',
+        'Referer': 'https://pages.razorpay.com/'
       },
-      body: JSON.stringify(orderPayload)
+      body: JSON.stringify(payload)
     });
 
-    if (!orderResponse.ok) {
-      const errorData = await orderResponse.text();
-      console.error('Razorpay API Error:', errorData);
-      throw new Error(`Razorpay API Error: ${orderResponse.status} - ${errorData}`);
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('Razorpay Cart API Error:', errorData);
+      throw new Error(`Razorpay Cart API Error: ${response.status} - ${errorData}`);
     }
 
-    const orderData = await orderResponse.json();
-    console.log('Razorpay order created successfully:', orderData);
+    const cartData = await response.json();
+    console.log('Razorpay cart created successfully:', cartData);
 
     // Store order in memory
-    orders.set(orderData.id, {
-      ...orderData,
-      user_id: userId,
-      session_id: sessionId,
-      line_items: lineItems
-    });
+    if (cartData.order_id) {
+      orders.set(cartData.order_id, {
+        ...cartData,
+        entity_id: entityId,
+        line_items: lineItems
+      });
+    }
 
-    return orderData;
+    return {
+      cart: cartData,
+      order_id: cartData.order_id,
+      entity_id: entityId
+    };
   }
 
   /**
