@@ -16,9 +16,9 @@ function App() {
   const [isSearching, setIsSearching] = useState(false);
   const limit = 100;
 
-  // API base URL and store ID from env
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
-  const storeId = import.meta.env.VITE_RAZORPAY_STORE_ID;
+  // API base URL and store ID from env (injected at build time)
+  const baseUrl = __API_BASE_URL__;
+  const storeId = __RAZORPAY_STORE_ID__;
 
   useEffect(() => {
     // Get search parameters from tool output

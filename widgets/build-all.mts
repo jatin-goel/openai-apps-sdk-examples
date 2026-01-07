@@ -54,6 +54,13 @@ function wrapEntryPlugin(
 
 fs.rmSync(outDir, { recursive: true, force: true });
 
+// Environment variables to inject at build time
+const API_BASE_URL = process.env.BASE_URL || process.env.DEFAULT_BASE_URL || "http://localhost:8000";
+const RAZORPAY_STORE_ID = process.env.RAZORPAY_STORE_ID || "";
+
+console.log(`Injecting API_BASE_URL: ${API_BASE_URL}`);
+console.log(`Injecting RAZORPAY_STORE_ID: ${RAZORPAY_STORE_ID}`);
+
 for (const file of entries) {
   const name = path.basename(path.dirname(file));
   if (targets.length && !targets.includes(name)) {
@@ -82,6 +89,10 @@ for (const file of entries) {
   const virtualId = `\0virtual-entry:${entryAbs}`;
 
   const createConfig = (): InlineConfig => ({
+    define: {
+      __API_BASE_URL__: JSON.stringify(API_BASE_URL),
+      __RAZORPAY_STORE_ID__: JSON.stringify(RAZORPAY_STORE_ID),
+    },
     plugins: [
       wrapEntryPlugin(virtualId, entryAbs, cssToInclude),
       tailwindcss(),

@@ -202,7 +202,15 @@ if (!window.__vite_plugin_react_preamble_installed__) {
 
 const inputs = buildInputs();
 
+// Environment variables for dev mode
+const API_BASE_URL = process.env.BASE_URL || process.env.DEFAULT_BASE_URL || "http://localhost:8000";
+const RAZORPAY_STORE_ID = process.env.RAZORPAY_STORE_ID || "";
+
 export default defineConfig(({}) => ({
+  define: {
+    __API_BASE_URL__: JSON.stringify(API_BASE_URL),
+    __RAZORPAY_STORE_ID__: JSON.stringify(RAZORPAY_STORE_ID),
+  },
   plugins: [
     tailwindcss(),
     react(),
