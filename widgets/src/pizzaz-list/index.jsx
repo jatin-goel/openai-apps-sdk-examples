@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { PlusCircle, MinusCircle, Star, ShoppingCart, Search } from "lucide-react";
+import { PlusCircle, MinusCircle, Star, ShoppingCart, Search, Loader2 } from "lucide-react";
 import { Button } from "@openai/apps-sdk-ui/components/Button";
 import { Image } from "@openai/apps-sdk-ui/components/Image";
 
@@ -13,6 +13,7 @@ function App() {
   const [total, setTotal] = useState(0);
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const limit = 100;
 
   // API base URL
@@ -28,6 +29,8 @@ function App() {
   useEffect(() => {
     // Use Razorpay parse-store API
     const apiUrl = `${baseUrl}/api/razorpay/parse-store?url=https://pages.razorpay.com/stores/st_RvP3FIXbUltGLM`;
+    
+    setIsSearching(true);
     
     fetch(apiUrl)
       .then(res => res.json())
@@ -70,6 +73,9 @@ function App() {
         console.error('Error fetching products:', err);
         setProducts([]);
         setTotal(0);
+      })
+      .finally(() => {
+        setIsSearching(false);
       });
   }, [query, skip]);
 
@@ -211,84 +217,95 @@ function App() {
               variant="solid" 
               size="md"
               type="submit"
+              disabled={isSearching}
             >
-              Search
+              {isSearching ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Search"
+              )}
             </Button>
           </form>
         </div>
         <div className="min-w-full text-sm flex flex-col">
-          {products.map((product, i) => (
-            <div
-              key={product.id}
-              className="px-3 -mx-2 rounded-2xl hover:bg-black/5"
-            >
+          {isSearching ? (
+            <div className="py-12 flex flex-col items-center justify-center gap-3">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+              <span className="text-black/60">Searching products...</span>
+            </div>
+          ) : products.length === 0 ? (
+            <div className="py-6 text-center text-black/60">
+              No products found.
+            </div>
+          ) : (
+            products.map((product, i) => (
               <div
-                style={{
-                  borderBottom:
-                    i === products.length - 1 ? "none" : "1px solid rgba(0, 0, 0, 0.05)",
-                }}
-                className="flex w-full items-center hover:border-black/0! gap-2"
+                key={product.id}
+                className="px-3 -mx-2 rounded-2xl hover:bg-black/5"
               >
-                <div className="py-3 pr-3 min-w-0 w-full sm:w-3/5">
-                  <div className="flex items-center gap-3">
-                    <Image
-                      src={product.thumbnail}
-                      alt={product.title}
-                      className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg object-cover ring ring-black/5"
-                    />
-                    <div className="min-w-0 sm:pl-1 flex flex-col items-start h-full">
-                      <div className="font-medium text-sm sm:text-md truncate max-w-[40ch]">
-                        {product.title}
-                      </div>
-                      <div className="mt-1 sm:mt-0.25 flex items-center gap-3 text-black/70 text-sm">
-                        <div className="flex items-center gap-1">
-                          <Star
-                            strokeWidth={1.5}
-                            className="h-3 w-3 text-black"
-                          />
-                          <span>{product.rating?.toFixed(1)}</span>
+                <div
+                  style={{
+                    borderBottom:
+                      i === products.length - 1 ? "none" : "1px solid rgba(0, 0, 0, 0.05)",
+                  }}
+                  className="flex w-full items-center hover:border-black/0! gap-2"
+                >
+                  <div className="py-3 pr-3 min-w-0 w-full sm:w-3/5">
+                    <div className="flex items-center gap-3">
+                      <Image
+                        src={product.thumbnail}
+                        alt={product.title}
+                        className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg object-cover ring ring-black/5"
+                      />
+                      <div className="min-w-0 sm:pl-1 flex flex-col items-start h-full">
+                        <div className="font-medium text-sm sm:text-md truncate max-w-[40ch]">
+                          {product.title}
                         </div>
-                        <div className="whitespace-nowrap font-medium">
-                         ₹{product.price}
+                        <div className="mt-1 sm:mt-0.25 flex items-center gap-3 text-black/70 text-sm">
+                          <div className="flex items-center gap-1">
+                            <Star
+                              strokeWidth={1.5}
+                              className="h-3 w-3 text-black"
+                            />
+                            <span>{product.rating?.toFixed(1)}</span>
+                          </div>
+                          <div className="whitespace-nowrap font-medium">
+                           ₹{product.price}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="hidden sm:block text-end py-2 px-3 text-sm text-black/60 whitespace-nowrap flex-auto">
-                  {product.category || "–"}
-                </div>
-                <div className="py-2 whitespace-nowrap flex justify-end gap-2">
-                  {isProductInCart(product.id) && (
+                  <div className="hidden sm:block text-end py-2 px-3 text-sm text-black/60 whitespace-nowrap flex-auto">
+                    {product.category || "–"}
+                  </div>
+                  <div className="py-2 whitespace-nowrap flex justify-end gap-2">
+                    {isProductInCart(product.id) && (
+                      <Button
+                        aria-label={`Remove ${product.title}`}
+                        color="secondary"
+                        variant="ghost"
+                        size="sm"
+                        uniform
+                        onClick={() => handleRemoveFromCart(product.id)}
+                      >
+                        <MinusCircle strokeWidth={1.5} className="h-5 w-5" />
+                      </Button>
+                    )}
                     <Button
-                      aria-label={`Remove ${product.title}`}
+                      aria-label={`Add ${product.title}`}
                       color="secondary"
                       variant="ghost"
                       size="sm"
                       uniform
-                      onClick={() => handleRemoveFromCart(product.id)}
+                      onClick={() => handleAddToCart(product)}
                     >
-                      <MinusCircle strokeWidth={1.5} className="h-5 w-5" />
+                      <PlusCircle strokeWidth={1.5} className="h-5 w-5" />
                     </Button>
-                  )}
-                  <Button
-                    aria-label={`Add ${product.title}`}
-                    color="secondary"
-                    variant="ghost"
-                    size="sm"
-                    uniform
-                    onClick={() => handleAddToCart(product)}
-                  >
-                    <PlusCircle strokeWidth={1.5} className="h-5 w-5" />
-                  </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-          {products.length === 0 && (
-            <div className="py-6 text-center text-black/60">
-              No products found.
-            </div>
+            ))
           )}
         </div>
         <div className="flex flex-col gap-2 pt-2">

@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, "..", "..", "..");
-const ASSETS_DIR = path.resolve(ROOT_DIR, "assets");
+const ASSETS_DIR = path.resolve(ROOT_DIR, "/widgets/assets");
 
 export const config = {
   // Server Configuration
