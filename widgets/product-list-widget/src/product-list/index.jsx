@@ -259,11 +259,11 @@ function App() {
               No products found.
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {products.map((product) => (
                 <div
                   key={product.id}
-                  className="group flex flex-col bg-white rounded-lg overflow-hidden border border-gray-200 hover:border-gray-300 hover:shadow-xl transition-all duration-300"
+                  className="group flex-shrink-0 w-[200px] sm:w-[220px] flex flex-col bg-white rounded-xl overflow-hidden border border-gray-200 hover:border-gray-300 hover:shadow-xl transition-all duration-300 snap-start"
                 >
                   {/* Product Image */}
                   <div className="aspect-square bg-white p-4 flex items-center justify-center relative overflow-hidden">
@@ -273,50 +273,50 @@ function App() {
                       className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                     />
                     {product.stockAvailable <= 5 && product.stockAvailable > 0 && (
-                      <span className="absolute top-3 left-3 bg-red-500 text-white text-[11px] font-semibold px-2.5 py-1 rounded">
+                      <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded">
                         Only {product.stockAvailable} left
                       </span>
                     )}
                   </div>
                   
                   {/* Product Info */}
-                  <div className="p-4 flex flex-col flex-1 border-t border-gray-100">
-                    <p className="text-xs text-gray-500 mb-1 truncate">
+                  <div className="p-3 flex flex-col flex-1 border-t border-gray-100">
+                    <p className="text-[10px] text-gray-500 mb-0.5 truncate uppercase tracking-wide">
                       {product.category}
                     </p>
                     <h3 className="font-medium text-gray-900 text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
                       {product.title}
                     </h3>
-                    <p className="mt-2 text-xl font-bold text-black">
+                    <p className="mt-1.5 text-lg font-bold text-black">
                       ₹{product.price}
                     </p>
                     
                     {/* Add to Cart Section */}
-                    <div className="mt-4">
+                    <div className="mt-3">
                       {getProductQuantity(product.id) > 0 ? (
                         <div className="flex items-center justify-between border-2 border-black rounded-lg">
                           <button
                             aria-label={`Remove ${product.title}`}
-                            className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                            className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 transition-colors"
                             onClick={() => handleRemoveFromCart(product.id)}
                           >
-                            <MinusCircle strokeWidth={2} className="h-5 w-5 text-black" />
+                            <MinusCircle strokeWidth={2} className="h-4 w-4 text-black" />
                           </button>
-                          <span className="font-bold text-black text-base">
+                          <span className="font-bold text-black text-sm">
                             {getProductQuantity(product.id)}
                           </span>
                           <button
                             aria-label={`Add ${product.title}`}
-                            className={`w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors ${getProductQuantity(product.id) >= product.stockAvailable ? 'opacity-30 cursor-not-allowed' : ''}`}
+                            className={`w-9 h-9 flex items-center justify-center hover:bg-gray-100 transition-colors ${getProductQuantity(product.id) >= product.stockAvailable ? 'opacity-30 cursor-not-allowed' : ''}`}
                             onClick={() => handleAddToCart(product)}
                             disabled={getProductQuantity(product.id) >= product.stockAvailable}
                           >
-                            <PlusCircle strokeWidth={2} className="h-5 w-5 text-black" />
+                            <PlusCircle strokeWidth={2} className="h-4 w-4 text-black" />
                           </button>
                         </div>
                       ) : (
                         <button
-                          className="w-full bg-black text-white py-3 px-4 rounded-lg text-sm font-bold hover:bg-gray-800 active:scale-[0.98] transition-all"
+                          className="w-full bg-black text-white py-2.5 px-3 rounded-lg text-sm font-bold hover:bg-gray-800 active:scale-[0.98] transition-all"
                           onClick={() => handleAddToCart(product)}
                         >
                           Add to Bag
