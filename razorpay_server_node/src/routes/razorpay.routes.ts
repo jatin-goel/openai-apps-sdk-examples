@@ -173,19 +173,39 @@ export class RazorpayRoutes {
   }
 
   /**
-   * GET /payment-success
+   * GET/POST /payment-success
    * Payment callback page - shows success or failure based on payment verification
    * 
-   * Query params from Razorpay:
+   * Razorpay sends data as POST with form-urlencoded body:
    * - razorpay_payment_id: Payment ID
    * - razorpay_order_id: Order ID
    * - razorpay_signature: Signature for verification
    */
   static async paymentSuccessPage(req: IncomingMessage, res: ServerResponse, url: URL) {
     try {
-      const paymentId = url.searchParams.get('razorpay_payment_id');
-      const orderId = url.searchParams.get('razorpay_order_id');
-      const signature = url.searchParams.get('razorpay_signature');
+      let paymentId: string | null = null;
+      let orderId: string | null = null;
+      let signature: string | null = null;
+
+      // Check if it's a POST request with form data
+      if (req.method === 'POST') {
+        // Parse form-urlencoded body
+        const body = await new Promise<string>((resolve) => {
+          let data = '';
+          req.on('data', chunk => data += chunk);
+          req.on('end', () => resolve(data));
+        });
+        
+        const params = new URLSearchParams(body);
+        paymentId = params.get('razorpay_payment_id');
+        orderId = params.get('razorpay_order_id');
+        signature = params.get('razorpay_signature');
+      } else {
+        // GET request - use query params
+        paymentId = url.searchParams.get('razorpay_payment_id');
+        orderId = url.searchParams.get('razorpay_order_id');
+        signature = url.searchParams.get('razorpay_signature');
+      }
 
       let isSuccess = false;
       let paymentDetails: any = null;
