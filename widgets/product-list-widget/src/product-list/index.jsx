@@ -7,8 +7,8 @@ import { Image } from "@openai/apps-sdk-ui/components/Image";
 function App() {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
-  const [query, setQuery] = useState("phone");
-  const [searchInput, setSearchInput] = useState("phone");
+  const [query, setQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [skip, setSkip] = useState(0);
   const [total, setTotal] = useState(0);
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
@@ -176,7 +176,7 @@ function App() {
               {storeName || "Store"}
             </div>
             <div className="text-sm text-black/60">
-              {total} products found for "{query}"
+              {query ? `${total} products found for "${query}"` : `${total} products`}
             </div>
           </div>
           {cart.length > 0 && (

@@ -267,23 +267,19 @@ export class RazorpayService {
 </head>
 <body class="bg-gray-50">
     <div class="min-h-screen flex items-center justify-center p-4">
-        <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-            <h1 class="text-2xl font-bold text-center mb-6">${businessName}</h1>
-            
-            <!-- Payment Status -->
-            <div id="payment-status" class="hidden mb-6 p-4 rounded-lg">
-                <div id="status-message" class="text-center"></div>
-            </div>
-            
-            <button id="rzp-button1" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-                Pay Now
-            </button>
-            
-            <div class="mt-4 text-center text-sm text-gray-500">
-                <p>🔒 Secured by Razorpay</p>
-                <p class="mt-2 text-xs">Order ID: <span class="font-mono">${orderId}</span></p>
-            </div>
+        <!-- Loading indicator while checkout opens -->
+        <div id="loading-indicator" class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">Opening checkout...</p>
         </div>
+        
+        <!-- Payment Status (shown after successful payment) -->
+        <div id="payment-status" class="hidden max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+            <div id="status-message" class="text-center"></div>
+        </div>
+        
+        <!-- Hidden fallback button -->
+        <button id="rzp-button1" class="hidden">Pay Now</button>
     </div>
     
     <script src="https://checkout.razorpay.com/v1/magic-checkout.js"></script>
@@ -328,8 +324,12 @@ export class RazorpayService {
     function showPaymentSuccess(payment) {
         const statusDiv = document.getElementById('payment-status');
         const messageDiv = document.getElementById('status-message');
+        const loadingDiv = document.getElementById('loading-indicator');
         
-        statusDiv.className = 'mb-6 p-4 rounded-lg bg-green-50 border border-green-200';
+        // Hide loading indicator
+        if (loadingDiv) loadingDiv.classList.add('hidden');
+        
+        statusDiv.className = 'max-w-md w-full bg-white rounded-lg shadow-lg p-8 bg-green-50 border border-green-200';
         messageDiv.innerHTML = \`
             <div class="text-green-800">
                 <svg class="w-16 h-16 mx-auto mb-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
