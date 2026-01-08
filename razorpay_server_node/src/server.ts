@@ -22,8 +22,6 @@ import { handleSseRequest, handlePostMessage } from "./mcp/server.js";
 import { handleCorsOptions } from "./middleware/cors.js";
 
 // Routes
-import AuthRoutes from "./routes/auth.routes.js";
-import CartRoutes from "./routes/cart.routes.js";
 import RazorpayRoutes from "./routes/razorpay.routes.js";
 import OrderRoutes from "./routes/order.routes.js";
 import StaticRoutes from "./routes/static.routes.js";
@@ -71,59 +69,6 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
   // Handle MCP POST messages
   if (req.method === "POST" && url.pathname === config.mcp.postPath) {
     await handlePostMessage(req, res, url);
-    return;
-  }
-
-  // ==========================================
-  // Authentication Endpoints
-  // ==========================================
-  
-  if (req.method === "OPTIONS" && url.pathname.startsWith("/api/auth/")) {
-    handleCorsOptions(res);
-    return;
-  }
-
-  if (req.method === "POST" && url.pathname === "/api/auth/signup") {
-    await AuthRoutes.signup(req, res);
-    return;
-  }
-
-  if (req.method === "POST" && url.pathname === "/api/auth/login") {
-    await AuthRoutes.login(req, res);
-    return;
-  }
-
-  if (req.method === "POST" && url.pathname === "/api/auth/verify") {
-    await AuthRoutes.verify(req, res);
-    return;
-  }
-
-  // ==========================================
-  // Cart Endpoints
-  // ==========================================
-  
-  if (req.method === "OPTIONS" && url.pathname.startsWith("/api/cart")) {
-    handleCorsOptions(res);
-    return;
-  }
-
-  if (req.method === "GET" && url.pathname === "/api/cart") {
-    await CartRoutes.getCart(req, res, url);
-    return;
-  }
-
-  if (req.method === "POST" && url.pathname === "/api/cart/add") {
-    await CartRoutes.addToCart(req, res);
-    return;
-  }
-
-  if (req.method === "POST" && url.pathname === "/api/cart/remove") {
-    await CartRoutes.removeFromCart(req, res);
-    return;
-  }
-
-  if (req.method === "POST" && url.pathname === "/api/cart/clear") {
-    await CartRoutes.clearCart(req, res);
     return;
   }
 
@@ -246,15 +191,6 @@ httpServer.listen(port, () => {
   console.log(`\n🔌 MCP Endpoints:`);
   console.log(`   SSE Stream:    GET  http://localhost:${port}${config.mcp.ssePath}`);
   console.log(`   Message Post:  POST http://localhost:${port}${config.mcp.postPath}?sessionId=...`);
-  console.log(`\n🔐 Auth Endpoints:`);
-  console.log(`   Signup:        POST http://localhost:${port}/api/auth/signup`);
-  console.log(`   Login:         POST http://localhost:${port}/api/auth/login`);
-  console.log(`   Verify:        POST http://localhost:${port}/api/auth/verify`);
-  console.log(`\n🛒 Cart Endpoints:`);
-  console.log(`   Get Cart:      GET  http://localhost:${port}/api/cart?userId=...`);
-  console.log(`   Add to Cart:   POST http://localhost:${port}/api/cart/add`);
-  console.log(`   Remove:        POST http://localhost:${port}/api/cart/remove`);
-  console.log(`   Clear:         POST http://localhost:${port}/api/cart/clear`);
   console.log(`\n💳 Payment Endpoints:`);
   console.log(`   Create Order:  POST http://localhost:${port}/api/razorpay/create-order`);
   console.log(`   Verify:        POST http://localhost:${port}/api/razorpay/verify-payment`);
