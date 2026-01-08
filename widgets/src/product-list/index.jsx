@@ -14,12 +14,11 @@ function App() {
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [storeName, setStoreName] = useState("");
   const limit = 100;
 
-  // API base URL and store ID from env (injected at build time)
-  const baseUrl = __API_BASE_URL__;
-  const storeId = __RAZORPAY_STORE_ID__;
+  // API base URL and store ID from env
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  const storeId = import.meta.env.VITE_RAZORPAY_STORE_ID;
 
   useEffect(() => {
     // Get search parameters from tool output
@@ -38,11 +37,6 @@ function App() {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          // Set store name from API response
-          if (data.store?.title) {
-            setStoreName(data.store.title);
-          }
-          
           // Map Razorpay product structure to expected format
           const mappedProducts = (data.products || []).map(product => ({
             id: product.id,
@@ -120,17 +114,31 @@ function App() {
     setCheckoutError("");
     
     try {
-      // Prepare line items with proper structure for Razorpay cart API
-      // The product.id is the line_item_id (e.g., "li_S0ycZ0t0WKqjio")
-      const lineItems = cart.map(item => ({
-        line_item_id: item.id,
-        quantity: 1
+      const sessionId = window.openai?.widgetSessionId || Date.now().toString();
+      
+      // Prepare cart data with proper structure for line items
+      const cartData = cart.map(item => ({
+        product_id: item.id,
+        title: item.title,
+        price: item.price,
+        quantity: 1,
+        thumbnail: item.thumbnail,
+        description: item.title,
+        offer_price: item.price,
+        tax_amount: 0
       }));
 
       const requestBody = {
-        lineItems: lineItems,
-        entityId: storeId,
-        notes: {}
+        cart: cartData,
+        userId: null,
+        sessionId: sessionId,
+        address: {
+          name: "Guest User",
+          phone: "0000000000",
+          street: "N/A",
+          city: "N/A",
+          zip: "000000"
+        }
       };
 
       console.log('Creating Razorpay order...', requestBody);
@@ -151,8 +159,8 @@ function App() {
         // Clear cart in memory after successful order creation
         setCart([]);
         
-        // Open magic checkout URL directly using order_id from response
-        const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${data.order_id}`;
+        // Open magic checkout URL directly
+        const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${data.order.id}`;
         window.open(magicCheckoutUrl, '_blank');
         
       } else {
@@ -180,7 +188,7 @@ function App() {
           ></div>
           <div className="flex-1">
             <div className="text-base sm:text-xl font-medium">
-              {storeName || "Store"}
+              Smartphone Store
             </div>
             <div className="text-sm text-black/60">
               {total} products found for "{query}"
