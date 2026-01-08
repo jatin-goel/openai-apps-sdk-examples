@@ -259,64 +259,64 @@ function App() {
               No products found.
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {products.map((product) => (
                 <div
                   key={product.id}
-                  className="flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg hover:border-gray-200 transition-all duration-200"
+                  className="group flex flex-col bg-white rounded-lg overflow-hidden border border-gray-200 hover:border-gray-300 hover:shadow-xl transition-all duration-300"
                 >
                   {/* Product Image */}
-                  <div className="aspect-square bg-gradient-to-br from-gray-50 to-white p-3 flex items-center justify-center relative">
+                  <div className="aspect-square bg-white p-4 flex items-center justify-center relative overflow-hidden">
                     <Image
                       src={product.thumbnail}
                       alt={product.title}
-                      className="w-full h-full object-contain mix-blend-multiply"
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                     />
                     {product.stockAvailable <= 5 && product.stockAvailable > 0 && (
-                      <span className="absolute top-2 left-2 bg-orange-500 text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+                      <span className="absolute top-3 left-3 bg-red-500 text-white text-[11px] font-semibold px-2.5 py-1 rounded">
                         Only {product.stockAvailable} left
                       </span>
                     )}
                   </div>
                   
                   {/* Product Info */}
-                  <div className="p-3 flex flex-col flex-1 bg-white">
-                    <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1 truncate">
+                  <div className="p-4 flex flex-col flex-1 border-t border-gray-100">
+                    <p className="text-xs text-gray-500 mb-1 truncate">
                       {product.category}
-                    </div>
-                    <div className="font-medium text-gray-800 text-sm leading-snug line-clamp-2 min-h-[2.5rem]">
+                    </p>
+                    <h3 className="font-medium text-gray-900 text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
                       {product.title}
-                    </div>
-                    <div className="mt-2 text-lg font-bold text-gray-900">
+                    </h3>
+                    <p className="mt-2 text-xl font-bold text-black">
                       ₹{product.price}
-                    </div>
+                    </p>
                     
                     {/* Add to Cart Section */}
-                    <div className="mt-auto pt-3">
+                    <div className="mt-4">
                       {getProductQuantity(product.id) > 0 ? (
-                        <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl p-1">
+                        <div className="flex items-center justify-between border-2 border-black rounded-lg">
                           <button
                             aria-label={`Remove ${product.title}`}
-                            className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm transition-all text-gray-600"
+                            className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors"
                             onClick={() => handleRemoveFromCart(product.id)}
                           >
-                            <MinusCircle strokeWidth={1.5} className="h-5 w-5" />
+                            <MinusCircle strokeWidth={2} className="h-5 w-5 text-black" />
                           </button>
-                          <span className="font-semibold text-gray-900">
+                          <span className="font-bold text-black text-base">
                             {getProductQuantity(product.id)}
                           </span>
                           <button
                             aria-label={`Add ${product.title}`}
-                            className={`w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white hover:shadow-sm transition-all text-gray-600 ${getProductQuantity(product.id) >= product.stockAvailable ? 'opacity-30 cursor-not-allowed' : ''}`}
+                            className={`w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition-colors ${getProductQuantity(product.id) >= product.stockAvailable ? 'opacity-30 cursor-not-allowed' : ''}`}
                             onClick={() => handleAddToCart(product)}
                             disabled={getProductQuantity(product.id) >= product.stockAvailable}
                           >
-                            <PlusCircle strokeWidth={1.5} className="h-5 w-5" />
+                            <PlusCircle strokeWidth={2} className="h-5 w-5 text-black" />
                           </button>
                         </div>
                       ) : (
                         <button
-                          className="w-full bg-gray-900 text-white py-2.5 px-4 rounded-xl text-sm font-semibold hover:bg-gray-800 active:scale-[0.98] transition-all"
+                          className="w-full bg-black text-white py-3 px-4 rounded-lg text-sm font-bold hover:bg-gray-800 active:scale-[0.98] transition-all"
                           onClick={() => handleAddToCart(product)}
                         >
                           Add to Bag
