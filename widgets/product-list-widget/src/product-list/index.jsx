@@ -281,10 +281,12 @@ function App() {
                   
                   {/* Product Info */}
                   <div className="p-3 flex flex-col flex-1 border-t border-gray-100 bg-white">
-                    <p className="text-[10px] text-black/60 mb-0.5 truncate uppercase tracking-wide">
-                      {product.category}
-                    </p>
-                    <h3 className="font-medium text-black text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
+                    {product.category && product.category.toLowerCase() !== 'others' && product.category.toLowerCase() !== 'uncategorized' && (
+                      <p className="text-[10px] text-black/60 mb-0.5 truncate uppercase tracking-wide">
+                        {product.category}
+                      </p>
+                    )}
+                    <h3 className="font-medium text-black text-sm leading-snug">
                       {product.title}
                     </h3>
                     <p className="mt-1.5 text-lg font-bold text-black">
