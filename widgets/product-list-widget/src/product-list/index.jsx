@@ -171,13 +171,6 @@ function App() {
     <div className="antialiased w-full text-black px-4 pb-2 border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
       <div className="max-w-full">
         <div className="flex flex-row items-center gap-4 sm:gap-4 border-b border-black/5 py-4">
-          <div
-            className="sm:w-18 w-16 aspect-square rounded-xl bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url(https://cdn.dummyjson.com/product-images/smartphones/iphone-6/thumbnail.webp)",
-            }}
-          ></div>
           <div className="flex-1">
             <div className="text-base sm:text-xl font-medium">
               {storeName || "Store"}

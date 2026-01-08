@@ -366,6 +366,17 @@ export class RazorpayService {
     
     // Check payment status on page load (in case user returns)
     checkPaymentStatus();
+    
+    // Automatically open Razorpay checkout on page load
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            rzp1.open();
+            // Start polling every 2 seconds
+            if (!pollingInterval) {
+                pollingInterval = setInterval(checkPaymentStatus, 2000);
+            }
+        }, 500);
+    });
     </script>
 </body>
 </html>`;
