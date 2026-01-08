@@ -272,12 +272,12 @@ export class RazorpayService {
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p class="text-gray-600">Opening checkout...</p>
         </div>
-        
+            
         <!-- Payment Status (shown after successful payment) -->
         <div id="payment-status" class="hidden max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-            <div id="status-message" class="text-center"></div>
-        </div>
-        
+                <div id="status-message" class="text-center"></div>
+            </div>
+            
         <!-- Hidden fallback button -->
         <button id="rzp-button1" class="hidden">Pay Now</button>
     </div>

@@ -106,6 +106,10 @@ function App() {
     return cart.some(item => item.id === productId);
   };
 
+  const getProductQuantity = (productId) => {
+    return cart.filter(item => item.id === productId).length;
+  };
+
   const getTotalItems = () => cart.length;
   const getTotalPrice = () => cart.reduce((sum, item) => sum + item.price, 0).toFixed(2);
 
@@ -262,8 +266,12 @@ function App() {
                       </div>
                     </div>
                   </div>
-                  <div className="hidden sm:block text-end py-2 px-3 text-sm text-black/60 whitespace-nowrap flex-auto">
-                    {product.category || "–"}
+                  <div className="text-end py-2 px-3 text-sm text-black/60 whitespace-nowrap flex-auto">
+                    {getProductQuantity(product.id) > 0 && (
+                      <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
+                        {getProductQuantity(product.id)} in cart
+                      </span>
+                    )}
                   </div>
                   <div className="py-2 whitespace-nowrap flex justify-end gap-2">
                     {isProductInCart(product.id) && (
