@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { PlusCircle, MinusCircle, Star, ShoppingCart, Search, Loader2 } from "lucide-react";
+import { PlusCircle, MinusCircle, ShoppingCart, Search, Loader2 } from "lucide-react";
 import { Button } from "@openai/apps-sdk-ui/components/Button";
 import { Image } from "@openai/apps-sdk-ui/components/Image";
 
@@ -248,7 +248,7 @@ function App() {
             </Button>
           </form>
         </div>
-        <div className="min-w-full text-sm flex flex-col">
+        <div className="py-4">
           {isSearching ? (
             <div className="py-12 flex flex-col items-center justify-center gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -259,77 +259,69 @@ function App() {
               No products found.
             </div>
           ) : (
-            products.map((product, i) => (
-              <div
-                key={product.id}
-                className="px-3 -mx-2 rounded-2xl hover:bg-black/5"
-              >
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {products.map((product) => (
                 <div
-                  style={{
-                    borderBottom:
-                      i === products.length - 1 ? "none" : "1px solid rgba(0, 0, 0, 0.05)",
-                  }}
-                  className="flex w-full items-center hover:border-black/0! gap-2"
+                  key={product.id}
+                  className="flex flex-col bg-gray-50 rounded-xl overflow-hidden hover:shadow-md transition-shadow"
                 >
-                  <div className="py-3 pr-3 min-w-0 flex-1">
-                    <div className="flex items-center gap-3">
-                      <Image
-                        src={product.thumbnail}
-                        alt={product.title}
-                        className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg object-cover ring ring-black/5"
-                      />
-                      <div className="min-w-0 sm:pl-1 flex flex-col items-start h-full">
-                        <div className="font-medium text-sm sm:text-md truncate max-w-[40ch]">
-                          {product.title}
+                  {/* Product Image */}
+                  <div className="aspect-square bg-white p-4 flex items-center justify-center">
+                    <Image
+                      src={product.thumbnail}
+                      alt={product.title}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  
+                  {/* Product Info */}
+                  <div className="p-3 flex flex-col flex-1">
+                    <div className="text-xs text-black/50 mb-1 truncate">
+                      {product.category}
+                    </div>
+                    <div className="font-medium text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
+                      {product.title}
+                    </div>
+                    <div className="mt-2 text-base font-bold">
+                      ₹{product.price}
+                    </div>
+                    
+                    {/* Add to Cart Section */}
+                    <div className="mt-3">
+                      {getProductQuantity(product.id) > 0 ? (
+                        <div className="flex items-center justify-between bg-white border border-black/10 rounded-lg p-1">
+                          <button
+                            aria-label={`Remove ${product.title}`}
+                            className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-black/5 transition-colors"
+                            onClick={() => handleRemoveFromCart(product.id)}
+                          >
+                            <MinusCircle strokeWidth={1.5} className="h-5 w-5" />
+                          </button>
+                          <span className="font-medium text-sm">
+                            {getProductQuantity(product.id)}
+                          </span>
+                          <button
+                            aria-label={`Add ${product.title}`}
+                            className={`w-8 h-8 flex items-center justify-center rounded-md hover:bg-black/5 transition-colors ${getProductQuantity(product.id) >= product.stockAvailable ? 'opacity-30 cursor-not-allowed' : ''}`}
+                            onClick={() => handleAddToCart(product)}
+                            disabled={getProductQuantity(product.id) >= product.stockAvailable}
+                          >
+                            <PlusCircle strokeWidth={1.5} className="h-5 w-5" />
+                          </button>
                         </div>
-                        <div className="mt-1 sm:mt-0.25 flex items-center gap-3 text-black/70 text-sm">
-                          <div className="flex items-center gap-1">
-                            <Star
-                              strokeWidth={1.5}
-                              className="h-3 w-3 text-black"
-                            />
-                            <span>{product.rating?.toFixed(1)}</span>
-                          </div>
-                          <div className="whitespace-nowrap font-medium">
-                           ₹{product.price}
-                          </div>
-                        </div>
-                      </div>
+                      ) : (
+                        <button
+                          className="w-full bg-black text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-black/80 transition-colors"
+                          onClick={() => handleAddToCart(product)}
+                        >
+                          Add to Bag
+                        </button>
+                      )}
                     </div>
                   </div>
-                  <div className="py-2 whitespace-nowrap flex items-center gap-1 ml-auto">
-                    {getProductQuantity(product.id) > 0 && (
-                      <Button
-                        aria-label={`Remove ${product.title}`}
-                        color="secondary"
-                        variant="ghost"
-                        size="sm"
-                        uniform
-                        onClick={() => handleRemoveFromCart(product.id)}
-                      >
-                        <MinusCircle strokeWidth={1.5} className="h-5 w-5" />
-                      </Button>
-                    )}
-                    {getProductQuantity(product.id) > 0 && (
-                      <span className="inline-flex items-center justify-center w-8 text-black text-sm font-medium">
-                        {getProductQuantity(product.id)}
-                      </span>
-                    )}
-                    <Button
-                      aria-label={`Add ${product.title}`}
-                      color="secondary"
-                      variant="ghost"
-                      size="sm"
-                      uniform
-                      onClick={() => handleAddToCart(product)}
-                      disabled={getProductQuantity(product.id) >= product.stockAvailable}
-                    >
-                      <PlusCircle strokeWidth={1.5} className={`h-5 w-5 ${getProductQuantity(product.id) >= product.stockAvailable ? 'opacity-30' : ''}`} />
-                    </Button>
-                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
         <div className="flex flex-col gap-2 pt-2">
