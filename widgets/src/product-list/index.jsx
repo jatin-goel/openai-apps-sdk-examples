@@ -14,6 +14,9 @@ function App() {
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState(null);
+  const [paymentStatus, setPaymentStatus] = useState(null);
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false);
   const limit = 100;
 
   // API base URL and store ID from env
@@ -80,6 +83,62 @@ function App() {
       });
   }, [query, skip]);
 
+  // Poll payment status when there's a pending order
+  useEffect(() => {
+    if (!pendingOrderId || !isCheckingPayment) return;
+
+    const checkPaymentStatus = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/api/razorpay/payment-status?orderId=${pendingOrderId}`);
+        const data = await response.json();
+
+        if (data.success && data.data.hasCapturedPayment) {
+          // Payment captured!
+          setPaymentStatus({
+            status: 'success',
+            payment: data.data.capturedPayment,
+            orderId: pendingOrderId
+          });
+          setIsCheckingPayment(false);
+          setPendingOrderId(null);
+        } else if (data.success && data.data.count > 0) {
+          // Check if any payment failed
+          const failedPayment = data.data.payments.find(p => p.status === 'failed');
+          if (failedPayment) {
+            setPaymentStatus({
+              status: 'failed',
+              orderId: pendingOrderId
+            });
+            setIsCheckingPayment(false);
+            setPendingOrderId(null);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking payment status:', error);
+      }
+    };
+
+    // Initial check
+    checkPaymentStatus();
+
+    // Poll every 3 seconds
+    const interval = setInterval(checkPaymentStatus, 3000);
+
+    // Stop polling after 5 minutes
+    const timeout = setTimeout(() => {
+      setIsCheckingPayment(false);
+      setPaymentStatus({
+        status: 'timeout',
+        orderId: pendingOrderId
+      });
+    }, 5 * 60 * 1000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [pendingOrderId, isCheckingPayment, baseUrl]);
+
   const handleAddToCart = (product) => {
     // Add product to cart in memory
     const newItem = {
@@ -112,6 +171,7 @@ function App() {
   const handlePayNow = async () => {
     setIsProcessingCheckout(true);
     setCheckoutError("");
+    setPaymentStatus(null);
     
     try {
       const sessionId = window.openai?.widgetSessionId || Date.now().toString();
@@ -156,12 +216,18 @@ function App() {
       if (data.success) {
         console.log('Order created successfully:', data);
         
+        // Store the order ID for payment status polling
+        setPendingOrderId(data.order.id);
+        
         // Clear cart in memory after successful order creation
         setCart([]);
         
         // Open magic checkout URL directly
         const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${data.order.id}`;
         window.open(magicCheckoutUrl, '_blank');
+        
+        // Start checking payment status
+        setIsCheckingPayment(true);
         
       } else {
         console.error('Order creation failed:', data.error);
@@ -310,6 +376,64 @@ function App() {
           )}
         </div>
         <div className="flex flex-col gap-2 pt-2">
+          {/* Payment Status Display */}
+          {isCheckingPayment && (
+            <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center gap-2 text-sm text-blue-800">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="font-medium">Checking payment status...</span>
+              </div>
+              <p className="text-xs text-blue-600 mt-1">
+                Complete your payment in the checkout window
+              </p>
+            </div>
+          )}
+
+          {paymentStatus && paymentStatus.status === 'success' && (
+            <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-2 text-sm text-green-800 mb-1">
+                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span className="font-medium">Payment Successful!</span>
+              </div>
+              <p className="text-xs text-green-700">
+                Payment ID: {paymentStatus.payment?.id}
+              </p>
+              <p className="text-xs text-green-700">
+                Amount: ₹{(paymentStatus.payment?.amount / 100).toFixed(2)}
+              </p>
+            </div>
+          )}
+
+          {paymentStatus && paymentStatus.status === 'failed' && (
+            <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center gap-2 text-sm text-red-800">
+                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <span className="font-medium">Payment Failed</span>
+              </div>
+              <p className="text-xs text-red-700 mt-1">
+                Please try again or use a different payment method
+              </p>
+            </div>
+          )}
+
+          {paymentStatus && paymentStatus.status === 'timeout' && (
+            <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-center gap-2 text-sm text-yellow-800">
+                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <span className="font-medium">Payment Status Unknown</span>
+              </div>
+              <p className="text-xs text-yellow-700 mt-1">
+                Please check your email for order confirmation
+              </p>
+            </div>
+          )}
+
           {total > limit && (
             <div className="flex gap-2">
               <Button 
