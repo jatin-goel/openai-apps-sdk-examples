@@ -189,6 +189,46 @@ export class RazorpayService {
   }
 
   /**
+   * Get payment status for an order
+   */
+  async getPaymentStatus(orderId: string) {
+    if (!orderId) {
+      throw new Error("Order ID is required");
+    }
+
+    const razorpayAuth = Buffer.from(
+      `${config.razorpay.keyId}:${config.razorpay.keySecret}`
+    ).toString('base64');
+
+    const response = await fetch(`https://api.razorpay.com/v1/orders/${orderId}/payments`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${razorpayAuth}`
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(`Razorpay API Error: ${response.status} - ${errorData}`);
+    }
+
+    const data = await response.json();
+
+    // Check if there's any captured payment
+    const capturedPayment = data.items?.find((payment: any) => 
+      payment.status === 'captured' && payment.captured === true
+    );
+
+    return {
+      orderId,
+      payments: data.items || [],
+      count: data.count || 0,
+      hasCapturedPayment: !!capturedPayment,
+      capturedPayment: capturedPayment || null
+    };
+  }
+
+  /**
    * Generate Magic Checkout HTML page with embedded script
    */
   generateMagicCheckoutHTML(params: {
@@ -217,24 +257,118 @@ export class RazorpayService {
     } = params;
 
 
-    return `<button id="rzp-button1">Pay</button>
-<script src="https://checkout.razorpay.com/v1/magic-checkout.js"></script>
-<script>
-var options = {
-    "key": "${config.razorpay.keyId}",
-    "one_click_checkout": true,
-    "name": "${businessName}",
-    "order_id": "${orderId}",
-    "show_coupons": ${showCoupons},
-    "callback_url": "${callbackUrl}",
-    "redirect": "true"
-};
-var rzp1 = new Razorpay(options);
-document.getElementById('rzp-button1').onclick = function(e){
-    rzp1.open();
-    e.preventDefault();
-}
-</script>`;
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${name}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+            <h1 class="text-2xl font-bold text-center mb-6">${businessName}</h1>
+            
+            <!-- Payment Status -->
+            <div id="payment-status" class="hidden mb-6 p-4 rounded-lg">
+                <div id="status-message" class="text-center"></div>
+            </div>
+            
+            <button id="rzp-button1" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                Pay Now
+            </button>
+            
+            <div class="mt-4 text-center text-sm text-gray-500">
+                <p>🔒 Secured by Razorpay</p>
+                <p class="mt-2 text-xs">Order ID: <span class="font-mono">${orderId}</span></p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://checkout.razorpay.com/v1/magic-checkout.js"></script>
+    <script>
+    const orderId = "${orderId}";
+    let pollingInterval = null;
+    let paymentWindow = null;
+    
+    // Razorpay options
+    var options = {
+        "key": "${config.razorpay.keyId}",
+        "one_click_checkout": true,
+        "name": "${businessName}",
+        "order_id": orderId,
+        "show_coupons": ${showCoupons},
+        "callback_url": "${callbackUrl}",
+        "redirect": "true"
+    };
+    
+    var rzp1 = new Razorpay(options);
+    
+    // Function to check payment status
+    async function checkPaymentStatus() {
+        try {
+            const response = await fetch(window.location.origin + '/api/razorpay/payment-status?orderId=' + orderId);
+            const data = await response.json();
+            
+            if (data.success && data.data.hasCapturedPayment) {
+                // Payment captured!
+                clearInterval(pollingInterval);
+                showPaymentSuccess(data.data.capturedPayment);
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error checking payment status:', error);
+            return false;
+        }
+    }
+    
+    // Function to show payment success
+    function showPaymentSuccess(payment) {
+        const statusDiv = document.getElementById('payment-status');
+        const messageDiv = document.getElementById('status-message');
+        
+        statusDiv.className = 'mb-6 p-4 rounded-lg bg-green-50 border border-green-200';
+        messageDiv.innerHTML = \`
+            <div class="text-green-800">
+                <svg class="w-16 h-16 mx-auto mb-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <h3 class="text-xl font-bold mb-2">Payment Successful!</h3>
+                <p class="text-sm">Payment ID: <span class="font-mono">\${payment.id}</span></p>
+                <p class="text-sm">Amount: ₹\${(payment.amount / 100).toFixed(2)}</p>
+            </div>
+        \`;
+        statusDiv.classList.remove('hidden');
+        
+        // Hide pay button
+        document.getElementById('rzp-button1').classList.add('hidden');
+        
+        // Redirect after 3 seconds if callback URL is set
+        if ("${callbackUrl}" && "${callbackUrl}" !== "https://example.com/payment-success") {
+            setTimeout(() => {
+                window.location.href = "${callbackUrl}";
+            }, 3000);
+        }
+    }
+    
+    // Start polling when pay button is clicked
+    document.getElementById('rzp-button1').onclick = function(e){
+        e.preventDefault();
+        rzp1.open();
+        
+        // Start polling every 2 seconds
+        if (!pollingInterval) {
+            pollingInterval = setInterval(checkPaymentStatus, 2000);
+        }
+    };
+    
+    // Check payment status on page load (in case user returns)
+    checkPaymentStatus();
+    </script>
+</body>
+</html>`;
   }
 }
 

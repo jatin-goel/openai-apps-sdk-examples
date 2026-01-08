@@ -54,6 +54,30 @@ export class RazorpayRoutes {
   }
 
   /**
+   * GET /api/razorpay/payment-status
+   * Get payment status for an order
+   * 
+   * Query params:
+   * - orderId (required): Razorpay order ID
+   */
+  static async getPaymentStatus(req: IncomingMessage, res: ServerResponse, url: URL) {
+    try {
+      const orderId = url.searchParams.get('orderId');
+      
+      if (!orderId) {
+        sendErrorResponse(res, 400, "orderId is required in query parameters");
+        return;
+      }
+
+      const result = await razorpayService.getPaymentStatus(orderId);
+      sendSuccessResponse(res, result);
+    } catch (error: any) {
+      console.error("Error getting payment status:", error);
+      sendErrorResponse(res, 500, error.message);
+    }
+  }
+
+  /**
    * POST /api/razorpay/parse-store
    * GET /api/razorpay/parse-store
    */
