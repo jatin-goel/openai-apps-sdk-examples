@@ -59,13 +59,16 @@ function App() {
             stockAvailable: product.stock_available || 0
           }));
           
+          // Filter out products with no stock available
+          const inStockProducts = mappedProducts.filter(p => p.stockAvailable > 0);
+          
           // Filter products based on search query
           const filteredProducts = query 
-            ? mappedProducts.filter(p => 
+            ? inStockProducts.filter(p => 
                 p.title.toLowerCase().includes(query.toLowerCase()) ||
                 p.category.toLowerCase().includes(query.toLowerCase())
               )
-            : mappedProducts;
+            : inStockProducts;
           
           // Apply pagination
           const paginatedProducts = filteredProducts.slice(skip, skip + limit);
@@ -90,20 +93,22 @@ function App() {
   }, [query, skip]);
 
   const handleAddToCart = (product) => {
-    // Check if we've reached the max stock available
-    const currentQuantity = getProductQuantity(product.id);
-    if (currentQuantity >= product.stockAvailable) {
-      return; // Don't add more than available stock
-    }
-    
-    // Add product to cart in memory
-    const newItem = {
-      id: product.id,
-      title: product.title,
-      price: product.price,
-      thumbnail: product.thumbnail
-    };
-    setCart(prevCart => [...prevCart, newItem]);
+    setCart(prevCart => {
+      // Check if we've reached the max stock available using latest cart state
+      const currentQuantity = prevCart.filter(item => item.id === product.id).length;
+      if (currentQuantity >= product.stockAvailable) {
+        return prevCart; // Don't add more than available stock
+      }
+      
+      // Add product to cart in memory
+      const newItem = {
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        thumbnail: product.thumbnail
+      };
+      return [...prevCart, newItem];
+    });
   };
 
   const handleRemoveFromCart = (productId) => {
@@ -266,7 +271,7 @@ function App() {
                   }}
                   className="flex w-full items-center hover:border-black/0! gap-2"
                 >
-                  <div className="py-3 pr-3 min-w-0 w-full sm:w-3/5">
+                  <div className="py-3 pr-3 min-w-0 flex-1">
                     <div className="flex items-center gap-3">
                       <Image
                         src={product.thumbnail}
@@ -292,7 +297,7 @@ function App() {
                       </div>
                     </div>
                   </div>
-                  <div className="py-2 whitespace-nowrap flex justify-end items-center gap-1">
+                  <div className="py-2 whitespace-nowrap flex items-center gap-1 ml-auto">
                     {getProductQuantity(product.id) > 0 && (
                       <Button
                         aria-label={`Remove ${product.title}`}
