@@ -289,13 +289,17 @@ export class RazorpayService {
     let paymentWindow = null;
     
     // Razorpay options
+    var callbackUrl = "${callbackUrl}" === "https://example.com/payment-success" 
+        ? window.location.origin + "/payment-success" 
+        : "${callbackUrl}";
+    
     var options = {
         "key": "${config.razorpay.keyId}",
         "one_click_checkout": true,
         "name": "${businessName}",
         "order_id": orderId,
         "show_coupons": ${showCoupons},
-        "callback_url": "${callbackUrl}",
+        "callback_url": callbackUrl,
         "redirect": "true"
     };
     
@@ -380,6 +384,110 @@ export class RazorpayService {
     </script>
 </body>
 </html>`;
+  }
+
+  /**
+   * Generate Payment Status HTML page (success or failure)
+   */
+  generatePaymentStatusHTML(params: {
+    isSuccess: boolean;
+    paymentId?: string;
+    orderId?: string;
+    amount?: number;
+    errorMessage?: string;
+  }): string {
+    const { isSuccess, paymentId, orderId, amount, errorMessage } = params;
+
+    if (isSuccess) {
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-green-50 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
+        <p class="text-gray-600 mb-6">Your order has been placed successfully.</p>
+        
+        ${amount ? `
+        <div class="bg-green-50 rounded-lg p-4 mb-6">
+            <p class="text-sm text-gray-600">Amount Paid</p>
+            <p class="text-3xl font-bold text-green-600">₹${(amount / 100).toFixed(2)}</p>
+        </div>
+        ` : ''}
+        
+        <div class="border-t border-gray-100 pt-4 space-y-2">
+            ${paymentId ? `
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Payment ID</span>
+                <span class="font-mono text-gray-900">${paymentId}</span>
+            </div>
+            ` : ''}
+            ${orderId ? `
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Order ID</span>
+                <span class="font-mono text-gray-900">${orderId}</span>
+            </div>
+            ` : ''}
+        </div>
+        
+        <div class="mt-8">
+            <p class="text-sm text-gray-500">You will receive a confirmation email shortly.</p>
+        </div>
+        
+        <button onclick="window.close()" class="mt-6 w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+            Close Window
+        </button>
+    </div>
+</body>
+</html>`;
+    } else {
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Failed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-red-50 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+        <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Payment Failed</h1>
+        <p class="text-gray-600 mb-6">${errorMessage || 'Unfortunately, your payment could not be processed.'}</p>
+        
+        <div class="bg-red-50 rounded-lg p-4 mb-6">
+            <p class="text-sm text-red-700">Please try again or use a different payment method.</p>
+        </div>
+        
+        ${orderId ? `
+        <div class="border-t border-gray-100 pt-4">
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Order ID</span>
+                <span class="font-mono text-gray-900">${orderId}</span>
+            </div>
+        </div>
+        ` : ''}
+        
+        <button onclick="window.close()" class="mt-6 w-full bg-red-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-700 transition-colors">
+            Close Window
+        </button>
+    </div>
+</body>
+</html>`;
+    }
   }
 }
 

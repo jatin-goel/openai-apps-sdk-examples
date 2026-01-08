@@ -171,6 +171,65 @@ export class RazorpayRoutes {
       sendErrorResponse(res, 500, error.message || "Failed to generate Magic Checkout HTML");
     }
   }
+
+  /**
+   * GET /payment-success
+   * Payment callback page - shows success or failure based on payment verification
+   * 
+   * Query params from Razorpay:
+   * - razorpay_payment_id: Payment ID
+   * - razorpay_order_id: Order ID
+   * - razorpay_signature: Signature for verification
+   */
+  static async paymentSuccessPage(req: IncomingMessage, res: ServerResponse, url: URL) {
+    try {
+      const paymentId = url.searchParams.get('razorpay_payment_id');
+      const orderId = url.searchParams.get('razorpay_order_id');
+      const signature = url.searchParams.get('razorpay_signature');
+
+      let isSuccess = false;
+      let paymentDetails: any = null;
+
+      if (paymentId && orderId && signature) {
+        // Verify signature
+        isSuccess = razorpayService.verifyPaymentSignature(orderId, paymentId, signature);
+        
+        if (isSuccess) {
+          // Get payment details
+          try {
+            const statusResult = await razorpayService.getPaymentStatus(orderId);
+            paymentDetails = statusResult.capturedPayment || { id: paymentId };
+          } catch (e) {
+            paymentDetails = { id: paymentId };
+          }
+        }
+      }
+
+      const html = razorpayService.generatePaymentStatusHTML({
+        isSuccess,
+        paymentId: paymentId || undefined,
+        orderId: orderId || undefined,
+        amount: paymentDetails?.amount,
+      });
+
+      res.writeHead(200, {
+        "Content-Type": "text/html",
+        "Access-Control-Allow-Origin": "*",
+      });
+      res.end(html);
+    } catch (error: any) {
+      console.error("Error generating payment status page:", error);
+      const html = razorpayService.generatePaymentStatusHTML({
+        isSuccess: false,
+        errorMessage: error.message,
+      });
+      res.writeHead(200, {
+        "Content-Type": "text/html",
+        "Access-Control-Allow-Origin": "*",
+      });
+      res.end(html);
+    }
+  }
 }
 
 export default RazorpayRoutes;

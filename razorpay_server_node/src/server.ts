@@ -111,6 +111,11 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
     return;
   }
 
+  if (req.method === "GET" && url.pathname === "/payment-success") {
+    await RazorpayRoutes.paymentSuccessPage(req, res, url);
+    return;
+  }
+
   // ==========================================
   // Order & Checkout Endpoints
   // ==========================================

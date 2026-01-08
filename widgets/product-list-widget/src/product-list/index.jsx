@@ -14,6 +14,7 @@ function App() {
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [storeName, setStoreName] = useState("");
   const limit = 100;
 
@@ -83,6 +84,7 @@ function App() {
       })
       .finally(() => {
         setIsSearching(false);
+        setIsInitialLoad(false);
       });
   }, [query, skip]);
 
@@ -170,6 +172,17 @@ function App() {
       setIsProcessingCheckout(false);
     }
   };
+
+  if (isInitialLoad) {
+    return (
+      <div className="antialiased w-full text-black px-4 pb-2 border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
+        <div className="py-16 flex flex-col items-center justify-center gap-4">
+          <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
+          <span className="text-black/60 text-sm">Loading store...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="antialiased w-full text-black px-4 pb-2 border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
@@ -337,7 +350,7 @@ function App() {
               )}
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Cart Summary</span>
-                <span className="text-sm font-medium">${getTotalPrice()}</span>
+                <span className="text-sm font-medium">₹{getTotalPrice()}</span>
               </div>
               <Button 
                 color="primary" 
