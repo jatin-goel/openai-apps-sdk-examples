@@ -25,7 +25,10 @@ function App() {
   useEffect(() => {
     // Get search parameters from tool output
     const toolOutput = window.openai?.toolOutput || {};
-    if (toolOutput.query) setQuery(toolOutput.query);
+    if (toolOutput.query) {
+      setQuery(toolOutput.query);
+      setSearchInput(toolOutput.query); // Also populate the search input box
+    }
     if (toolOutput.skip !== undefined) setSkip(toolOutput.skip);
   }, []);
 
