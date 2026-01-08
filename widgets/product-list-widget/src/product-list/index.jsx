@@ -55,7 +55,8 @@ function App() {
             rating: 4.5, // Default rating since Razorpay doesn't provide it
             category: product.categories && product.categories.length > 0 
               ? product.categories[0].name 
-              : 'Uncategorized'
+              : 'Uncategorized',
+            stockAvailable: product.stock_available || 0
           }));
           
           // Filter products based on search query
@@ -89,6 +90,12 @@ function App() {
   }, [query, skip]);
 
   const handleAddToCart = (product) => {
+    // Check if we've reached the max stock available
+    const currentQuantity = getProductQuantity(product.id);
+    if (currentQuantity >= product.stockAvailable) {
+      return; // Don't add more than available stock
+    }
+    
     // Add product to cart in memory
     const newItem = {
       id: product.id,
@@ -100,8 +107,14 @@ function App() {
   };
 
   const handleRemoveFromCart = (productId) => {
-    // Remove product from cart in memory
-    setCart(prevCart => prevCart.filter(item => item.id !== productId));
+    // Remove only ONE item from cart (reduce quantity by 1)
+    setCart(prevCart => {
+      const index = prevCart.findIndex(item => item.id === productId);
+      if (index === -1) return prevCart;
+      const newCart = [...prevCart];
+      newCart.splice(index, 1);
+      return newCart;
+    });
   };
 
   const isProductInCart = (productId) => {
@@ -279,15 +292,8 @@ function App() {
                       </div>
                     </div>
                   </div>
-                  <div className="text-end py-2 px-3 text-sm whitespace-nowrap flex-auto">
+                  <div className="py-2 whitespace-nowrap flex justify-end items-center gap-1">
                     {getProductQuantity(product.id) > 0 && (
-                      <span className="inline-flex items-center justify-center w-6 h-6 bg-white border border-black/20 rounded-full text-black text-sm font-medium">
-                        {getProductQuantity(product.id)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="py-2 whitespace-nowrap flex justify-end gap-2">
-                    {isProductInCart(product.id) && (
                       <Button
                         aria-label={`Remove ${product.title}`}
                         color="secondary"
@@ -299,6 +305,11 @@ function App() {
                         <MinusCircle strokeWidth={1.5} className="h-5 w-5" />
                       </Button>
                     )}
+                    {getProductQuantity(product.id) > 0 && (
+                      <span className="inline-flex items-center justify-center w-8 text-black text-sm font-medium">
+                        {getProductQuantity(product.id)}
+                      </span>
+                    )}
                     <Button
                       aria-label={`Add ${product.title}`}
                       color="secondary"
@@ -306,8 +317,9 @@ function App() {
                       size="sm"
                       uniform
                       onClick={() => handleAddToCart(product)}
+                      disabled={getProductQuantity(product.id) >= product.stockAvailable}
                     >
-                      <PlusCircle strokeWidth={1.5} className="h-5 w-5" />
+                      <PlusCircle strokeWidth={1.5} className={`h-5 w-5 ${getProductQuantity(product.id) >= product.stockAvailable ? 'opacity-30' : ''}`} />
                     </Button>
                   </div>
                 </div>
