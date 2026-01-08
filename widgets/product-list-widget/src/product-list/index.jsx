@@ -266,10 +266,10 @@ function App() {
                       </div>
                     </div>
                   </div>
-                  <div className="text-end py-2 px-3 text-sm text-black/60 whitespace-nowrap flex-auto">
+                  <div className="text-end py-2 px-3 text-sm whitespace-nowrap flex-auto">
                     {getProductQuantity(product.id) > 0 && (
-                      <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
-                        {getProductQuantity(product.id)} in cart
+                      <span className="inline-flex items-center justify-center w-6 h-6 bg-white border border-black/20 rounded-full text-black text-sm font-medium">
+                        {getProductQuantity(product.id)}
                       </span>
                     )}
                   </div>
