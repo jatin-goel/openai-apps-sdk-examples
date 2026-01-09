@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
-import { PlusCircle, MinusCircle, Star, ShoppingCart, Search, Loader2 } from "lucide-react";
+import { PlusCircle, MinusCircle, Star, ShoppingCart, Search, Loader2, ChevronLeft, ChevronRight, Package } from "lucide-react";
 import { Button } from "@openai/apps-sdk-ui/components/Button";
 import { Image } from "@openai/apps-sdk-ui/components/Image";
 
@@ -17,6 +17,8 @@ function App() {
   const [pendingOrderId, setPendingOrderId] = useState(null);
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const carouselRef = useRef(null);
   const limit = 100;
 
   // API base URL and store ID from env
@@ -167,6 +169,26 @@ function App() {
     setQuery(searchInput);
     setSkip(0); // Reset to first page when searching
   };
+
+  // Carousel scroll functions
+  const scrollCarousel = (direction) => {
+    if (!carouselRef.current) return;
+    const scrollAmount = 320; // Width of card + gap
+    const newPosition = direction === 'left' 
+      ? Math.max(0, scrollPosition - scrollAmount)
+      : scrollPosition + scrollAmount;
+    
+    carouselRef.current.scrollTo({
+      left: newPosition,
+      behavior: 'smooth'
+    });
+    setScrollPosition(newPosition);
+  };
+
+  const canScrollLeft = scrollPosition > 0;
+  const canScrollRight = carouselRef.current 
+    ? scrollPosition < (carouselRef.current.scrollWidth - carouselRef.current.clientWidth)
+    : false;
 
   const handlePayNow = async () => {
     setIsProcessingCheckout(true);
@@ -326,39 +348,37 @@ function App() {
   };
 
   return (
-    <div className="antialiased w-full text-black px-4 pb-2 border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
+    <div className="antialiased w-full text-black border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="max-w-full">
-        <div className="flex flex-row items-center gap-4 sm:gap-4 border-b border-black/5 py-4">
-          <div
-            className="sm:w-18 w-16 aspect-square rounded-xl bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url(https://cdn.dummyjson.com/product-images/smartphones/iphone-6/thumbnail.webp)",
-            }}
-          ></div>
-          <div className="flex-1">
-            <div className="text-base sm:text-xl font-medium">
-              Smartphone Store
+        {/* Header Section */}
+        <div className="bg-white/80 backdrop-blur-sm border-b border-black/5 px-6 py-5">
+          <div className="flex flex-row items-center gap-4">
+            <div
+              className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg flex items-center justify-center"
+            >
+              <Package className="h-7 w-7 text-white" />
             </div>
-            <div className="text-sm text-black/60">
-              {total} products found for "{query}"
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Product Showcase
+              </h1>
+              <p className="text-sm text-black/60 mt-0.5">
+                {total} products • Showing results for "{query}"
+              </p>
             </div>
+            {cart.length > 0 && (
+              <div className="flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl shadow-lg">
+                <ShoppingCart className="h-5 w-5" />
+                <div className="flex flex-col items-end">
+                  <span className="text-xs font-medium opacity-90">Cart</span>
+                  <span className="text-sm font-bold">{getTotalItems()} items</span>
+                </div>
+              </div>
+            )}
           </div>
-          {cart.length > 0 && (
-            <div className="flex items-center gap-2 text-sm">
-              <ShoppingCart className="h-4 w-4" />
-              <span className="font-medium">{getTotalItems()} items</span>
-            </div>
-          )}
-        </div>
 
-        {/* Payment Status Component */}
-        <div className="pt-4">
-          <PaymentStatusComponent />
-        </div>
-
-        <div className="py-3 border-b border-black/5">
-          <form onSubmit={handleSearch} className="flex gap-2">
+          {/* Search Bar */}
+          <form onSubmit={handleSearch} className="flex gap-2 mt-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-black/40" />
               <input
@@ -366,7 +386,7 @@ function App() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search for products..."
-                className="w-full pl-10 pr-3 py-2 border border-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-full pl-10 pr-4 py-2.5 border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white shadow-sm"
               />
             </div>
             <Button 
@@ -384,124 +404,175 @@ function App() {
             </Button>
           </form>
         </div>
-        <div className="min-w-full text-sm flex flex-col">
-          {isSearching ? (
-            <div className="py-12 flex flex-col items-center justify-center gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-              <span className="text-black/60">Searching products...</span>
-            </div>
-          ) : products.length === 0 ? (
-            <div className="py-6 text-center text-black/60">
-              No products found.
-            </div>
-          ) : (
-            products.map((product, i) => (
-              <div
-                key={product.id}
-                className="px-3 -mx-2 rounded-2xl hover:bg-black/5"
-              >
-                <div
-                  style={{
-                    borderBottom:
-                      i === products.length - 1 ? "none" : "1px solid rgba(0, 0, 0, 0.05)",
-                  }}
-                  className="flex w-full items-center hover:border-black/0! gap-2"
+
+        {/* Payment Status Component */}
+        <div className="px-6 pt-4">
+          <PaymentStatusComponent />
+        </div>
+
+        {/* Horizontal Product Carousel */}
+        <div className="px-6 py-6">
+          <div className="relative">
+            {/* Carousel Title */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-800">Featured Products</h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => scrollCarousel('left')}
+                  disabled={!canScrollLeft}
+                  className="p-2 rounded-full bg-white border border-black/10 shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  aria-label="Scroll left"
                 >
-                  <div className="py-3 pr-3 min-w-0 w-full sm:w-3/5">
-                    <div className="flex items-center gap-3">
+                  <ChevronLeft className="h-5 w-5 text-gray-700" />
+                </button>
+                <button
+                  onClick={() => scrollCarousel('right')}
+                  disabled={!canScrollRight}
+                  className="p-2 rounded-full bg-white border border-black/10 shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight className="h-5 w-5 text-gray-700" />
+                </button>
+              </div>
+            </div>
+
+            {/* Products Container */}
+            {isSearching ? (
+              <div className="py-16 flex flex-col items-center justify-center gap-3">
+                <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
+                <span className="text-black/60 font-medium">Loading amazing products...</span>
+              </div>
+            ) : products.length === 0 ? (
+              <div className="py-16 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                  <Package className="h-8 w-8 text-gray-400" />
+                </div>
+                <p className="text-black/60 font-medium">No products found.</p>
+                <p className="text-sm text-black/40 mt-1">Try searching for something else</p>
+              </div>
+            ) : (
+              <div
+                ref={carouselRef}
+                className="flex gap-4 overflow-x-auto scrollbar-hide pb-2"
+                style={{
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                  WebkitOverflowScrolling: 'touch'
+                }}
+                onScroll={(e) => setScrollPosition(e.target.scrollLeft)}
+              >
+                {products.map((product) => (
+                  <div
+                    key={product.id}
+                    className="flex-none w-72 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-black/5"
+                  >
+                    {/* Product Image */}
+                    <div className="relative bg-gray-50 h-48 flex items-center justify-center overflow-hidden">
                       <Image
                         src={product.thumbnail}
                         alt={product.title}
-                        className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg object-cover ring ring-black/5"
+                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                       />
-                      <div className="min-w-0 sm:pl-1 flex flex-col items-start h-full">
-                        <div className="font-medium text-sm sm:text-md truncate max-w-[40ch]">
-                          {product.title}
+                      {isProductInCart(product.id) && (
+                        <div className="absolute top-3 right-3 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg flex items-center gap-1">
+                          <ShoppingCart className="h-3 w-3" />
+                          In Cart
                         </div>
-                        <div className="mt-1 sm:mt-0.25 flex items-center gap-3 text-black/70 text-sm">
-                          <div className="flex items-center gap-1">
-                            <Star
-                              strokeWidth={1.5}
-                              className="h-3 w-3 text-black"
-                            />
-                            <span>{product.rating?.toFixed(1)}</span>
-                          </div>
-                          <div className="whitespace-nowrap font-medium">
-                           ₹{product.price}
-                          </div>
+                      )}
+                    </div>
+
+                    {/* Product Info */}
+                    <div className="p-4">
+                      <h3 className="font-bold text-base text-gray-900 mb-2 line-clamp-2 min-h-[3rem]">
+                        {product.title}
+                      </h3>
+                      
+                      {/* Category Badge */}
+                      {product.category && (
+                        <div className="mb-2">
+                          <span className="inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg">
+                            {product.category}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Rating */}
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
+                          <Star
+                            className="h-4 w-4 text-yellow-500 fill-yellow-500"
+                            strokeWidth={1.5}
+                          />
+                          <span className="font-semibold text-sm text-gray-700">
+                            {product.rating?.toFixed(1)}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          ({Math.floor(Math.random() * 1000) + 100} Reviews)
+                        </span>
+                      </div>
+
+                      {/* Price and Actions */}
+                      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500 line-through">
+                            ₹{(product.price * 1.2).toFixed(0)}
+                          </span>
+                          <span className="text-2xl font-bold text-gray-900">
+                            ₹{product.price.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                        <div className="flex gap-1">
+                          {isProductInCart(product.id) && (
+                            <button
+                              onClick={() => handleRemoveFromCart(product.id)}
+                              className="p-2 rounded-full bg-red-50 hover:bg-red-100 text-red-600 transition-colors"
+                              aria-label={`Remove ${product.title}`}
+                            >
+                              <MinusCircle strokeWidth={2} className="h-5 w-5" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleAddToCart(product)}
+                            className="p-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition-colors shadow-md hover:shadow-lg"
+                            aria-label={`Add ${product.title}`}
+                          >
+                            <PlusCircle strokeWidth={2} className="h-5 w-5" />
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="hidden sm:block text-end py-2 px-3 text-sm text-black/60 whitespace-nowrap flex-auto">
-                    {product.category || "–"}
-                  </div>
-                  <div className="py-2 whitespace-nowrap flex justify-end gap-2">
-                    {isProductInCart(product.id) && (
-                      <Button
-                        aria-label={`Remove ${product.title}`}
-                        color="secondary"
-                        variant="ghost"
-                        size="sm"
-                        uniform
-                        onClick={() => handleRemoveFromCart(product.id)}
-                      >
-                        <MinusCircle strokeWidth={1.5} className="h-5 w-5" />
-                      </Button>
-                    )}
-                    <Button
-                      aria-label={`Add ${product.title}`}
-                      color="secondary"
-                      variant="ghost"
-                      size="sm"
-                      uniform
-                      onClick={() => handleAddToCart(product)}
-                    >
-                      <PlusCircle strokeWidth={1.5} className="h-5 w-5" />
-                    </Button>
-                  </div>
-                </div>
+                ))}
               </div>
-            ))
-          )}
+            )}
+          </div>
         </div>
-        <div className="flex flex-col gap-2 pt-2">
-          {total > limit && (
-            <div className="flex gap-2">
-              <Button 
-                color="secondary" 
-                variant="outline" 
-                size="sm"
-                disabled={skip === 0}
-                onClick={() => setSkip(Math.max(0, skip - limit))}
-              >
-                Previous
-              </Button>
-              <Button 
-                color="secondary" 
-                variant="outline" 
-                size="sm"
-                disabled={skip + limit >= total}
-                onClick={() => setSkip(skip + limit)}
-              >
-                Next
-              </Button>
-              <span className="text-sm text-black/60 self-center ml-2">
-                {skip + 1}-{Math.min(skip + limit, total)} of {total}
-              </span>
-            </div>
-          )}
-          {cart.length > 0 && (
-            <div className="pt-2 border-t border-black/5">
+
+        {/* Cart Summary Footer */}
+        {cart.length > 0 && (
+          <div className="px-6 pb-6">
+            <div className="bg-white rounded-2xl shadow-lg border border-black/5 p-5">
               {checkoutError && (
-                <div className="mb-3 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
+                <div className="mb-4 text-sm text-red-600 bg-red-50 px-4 py-3 rounded-xl border border-red-200 flex items-start gap-2">
+                  <svg className="h-5 w-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
                   {checkoutError}
                 </div>
               )}
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Cart Summary</span>
-                <span className="text-sm font-medium">${getTotalPrice()}</span>
+              
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Cart Summary</h3>
+                  <p className="text-sm text-gray-500">{getTotalItems()} items in cart</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-500">Total Amount</p>
+                  <p className="text-2xl font-bold text-gray-900">₹{getTotalPrice()}</p>
+                </div>
               </div>
+              
               <Button 
                 color="primary" 
                 variant="solid" 
@@ -512,23 +583,36 @@ function App() {
               >
                 {isProcessingCheckout ? (
                   <>
-                    <svg className="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Processing...
+                    Processing Payment...
                   </>
                 ) : (
                   <>
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Pay Now ({getTotalItems()} items)
+                    <ShoppingCart className="h-5 w-5 mr-2" />
+                    Proceed to Checkout
                   </>
                 )}
               </Button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+      
+      {/* Custom CSS for hiding scrollbar */}
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
     </div>
   );
 }
