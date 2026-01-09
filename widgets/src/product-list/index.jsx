@@ -260,7 +260,7 @@ function App() {
         
         // Open magic checkout URL directly
         const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${data.order.id}`;
-        window.open(magicCheckoutUrl, '_blank');
+        // window.open(magicCheckoutUrl, '_blank');
         
       } else {
         console.error('Order creation failed:', data.error);
@@ -276,9 +276,9 @@ function App() {
 
   // Payment Status Component
   const PaymentStatusComponent = () => {
-    if (!isCheckingPayment && !paymentStatus) return null;
+    // if (!isCheckingPayment && !paymentStatus) return null;
 
-    if (isCheckingPayment) {
+    // if (isCheckingPayment) {
       return (
         <div className="mb-4 p-4 bg-blue-50 border-2 border-blue-300 rounded-xl shadow-sm">
           <div className="flex items-center gap-3">
@@ -292,7 +292,7 @@ function App() {
           </div>
         </div>
       );
-    }
+    // }
 
     if (paymentStatus?.status === 'success') {
       return (
