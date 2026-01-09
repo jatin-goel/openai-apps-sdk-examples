@@ -137,14 +137,14 @@ function App() {
     // Poll every 3 seconds
     const interval = setInterval(checkPaymentStatus, 3000);
 
-    // Stop polling after 5 minutes
+    // Stop polling after 1 minute
     const timeout = setTimeout(() => {
       setIsCheckingPayment(false);
       setPaymentStatus({
         status: 'timeout',
         orderId: pendingOrderId
       });
-    }, 5 * 60 * 1000);
+    }, 1 * 60 * 1000); // 1 minute
 
     return () => {
       clearInterval(interval);
@@ -395,6 +395,9 @@ function App() {
               </p>
               <p className="text-xs text-blue-700 mt-1">
                 You'll see a success message here once payment is confirmed.
+              </p>
+              <p className="text-xs text-blue-600 mt-2 font-medium">
+                ⏱️ Checking for 1 minute...
               </p>
             </div>
           </div>
