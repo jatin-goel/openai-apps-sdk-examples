@@ -1,8 +1,163 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createRoot } from "react-dom/client";
-import { PlusCircle, MinusCircle, ShoppingCart, Search, Loader2 } from "lucide-react";
+import { PlusCircle, MinusCircle, ShoppingCart, Search, Loader2, X, CheckCircle, ExternalLink } from "lucide-react";
 import { Button } from "@openai/apps-sdk-ui/components/Button";
 import { Image } from "@openai/apps-sdk-ui/components/Image";
+
+// Payment Overlay Component
+function PaymentOverlay({ isOpen, orderId, baseUrl, onClose, onPaymentSuccess }) {
+  const [status, setStatus] = useState('polling'); // 'polling' | 'success' | 'error'
+  const [paymentDetails, setPaymentDetails] = useState(null);
+  const [checkoutOpened, setCheckoutOpened] = useState(false);
+  const pollingRef = useRef(null);
+  const checkoutWindowRef = useRef(null);
+
+  const checkPaymentStatus = useCallback(async () => {
+    if (!orderId) return;
+    
+    try {
+      const response = await fetch(`${baseUrl}/api/razorpay/payment-status?orderId=${orderId}`);
+      const data = await response.json();
+      
+      if (data.success && data.data?.hasCapturedPayment) {
+        setStatus('success');
+        setPaymentDetails(data.data.capturedPayment);
+        if (pollingRef.current) {
+          clearInterval(pollingRef.current);
+          pollingRef.current = null;
+        }
+        onPaymentSuccess?.();
+      }
+    } catch (error) {
+      console.error('Error checking payment status:', error);
+    }
+  }, [orderId, baseUrl, onPaymentSuccess]);
+
+  useEffect(() => {
+    if (isOpen && orderId && !checkoutOpened) {
+      // Open magic checkout in new window
+      const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${orderId}`;
+      checkoutWindowRef.current = window.open(magicCheckoutUrl, '_blank');
+      setCheckoutOpened(true);
+      
+      // Start polling for payment status every 2 seconds
+      pollingRef.current = setInterval(checkPaymentStatus, 2000);
+      
+      // Also check immediately
+      checkPaymentStatus();
+    }
+    
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+  }, [isOpen, orderId, baseUrl, checkPaymentStatus, checkoutOpened]);
+
+  // Reset state when overlay closes
+  useEffect(() => {
+    if (!isOpen) {
+      setStatus('polling');
+      setPaymentDetails(null);
+      setCheckoutOpened(false);
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={status === 'success' ? onClose : undefined}
+      />
+      
+      {/* Modal */}
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-[90%] mx-4 overflow-hidden">
+        {status === 'polling' ? (
+          // Polling State
+          <div className="p-8 text-center">
+            <div className="mb-6">
+              <div className="relative inline-flex">
+                <div className="w-16 h-16 rounded-full border-4 border-blue-100 flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                  <ExternalLink className="w-3 h-3 text-white" />
+                </div>
+              </div>
+            </div>
+            
+            <h3 className="text-lg font-bold text-gray-900 mb-2">
+              Waiting for Payment
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Complete your payment in the checkout window. This page will update automatically.
+            </p>
+            
+            <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+              <span>Checking payment status...</span>
+            </div>
+            
+            <button
+              onClick={onClose}
+              className="mt-6 text-sm text-gray-500 hover:text-gray-700 underline transition-colors"
+            >
+              Cancel and close
+            </button>
+          </div>
+        ) : status === 'success' ? (
+          // Success State
+          <div className="p-8 text-center bg-gradient-to-b from-green-50 to-white">
+            <div className="mb-6">
+              <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-12 h-12 text-green-600" />
+              </div>
+            </div>
+            
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              Payment Successful!
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Thank you for your purchase. Your order has been confirmed.
+            </p>
+            
+            {paymentDetails && (
+              <div className="bg-white border border-green-200 rounded-xl p-4 mb-6 text-left">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs text-gray-500 uppercase tracking-wide">Amount Paid</span>
+                  <span className="text-lg font-bold text-green-600">
+                    ₹{(paymentDetails.amount / 100).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-gray-500 uppercase tracking-wide">Payment ID</span>
+                  <span className="text-xs font-mono text-gray-600">
+                    {paymentDetails.id?.slice(0, 20)}...
+                  </span>
+                </div>
+              </div>
+            )}
+            
+            <button
+              onClick={onClose}
+              className="w-full bg-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-green-700 active:scale-[0.98] transition-all"
+            >
+              Continue Shopping
+            </button>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -16,6 +171,7 @@ function App() {
   const [isSearching, setIsSearching] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [storeName, setStoreName] = useState("");
+  const [paymentOverlay, setPaymentOverlay] = useState({ isOpen: false, orderId: null });
   const limit = 100;
 
   // API base URL and store ID from env (injected at build time)
@@ -136,6 +292,15 @@ function App() {
   const getTotalItems = () => cart.length;
   const getTotalPrice = () => cart.reduce((sum, item) => sum + item.price, 0).toFixed(2);
 
+  const handleClosePaymentOverlay = () => {
+    setPaymentOverlay({ isOpen: false, orderId: null });
+  };
+
+  const handlePaymentSuccess = () => {
+    // Clear cart after successful payment
+    setCart([]);
+  };
+
   const handleSearch = (e) => {
     e.preventDefault();
     setQuery(searchInput);
@@ -175,12 +340,8 @@ function App() {
       if (data.success) {
         console.log('Order created successfully:', data);
         
-        // Clear cart in memory after successful order creation
-        setCart([]);
-        
-        // Open magic checkout URL directly using order_id from response
-        // const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${data.order_id}`;
-        // window.open(magicCheckoutUrl, '_blank');
+        // Show payment overlay with polling (this will open checkout and poll for payment status)
+        setPaymentOverlay({ isOpen: true, orderId: data.order_id });
         
       } else {
         console.error('Order creation failed:', data.error);
@@ -398,6 +559,15 @@ function App() {
           )}
         </div>
       </div>
+      
+      {/* Payment Overlay */}
+      <PaymentOverlay
+        isOpen={paymentOverlay.isOpen}
+        orderId={paymentOverlay.orderId}
+        baseUrl={baseUrl}
+        onClose={handleClosePaymentOverlay}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 }
