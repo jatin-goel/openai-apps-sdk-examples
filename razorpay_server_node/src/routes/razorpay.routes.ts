@@ -27,33 +27,6 @@ export class RazorpayRoutes {
   }
 
   /**
-   * POST /api/razorpay/verify-payment
-   */
-  static async verifyPayment(req: IncomingMessage, res: ServerResponse) {
-    try {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await parseJsonBody(req);
-      
-      const isAuthentic = razorpayService.verifyPaymentSignature(
-        razorpay_order_id,
-        razorpay_payment_id,
-        razorpay_signature
-      );
-
-      if (isAuthentic) {
-        sendSuccessResponse(res, {
-          message: "Payment verified successfully",
-          payment_id: razorpay_payment_id
-        });
-      } else {
-        sendErrorResponse(res, 400, "Invalid payment signature");
-      }
-    } catch (error: any) {
-      console.error("Error verifying payment:", error);
-      sendErrorResponse(res, 500, error.message);
-    }
-  }
-
-  /**
    * GET /api/razorpay/payment-status
    * Get payment status for an order
    * 
