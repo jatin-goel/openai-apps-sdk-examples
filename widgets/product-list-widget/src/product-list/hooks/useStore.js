@@ -1,31 +1,30 @@
 import { useState, useEffect } from "react";
 
+// Get initial values from tool output (available at load time)
+const getInitialToolOutput = () => {
+  const toolOutput = window.openai?.toolOutput || {};
+  return {
+    query: toolOutput.query || "",
+    skip: toolOutput.skip || 0
+  };
+};
+
 /**
  * useStore - Hook to fetch and manage store products
  */
 export function useStore(baseUrl, storeId) {
+  const initialValues = getInitialToolOutput();
+  
   const [products, setProducts] = useState([]);
   const [storeName, setStoreName] = useState("");
   const [total, setTotal] = useState(0);
-  const [query, setQuery] = useState("");
-  const [searchInput, setSearchInput] = useState("");
-  const [skip, setSkip] = useState(0);
+  const [query, setQuery] = useState(initialValues.query);
+  const [searchInput, setSearchInput] = useState(initialValues.query);
+  const [skip, setSkip] = useState(initialValues.skip);
   const [isSearching, setIsSearching] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   
   const limit = 100;
-
-  // Initialize from tool output
-  useEffect(() => {
-    const toolOutput = window.openai?.toolOutput || {};
-    if (toolOutput.query) {
-      setQuery(toolOutput.query);
-      setSearchInput(toolOutput.query);
-    }
-    if (toolOutput.skip !== undefined) {
-      setSkip(toolOutput.skip);
-    }
-  }, []);
 
   // Fetch products when query or skip changes
   useEffect(() => {
@@ -111,4 +110,3 @@ export function useStore(baseUrl, storeId) {
 }
 
 export default useStore;
-
