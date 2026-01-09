@@ -17,6 +17,7 @@ function App() {
   const [pendingOrderId, setPendingOrderId] = useState(null);
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+  const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
   const carouselRef = useRef(null);
   const limit = 100;
@@ -181,6 +182,20 @@ function App() {
     setSkip(0); // Reset to first page when searching
   };
 
+  const handleProceedToPayment = () => {
+    if (!pendingOrderId) return;
+    
+    // Hide order confirmation widget
+    setShowOrderConfirmation(false);
+    
+    // Start checking payment status (show overlay)
+    setIsCheckingPayment(true);
+    
+    // Open magic checkout URL
+    const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${pendingOrderId}`;
+    window.open(magicCheckoutUrl, '_blank');
+  };
+
   // Carousel scroll functions
   const scrollCarousel = (direction) => {
     if (!carouselRef.current) return;
@@ -255,12 +270,8 @@ function App() {
         // Clear cart in memory after successful order creation
         setCart([]);
         
-        // Start checking payment status (show overlay BEFORE opening window)
-        setIsCheckingPayment(true);
-        
-        // Open magic checkout URL directly
-        const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${data.order.id}`;
-        // window.open(magicCheckoutUrl, '_blank');
+        // Show order confirmation widget instead of opening payment immediately
+        setShowOrderConfirmation(true);
         
       } else {
         console.error('Order creation failed:', data.error);
@@ -276,9 +287,9 @@ function App() {
 
   // Payment Status Component
   const PaymentStatusComponent = () => {
-    // if (!isCheckingPayment && !paymentStatus) return null;
+    if (!isCheckingPayment && !paymentStatus) return null;
 
-    // if (isCheckingPayment) {
+    if (isCheckingPayment) {
       return (
         <div className="mb-4 p-4 bg-blue-50 border-2 border-blue-300 rounded-xl shadow-sm">
           <div className="flex items-center gap-3">
@@ -292,7 +303,7 @@ function App() {
           </div>
         </div>
       );
-    // }
+    }
 
     if (paymentStatus?.status === 'success') {
       return (
@@ -374,6 +385,61 @@ function App() {
 
   return (
     <div className="antialiased w-full text-black border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 relative">
+      {/* Order Confirmation Overlay */}
+      {showOrderConfirmation && pendingOrderId && (
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg mx-4">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="h-10 w-10 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-extrabold text-gray-900 mb-2">
+                Order Created Successfully! 🎉
+              </h3>
+              <p className="text-gray-600">
+                Your order has been created. Click below to proceed with payment.
+              </p>
+            </div>
+            
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5 mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold text-gray-700">Order ID:</span>
+                <span className="font-mono text-sm bg-white px-3 py-1.5 rounded-lg border border-blue-300 text-blue-900 font-bold">
+                  {pendingOrderId}
+                </span>
+              </div>
+              
+              {/* Payment Status Polling Indicator */}
+              <div className="mt-4 pt-4 border-t border-blue-200">
+                <PaymentStatusComponent />
+              </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowOrderConfirmation(false);
+                  setPendingOrderId(null);
+                  setPaymentStatus(null);
+                }}
+                className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleProceedToPayment}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+              >
+                <ShoppingCart className="h-5 w-5" strokeWidth={2.5} />
+                Pay Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Loading Overlay During Payment */}
       {isCheckingPayment && (
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
