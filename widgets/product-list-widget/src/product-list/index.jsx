@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
-import { PlusCircle, MinusCircle, ShoppingCart, Search, Loader2, X, CheckCircle, ExternalLink } from "lucide-react";
+import { PlusCircle, MinusCircle, ShoppingCart, Search, Loader2, CheckCircle, ExternalLink } from "lucide-react";
 import { Button } from "@openai/apps-sdk-ui/components/Button";
 import { Image } from "@openai/apps-sdk-ui/components/Image";
 
@@ -12,48 +12,52 @@ function PaymentOverlay({ isOpen, orderId, baseUrl, onClose, onPaymentSuccess })
   const pollingRef = useRef(null);
   const checkoutWindowRef = useRef(null);
 
-  const checkPaymentStatus = useCallback(async () => {
-    if (!orderId) return;
-    
-    try {
-      const response = await fetch(`${baseUrl}/api/razorpay/payment-status?orderId=${orderId}`);
-      const data = await response.json();
-      
-      if (data.success && data.data?.hasCapturedPayment) {
-        setStatus('success');
-        setPaymentDetails(data.data.capturedPayment);
-        if (pollingRef.current) {
-          clearInterval(pollingRef.current);
-          pollingRef.current = null;
-        }
-        onPaymentSuccess?.();
-      }
-    } catch (error) {
-      console.error('Error checking payment status:', error);
-    }
-  }, [orderId, baseUrl, onPaymentSuccess]);
-
+  // Open checkout window when overlay opens
   useEffect(() => {
     if (isOpen && orderId && !checkoutOpened) {
       // Open magic checkout in new window
       const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${orderId}`;
       checkoutWindowRef.current = window.open(magicCheckoutUrl, '_blank');
       setCheckoutOpened(true);
-      
-      // Start polling for payment status every 2 seconds
-      pollingRef.current = setInterval(checkPaymentStatus, 2000);
-      
-      // Also check immediately
-      checkPaymentStatus();
     }
-    
-    return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-        pollingRef.current = null;
+  }, [isOpen, orderId, baseUrl, checkoutOpened]);
+
+  // Polling effect - separate from checkout opening
+  useEffect(() => {
+    if (!isOpen || !orderId || status === 'success') {
+      return;
+    }
+
+    const checkPaymentStatus = async () => {
+      try {
+        console.log('Polling payment status for order:', orderId);
+        const response = await fetch(`${baseUrl}/api/razorpay/payment-status?orderId=${orderId}`);
+        const data = await response.json();
+        
+        console.log('Payment status response:', data);
+        
+        if (data.success && data.hasCapturedPayment) {
+          setStatus('success');
+          setPaymentDetails(data.capturedPayment);
+          onPaymentSuccess?.();
+        }
+      } catch (error) {
+        console.error('Error checking payment status:', error);
       }
     };
-  }, [isOpen, orderId, baseUrl, checkPaymentStatus, checkoutOpened]);
+
+    // Check immediately
+    checkPaymentStatus();
+    
+    // Then poll every 2 seconds
+    const intervalId = setInterval(checkPaymentStatus, 2000);
+    pollingRef.current = intervalId;
+    
+    return () => {
+      clearInterval(intervalId);
+      pollingRef.current = null;
+    };
+  }, [isOpen, orderId, baseUrl, status, onPaymentSuccess]);
 
   // Reset state when overlay closes
   useEffect(() => {
@@ -61,10 +65,6 @@ function PaymentOverlay({ isOpen, orderId, baseUrl, onClose, onPaymentSuccess })
       setStatus('polling');
       setPaymentDetails(null);
       setCheckoutOpened(false);
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-        pollingRef.current = null;
-      }
     }
   }, [isOpen]);
 
