@@ -173,7 +173,7 @@ function App() {
   // Carousel scroll functions
   const scrollCarousel = (direction) => {
     if (!carouselRef.current) return;
-    const scrollAmount = 320; // Width of card + gap
+    const scrollAmount = 340; // Width of card (320px) + gap (20px)
     const newPosition = direction === 'left' 
       ? Math.max(0, scrollPosition - scrollAmount)
       : scrollPosition + scrollAmount;
@@ -351,42 +351,42 @@ function App() {
     <div className="antialiased w-full text-black border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="max-w-full">
         {/* Header Section */}
-        <div className="bg-white/80 backdrop-blur-sm border-b border-black/5 px-6 py-5">
-          <div className="flex flex-row items-center gap-4">
+        <div className="bg-white/90 backdrop-blur-md border-b border-gray-200 px-6 py-6 shadow-sm">
+          <div className="flex flex-row items-center gap-5">
             <div
-              className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg flex items-center justify-center"
+              className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-purple-600 shadow-xl flex items-center justify-center ring-4 ring-blue-100"
             >
-              <Package className="h-7 w-7 text-white" />
+              <Package className="h-8 w-8 text-white" strokeWidth={2.5} />
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 Product Showcase
               </h1>
-              <p className="text-sm text-black/60 mt-0.5">
-                {total} products • Showing results for "{query}"
+              <p className="text-sm text-gray-600 mt-1 font-medium">
+                {total} premium products • "{query}"
               </p>
             </div>
             {cart.length > 0 && (
-              <div className="flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl shadow-lg">
-                <ShoppingCart className="h-5 w-5" />
+              <div className="flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 ring-2 ring-blue-200">
+                <ShoppingCart className="h-5 w-5" strokeWidth={2.5} />
                 <div className="flex flex-col items-end">
-                  <span className="text-xs font-medium opacity-90">Cart</span>
-                  <span className="text-sm font-bold">{getTotalItems()} items</span>
+                  <span className="text-xs font-semibold opacity-90">Your Cart</span>
+                  <span className="text-base font-extrabold">{getTotalItems()} {getTotalItems() === 1 ? 'item' : 'items'}</span>
                 </div>
               </div>
             )}
           </div>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="flex gap-2 mt-4">
+          <form onSubmit={handleSearch} className="flex gap-3 mt-5">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-black/40" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search for products..."
-                className="w-full pl-10 pr-4 py-2.5 border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white shadow-sm"
+                className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-medium bg-white shadow-sm hover:border-gray-300 transition-colors"
               />
             </div>
             <Button 
@@ -397,9 +397,12 @@ function App() {
               disabled={isSearching}
             >
               {isSearching ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
-                "Search"
+                <>
+                  <Search className="h-4 w-4 mr-2" />
+                  Search
+                </>
               )}
             </Button>
           </form>
@@ -414,24 +417,27 @@ function App() {
         <div className="px-6 py-6">
           <div className="relative">
             {/* Carousel Title */}
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Featured Products</h2>
-              <div className="flex gap-2">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-2xl font-extrabold text-gray-800 flex items-center gap-2">
+                <span className="inline-block w-1.5 h-8 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></span>
+                Featured Products
+              </h2>
+              <div className="flex gap-3">
                 <button
                   onClick={() => scrollCarousel('left')}
                   disabled={!canScrollLeft}
-                  className="p-2 rounded-full bg-white border border-black/10 shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  className="p-3 rounded-xl bg-white border-2 border-gray-200 shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:border-blue-400 hover:bg-blue-50 active:scale-95"
                   aria-label="Scroll left"
                 >
-                  <ChevronLeft className="h-5 w-5 text-gray-700" />
+                  <ChevronLeft className="h-5 w-5 text-gray-700" strokeWidth={2.5} />
                 </button>
                 <button
                   onClick={() => scrollCarousel('right')}
                   disabled={!canScrollRight}
-                  className="p-2 rounded-full bg-white border border-black/10 shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  className="p-3 rounded-xl bg-white border-2 border-gray-200 shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:border-blue-400 hover:bg-blue-50 active:scale-95"
                   aria-label="Scroll right"
                 >
-                  <ChevronRight className="h-5 w-5 text-gray-700" />
+                  <ChevronRight className="h-5 w-5 text-gray-700" strokeWidth={2.5} />
                 </button>
               </div>
             </div>
@@ -453,7 +459,7 @@ function App() {
             ) : (
               <div
                 ref={carouselRef}
-                className="flex gap-4 overflow-x-auto scrollbar-hide pb-2"
+                className="flex gap-5 overflow-x-auto scrollbar-hide pb-4 scroll-smooth"
                 style={{
                   scrollbarWidth: 'none',
                   msOverflowStyle: 'none',
@@ -464,81 +470,100 @@ function App() {
                 {products.map((product) => (
                   <div
                     key={product.id}
-                    className="flex-none w-72 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-black/5"
+                    className="flex-none w-80 bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-200 hover:border-blue-300"
                   >
                     {/* Product Image */}
-                    <div className="relative bg-gray-50 h-48 flex items-center justify-center overflow-hidden">
+                    <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 h-56 flex items-center justify-center overflow-hidden">
                       <Image
                         src={product.thumbnail}
                         alt={product.title}
-                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                        className="w-full h-full object-contain p-4 hover:scale-105 transition-transform duration-300"
                       />
                       {isProductInCart(product.id) && (
-                        <div className="absolute top-3 right-3 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg flex items-center gap-1">
-                          <ShoppingCart className="h-3 w-3" />
+                        <div className="absolute top-3 right-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1.5 animate-pulse">
+                          <ShoppingCart className="h-3.5 w-3.5" />
                           In Cart
                         </div>
                       )}
+                      {/* Discount Badge */}
+                      <div className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-orange-500 text-white px-2.5 py-1 rounded-lg text-xs font-bold shadow-lg">
+                        20% OFF
+                      </div>
                     </div>
 
                     {/* Product Info */}
-                    <div className="p-4">
-                      <h3 className="font-bold text-base text-gray-900 mb-2 line-clamp-2 min-h-[3rem]">
+                    <div className="p-5 flex flex-col h-[230px]">
+                      {/* Title - Fixed height */}
+                      <h3 className="font-bold text-base text-gray-900 mb-2 line-clamp-2 h-12 leading-tight">
                         {product.title}
                       </h3>
                       
                       {/* Category Badge */}
                       {product.category && (
-                        <div className="mb-2">
-                          <span className="inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg">
+                        <div className="mb-3">
+                          <span className="inline-block px-3 py-1 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-200">
                             {product.category}
                           </span>
                         </div>
                       )}
 
                       {/* Rating */}
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="flex items-center gap-1.5 bg-gradient-to-r from-yellow-50 to-amber-50 px-2.5 py-1.5 rounded-lg border border-yellow-200">
                           <Star
                             className="h-4 w-4 text-yellow-500 fill-yellow-500"
                             strokeWidth={1.5}
                           />
-                          <span className="font-semibold text-sm text-gray-700">
+                          <span className="font-bold text-sm text-gray-800">
                             {product.rating?.toFixed(1)}
                           </span>
                         </div>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 font-medium">
                           ({Math.floor(Math.random() * 1000) + 100} Reviews)
                         </span>
                       </div>
 
-                      {/* Price and Actions */}
-                      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                        <div className="flex flex-col">
-                          <span className="text-xs text-gray-500 line-through">
+                      {/* Spacer to push price/buttons to bottom */}
+                      <div className="flex-1"></div>
+
+                      {/* Price and Actions - Always at bottom */}
+                      <div className="flex items-end justify-between pt-4 border-t border-gray-200">
+                        <div className="flex flex-col justify-end">
+                          <span className="text-xs text-gray-400 line-through font-medium">
                             ₹{(product.price * 1.2).toFixed(0)}
                           </span>
-                          <span className="text-2xl font-bold text-gray-900">
+                          <span className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                             ₹{product.price.toLocaleString('en-IN')}
                           </span>
                         </div>
-                        <div className="flex gap-1">
-                          {isProductInCart(product.id) && (
+                        <div className="flex items-center gap-2">
+                          {isProductInCart(product.id) ? (
+                            <>
+                              <button
+                                onClick={() => handleRemoveFromCart(product.id)}
+                                className="p-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 transition-all duration-200 hover:scale-110 border border-red-200"
+                                aria-label={`Remove ${product.title}`}
+                              >
+                                <MinusCircle strokeWidth={2.5} className="h-5 w-5" />
+                              </button>
+                              <button
+                                onClick={() => handleAddToCart(product)}
+                                className="p-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white transition-all duration-200 hover:scale-110 shadow-lg hover:shadow-xl"
+                                aria-label={`Add another ${product.title}`}
+                              >
+                                <PlusCircle strokeWidth={2.5} className="h-5 w-5" />
+                              </button>
+                            </>
+                          ) : (
                             <button
-                              onClick={() => handleRemoveFromCart(product.id)}
-                              className="p-2 rounded-full bg-red-50 hover:bg-red-100 text-red-600 transition-colors"
-                              aria-label={`Remove ${product.title}`}
+                              onClick={() => handleAddToCart(product)}
+                              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
+                              aria-label={`Add ${product.title}`}
                             >
-                              <MinusCircle strokeWidth={2} className="h-5 w-5" />
+                              <ShoppingCart strokeWidth={2.5} className="h-5 w-5" />
+                              <span className="text-sm">Add</span>
                             </button>
                           )}
-                          <button
-                            onClick={() => handleAddToCart(product)}
-                            className="p-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition-colors shadow-md hover:shadow-lg"
-                            aria-label={`Add ${product.title}`}
-                          >
-                            <PlusCircle strokeWidth={2} className="h-5 w-5" />
-                          </button>
                         </div>
                       </div>
                     </div>
@@ -552,24 +577,31 @@ function App() {
         {/* Cart Summary Footer */}
         {cart.length > 0 && (
           <div className="px-6 pb-6">
-            <div className="bg-white rounded-2xl shadow-lg border border-black/5 p-5">
+            <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-2xl shadow-xl border-2 border-gray-200 p-6">
               {checkoutError && (
-                <div className="mb-4 text-sm text-red-600 bg-red-50 px-4 py-3 rounded-xl border border-red-200 flex items-start gap-2">
+                <div className="mb-4 text-sm text-red-700 bg-red-50 px-4 py-3 rounded-xl border-2 border-red-200 flex items-start gap-3 shadow-sm">
                   <svg className="h-5 w-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
-                  {checkoutError}
+                  <span className="font-semibold">{checkoutError}</span>
                 </div>
               )}
               
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-5 pb-4 border-b-2 border-gray-200">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">Cart Summary</h3>
-                  <p className="text-sm text-gray-500">{getTotalItems()} items in cart</p>
+                  <h3 className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
+                    <ShoppingCart className="h-5 w-5 text-blue-600" strokeWidth={2.5} />
+                    Cart Summary
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 font-medium">
+                    {getTotalItems()} {getTotalItems() === 1 ? 'item' : 'items'} ready to checkout
+                  </p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-500">Total Amount</p>
-                  <p className="text-2xl font-bold text-gray-900">₹{getTotalPrice()}</p>
+                <div className="text-right bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-200">
+                  <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Total Amount</p>
+                  <p className="text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    ₹{getTotalPrice()}
+                  </p>
                 </div>
               </div>
               
@@ -591,8 +623,8 @@ function App() {
                   </>
                 ) : (
                   <>
-                    <ShoppingCart className="h-5 w-5 mr-2" />
-                    Proceed to Checkout
+                    <ShoppingCart className="h-5 w-5 mr-2" strokeWidth={2.5} />
+                    Proceed to Secure Checkout
                   </>
                 )}
               </Button>
