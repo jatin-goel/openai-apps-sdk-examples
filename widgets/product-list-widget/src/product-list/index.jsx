@@ -179,8 +179,8 @@ function App() {
         setCart([]);
         
         // Open magic checkout URL directly using order_id from response
-        const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${data.order_id}`;
-        window.open(magicCheckoutUrl, '_blank');
+        // const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${data.order_id}`;
+        // window.open(magicCheckoutUrl, '_blank');
         
       } else {
         console.error('Order creation failed:', data.error);
