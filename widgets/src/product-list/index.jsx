@@ -94,25 +94,36 @@ function App() {
         const response = await fetch(`${baseUrl}/api/razorpay/payment-status?orderId=${pendingOrderId}`);
         const data = await response.json();
 
-        if (data.success && data.data.hasCapturedPayment) {
-          // Payment captured!
-          setPaymentStatus({
-            status: 'success',
-            payment: data.data.capturedPayment,
-            orderId: pendingOrderId
-          });
-          setIsCheckingPayment(false);
-          setPendingOrderId(null);
-        } else if (data.success && data.data.count > 0) {
-          // Check if any payment failed
-          const failedPayment = data.data.payments.find(p => p.status === 'failed');
-          if (failedPayment) {
+        console.log('Payment status response:', data); // Debug log
+
+        if (data.success && data.data) {
+          // Check if payment is captured
+          if (data.data.hasCapturedPayment && data.data.capturedPayment) {
+            // Payment captured!
+            console.log('Payment captured successfully!', data.data.capturedPayment);
             setPaymentStatus({
-              status: 'failed',
+              status: 'success',
+              payment: data.data.capturedPayment,
               orderId: pendingOrderId
             });
             setIsCheckingPayment(false);
             setPendingOrderId(null);
+            return; // Stop checking
+          }
+          
+          // Check if any payment failed
+          if (data.data.payments && data.data.payments.length > 0) {
+            const failedPayment = data.data.payments.find(p => p.status === 'failed');
+            if (failedPayment) {
+              console.log('Payment failed:', failedPayment);
+              setPaymentStatus({
+                status: 'failed',
+                orderId: pendingOrderId
+              });
+              setIsCheckingPayment(false);
+              setPendingOrderId(null);
+              return; // Stop checking
+            }
           }
         }
       } catch (error) {
@@ -285,22 +296,36 @@ function App() {
 
     if (paymentStatus?.status === 'success') {
       return (
-        <div className="mb-4 p-4 bg-green-50 border-2 border-green-300 rounded-xl shadow-sm">
-          <div className="flex items-start gap-3">
-            <svg className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
+        <div className="mb-4 p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-400 rounded-2xl shadow-xl">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+              <svg className="h-7 w-7 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
             <div className="flex-1">
-              <div className="font-semibold text-green-900 text-base">Payment Successful! 🎉</div>
-              <div className="text-sm text-green-800 mt-2 space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-green-700">Payment ID:</span>
-                  <span className="font-mono text-xs">{paymentStatus.payment?.id}</span>
+              <div className="font-extrabold text-green-900 text-xl mb-2 flex items-center gap-2">
+                Payment Successful! 
+                <span className="text-2xl">🎉</span>
+              </div>
+              <div className="text-sm text-green-800 space-y-2">
+                <div className="bg-white/70 rounded-lg p-3 space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-green-700 font-semibold">Payment ID:</span>
+                    <span className="font-mono text-xs bg-green-100 px-2 py-1 rounded">{paymentStatus.payment?.id}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-green-700 font-semibold">Amount Paid:</span>
+                    <span className="font-bold text-lg text-green-900">₹{(paymentStatus.payment?.amount / 100).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-green-700 font-semibold">Status:</span>
+                    <span className="font-bold text-green-700 uppercase">{paymentStatus.payment?.status}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-green-700">Amount Paid:</span>
-                  <span className="font-semibold">₹{(paymentStatus.payment?.amount / 100).toFixed(2)}</span>
-                </div>
+                <p className="text-xs text-green-700 text-center font-semibold mt-3">
+                  ✅ Your order has been confirmed. Thank you for shopping with us!
+                </p>
               </div>
             </div>
           </div>
@@ -348,7 +373,34 @@ function App() {
   };
 
   return (
-    <div className="antialiased w-full text-black border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="antialiased w-full text-black border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 relative">
+      {/* Loading Overlay During Payment */}
+      {isCheckingPayment && (
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
+            <div className="mb-4">
+              <Loader2 className="h-16 w-16 animate-spin text-blue-500 mx-auto" />
+            </div>
+            <h3 className="text-xl font-extrabold text-gray-900 mb-2">
+              Processing Payment
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Please complete your payment in the checkout window.
+              <br />
+              We're checking your payment status...
+            </p>
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+              <p className="text-sm text-blue-800 font-semibold">
+                💡 Don't close this window!
+              </p>
+              <p className="text-xs text-blue-700 mt-1">
+                You'll see a success message here once payment is confirmed.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="max-w-full">
         {/* Header Section */}
         <div className="bg-white/90 backdrop-blur-md border-b border-gray-200 px-6 py-6 shadow-sm">
