@@ -273,6 +273,7 @@ function App() {
         // Show order confirmation widget instead of opening payment immediately
         setShowOrderConfirmation(true);
         
+        
       } else {
         console.error('Order creation failed:', data.error);
         setCheckoutError(data.error || 'Failed to create order');
