@@ -255,12 +255,12 @@ function App() {
         // Clear cart in memory after successful order creation
         setCart([]);
         
+        // Start checking payment status (show overlay BEFORE opening window)
+        setIsCheckingPayment(true);
+        
         // Open magic checkout URL directly
         const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${data.order.id}`;
         window.open(magicCheckoutUrl, '_blank');
-        
-        // Start checking payment status
-        setIsCheckingPayment(true);
         
       } else {
         console.error('Order creation failed:', data.error);
