@@ -101,11 +101,6 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
     return;
   }
 
-  if (req.method === "POST" && url.pathname === "/api/razorpay/magic-checkout") {
-    await RazorpayRoutes.magicCheckout(req, res);
-    return;
-  }
-
   if (req.method === "GET" && url.pathname === "/api/razorpay/magic-checkout") {
     await RazorpayRoutes.magicCheckoutHTML(req, res, url);
     return;
@@ -201,7 +196,6 @@ httpServer.listen(port, () => {
   console.log(`   Verify:        POST http://localhost:${port}/api/razorpay/verify-payment`);
   console.log(`   Payment Status: GET http://localhost:${port}/api/razorpay/payment-status?orderId=...`);
   console.log(`   Parse Store:   GET  http://localhost:${port}/api/razorpay/parse-store?url=...`);
-  console.log(`   Magic Checkout (JSON): POST http://localhost:${port}/api/razorpay/magic-checkout`);
   console.log(`   Magic Checkout (HTML): GET  http://localhost:${port}/api/razorpay/magic-checkout?orderId=...`);
   console.log(`\n📦 Order Endpoints:`);
   console.log(`   Checkout:      POST http://localhost:${port}/api/checkout/proceed`);

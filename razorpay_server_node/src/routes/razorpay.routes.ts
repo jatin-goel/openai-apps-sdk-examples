@@ -107,21 +107,6 @@ export class RazorpayRoutes {
   }
 
   /**
-   * POST /api/razorpay/magic-checkout
-   */
-  static async magicCheckout(req: IncomingMessage, res: ServerResponse) {
-    try {
-      const { products, customer, callbacks } = await parseJsonBody(req);
-      const result = await razorpayService.createMagicCheckout(products, customer, callbacks);
-      sendSuccessResponse(res, result);
-    } catch (error: any) {
-      console.error("Error creating Magic Checkout:", error);
-      const statusCode = error.message.includes("required") ? 400 : 500;
-      sendErrorResponse(res, statusCode, error.message || "Failed to create Magic Checkout");
-    }
-  }
-
-  /**
    * GET /api/razorpay/magic-checkout
    * Returns HTML page with Magic Checkout embedded
    * 
