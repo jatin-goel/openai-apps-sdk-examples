@@ -1,10 +1,8 @@
 /**
  * Razorpay MCP Server
  * 
- * A modular, well-organized backend server providing:
- * - MCP (Model Context Protocol) integration
- * - User authentication (JWT-based)
- * - Shopping cart management
+ * Backend server providing:
+ * - MCP (Model Context Protocol) integration for widgets
  * - Razorpay payment integration
  * - Order management
  */
@@ -12,20 +10,12 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { URL } from "node:url";
 
-// Configuration
 import config from "./config/index.js";
-
-// MCP Server
 import { handleSseRequest, handlePostMessage } from "./mcp/server.js";
-
-// Middleware
 import { handleCorsOptions } from "./middleware/cors.js";
-
-// Routes
 import RazorpayRoutes from "./routes/razorpay.routes.js";
 import OrderRoutes from "./routes/order.routes.js";
 import StaticRoutes from "./routes/static.routes.js";
-import ShopifyRoutes from "./routes/shopify.routes.js";
 
 /**
  * Main HTTP server request handler
@@ -36,46 +26,33 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
     return;
   }
 
-  // Parse URL
   const host = req.headers.host || "localhost";
   let url: URL;
+  
   try {
     url = new URL(req.url, `http://${host}`);
-  } catch (error) {
-    console.error("Invalid URL", error);
+  } catch {
     res.writeHead(400).end("Invalid URL");
     return;
   }
 
-  // ==========================================
   // MCP Endpoints
-  // ==========================================
-  
-  // Handle MCP OPTIONS requests
-  if (
-    req.method === "OPTIONS" &&
-    (url.pathname === config.mcp.ssePath || url.pathname === config.mcp.postPath)
-  ) {
+  if (req.method === "OPTIONS" && (url.pathname === config.mcp.ssePath || url.pathname === config.mcp.postPath)) {
     handleCorsOptions(res);
     return;
   }
 
-  // Handle MCP SSE connection
   if (req.method === "GET" && url.pathname === config.mcp.ssePath) {
     await handleSseRequest(res, config.mcp.postPath);
     return;
   }
 
-  // Handle MCP POST messages
   if (req.method === "POST" && url.pathname === config.mcp.postPath) {
     await handlePostMessage(req, res, url);
     return;
   }
 
-  // ==========================================
-  // Razorpay Payment Endpoints
-  // ==========================================
-  
+  // Razorpay Endpoints
   if (req.method === "OPTIONS" && url.pathname.startsWith("/api/razorpay/")) {
     handleCorsOptions(res);
     return;
@@ -106,10 +83,7 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
     return;
   }
 
-  // ==========================================
-  // Order & Checkout Endpoints
-  // ==========================================
-  
+  // Checkout Endpoints
   if (req.method === "OPTIONS" && url.pathname.startsWith("/api/checkout/")) {
     handleCorsOptions(res);
     return;
@@ -125,33 +99,7 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
     return;
   }
 
-  // ==========================================
-  // Shopify Products Endpoints
-  // ==========================================
-  
-  if (req.method === "OPTIONS" && url.pathname.startsWith("/api/shopify/")) {
-    handleCorsOptions(res);
-    return;
-  }
-
-  if (req.method === "GET" && url.pathname === "/api/shopify/products") {
-    await ShopifyRoutes.getProducts(req, res, url);
-    return;
-  }
-
-  // ==========================================
-  // Static Pages
-  // ==========================================
-  
-  if (req.method === "GET" && url.pathname === "/checkout") {
-    StaticRoutes.serveCheckoutPage(req, res);
-    return;
-  }
-
-  // ==========================================
   // Static Assets
-  // ==========================================
-  
   if (req.method === "GET" && url.pathname.startsWith("/")) {
     const served = StaticRoutes.serveAsset(req, res, url);
     if (served) {
@@ -159,16 +107,10 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
     }
   }
 
-  // ==========================================
-  // 404 Not Found
-  // ==========================================
-  
   res.writeHead(404).end("Not Found");
 };
 
-/**
- * Create and start HTTP server
- */
+// Create and start server
 const httpServer = createServer(requestHandler);
 
 httpServer.on("clientError", (err: Error, socket) => {
@@ -176,7 +118,6 @@ httpServer.on("clientError", (err: Error, socket) => {
   socket.end("HTTP/1.1 400 Bad Request\r\n\r\n");
 });
 
-// Start server
 const port = config.port || 8000;
 
 httpServer.listen(port, () => {
@@ -184,17 +125,15 @@ httpServer.listen(port, () => {
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
   console.log(`📡 Server listening on http://localhost:${port}`);
   console.log(`\n🔌 MCP Endpoints:`);
-  console.log(`   SSE Stream:    GET  http://localhost:${port}${config.mcp.ssePath}`);
-  console.log(`   Message Post:  POST http://localhost:${port}${config.mcp.postPath}?sessionId=...`);
-  console.log(`\n💳 Payment Endpoints:`);
-  console.log(`   Create Order:  POST http://localhost:${port}/api/razorpay/create-order`);
-  console.log(`   Payment Status: GET http://localhost:${port}/api/razorpay/payment-status?orderId=...`);
-  console.log(`   Parse Store:   GET  http://localhost:${port}/api/razorpay/parse-store?url=...`);
-  console.log(`   Magic Checkout (HTML): GET  http://localhost:${port}/api/razorpay/magic-checkout?orderId=...`);
+  console.log(`   SSE Stream:     GET  ${config.mcp.ssePath}`);
+  console.log(`   Message Post:   POST ${config.mcp.postPath}?sessionId=...`);
+  console.log(`\n💳 Razorpay Endpoints:`);
+  console.log(`   Create Order:   POST /api/razorpay/create-order`);
+  console.log(`   Payment Status: GET  /api/razorpay/payment-status?orderId=...`);
+  console.log(`   Parse Store:    GET  /api/razorpay/parse-store?url=...`);
+  console.log(`   Magic Checkout: GET  /api/razorpay/magic-checkout?orderId=...`);
   console.log(`\n📦 Order Endpoints:`);
-  console.log(`   Checkout:      POST http://localhost:${port}/api/checkout/proceed`);
-  console.log(`   Get Order:     GET  http://localhost:${port}/api/orders/:orderId`);
-  console.log(`\n📄 Pages:`);
-  console.log(`   Checkout:      http://localhost:${port}/checkout`);
+  console.log(`   Checkout:       POST /api/checkout/proceed`);
+  console.log(`   Get Order:      GET  /api/orders/:orderId`);
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
 });

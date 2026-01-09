@@ -6,33 +6,26 @@ const ROOT_DIR = path.resolve(__dirname, "..", "..", "..");
 const ASSETS_DIR = path.resolve(ROOT_DIR, "widgets/product-list-widget/assets");
 
 export const config = {
-  // Server Configuration
-  port: Number(process.env.PORT),
-  host: process.env.HOST,
+  // Server
+  port: Number(process.env.PORT) || 8000,
 
   // Paths
   rootDir: ROOT_DIR,
   assetsDir: ASSETS_DIR,
 
-  // JWT Configuration
-  jwt: {
-    secret: process.env.JWT_SECRET,
-    expiry: "7d"
-  },
-
-  // Razorpay Configuration
+  // Razorpay
   razorpay: {
-    keyId: process.env.RAZORPAY_KEY_ID,
-    keySecret: process.env.RAZORPAY_KEY_SECRET
+    keyId: process.env.RAZORPAY_KEY_ID || '',
+    keySecret: process.env.RAZORPAY_KEY_SECRET || ''
   },
 
-  // MCP Configuration
+  // MCP
   mcp: {
     ssePath: "/mcp",
     postPath: "/mcp/messages"
   },
 
-  // CORS Configuration
+  // CORS
   cors: {
     allowOrigin: "*",
     allowMethods: "GET, POST, OPTIONS",
@@ -41,4 +34,3 @@ export const config = {
 } as const;
 
 export default config;
-

@@ -1,21 +1,15 @@
 /**
- * Main exports for the Razorpay Server
- * 
- * This file provides a clean API for importing server components
+ * Main exports for the Razorpay MCP Server
  */
 
 // Configuration
 export { default as config } from "./config/index.js";
 
 // Services
-export { AuthService } from "./services/auth.service.js";
-export { CartService } from "./services/cart.service.js";
 export { RazorpayService } from "./services/razorpay.service.js";
 export { OrderService } from "./services/order.service.js";
 
 // Routes
-export { AuthRoutes } from "./routes/auth.routes.js";
-export { CartRoutes } from "./routes/cart.routes.js";
 export { RazorpayRoutes } from "./routes/razorpay.routes.js";
 export { OrderRoutes } from "./routes/order.routes.js";
 export { StaticRoutes } from "./routes/static.routes.js";
@@ -38,12 +32,10 @@ export {
 
 // Types
 export type {
-  User,
-  CartItem,
-  Address,
-  Order,
-  Payment,
   Widget,
   SessionRecord,
   ApiResponse,
+  OrderLineItem,
+  CreateOrderRequest,
+  PaymentStatus,
 } from "./types/index.js";

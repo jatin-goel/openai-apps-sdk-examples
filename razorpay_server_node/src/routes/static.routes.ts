@@ -3,69 +3,43 @@ import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import config from "../config/index.js";
 
+const CONTENT_TYPES: Record<string, string> = {
+  '.js': 'application/javascript',
+  '.css': 'text/css',
+  '.html': 'text/html',
+  '.map': 'application/json'
+};
+
+const ALLOWED_EXTENSIONS = new Set(['.js', '.css', '.html', '.map']);
+
 export class StaticRoutes {
   /**
-   * Serve checkout page
+   * Serve static assets from the assets directory
    */
-  static serveCheckoutPage(req: IncomingMessage, res: ServerResponse) {
+  static serveAsset(req: IncomingMessage, res: ServerResponse, url: URL): boolean {
+    const fileName = url.pathname.slice(1);
+    const filePath = path.join(config.assetsDir, fileName);
+    const ext = path.extname(fileName);
+
+    // Only serve files from assets directory with allowed extensions
+    if (!filePath.startsWith(config.assetsDir) || !ALLOWED_EXTENSIONS.has(ext)) {
+      return false;
+    }
+
     try {
-      const checkoutPagePath = path.resolve(config.rootDir, "checkout-page.html");
-      const content = fs.readFileSync(checkoutPagePath, "utf8");
-      
+      const content = fs.readFileSync(filePath);
+      const contentType = CONTENT_TYPES[ext] || 'application/octet-stream';
+
       res.writeHead(200, {
-        "Content-Type": "text/html",
+        "Content-Type": contentType,
         "Access-Control-Allow-Origin": "*",
       });
       res.end(content);
-    } catch (error) {
-      console.error("Error serving checkout page:", error);
-      res.writeHead(500, { "Content-Type": "text/plain" });
-      res.end("Error loading checkout page");
+      return true;
+    } catch {
+      return false;
     }
-  }
-
-  /**
-   * Serve static assets
-   */
-  static serveAsset(req: IncomingMessage, res: ServerResponse, url: URL) {
-    const fileName = url.pathname.slice(1); // Remove leading slash
-    const filePath = path.join(config.assetsDir, fileName);
-
-    // Only serve files from the assets directory with allowed extensions
-    if (
-      filePath.startsWith(config.assetsDir) &&
-      (fileName.endsWith(".js") ||
-        fileName.endsWith(".css") ||
-        fileName.endsWith(".html") ||
-        fileName.endsWith(".map"))
-    ) {
-      try {
-        const content = fs.readFileSync(filePath);
-        const contentType = fileName.endsWith(".js")
-          ? "application/javascript"
-          : fileName.endsWith(".css")
-          ? "text/css"
-          : fileName.endsWith(".html")
-          ? "text/html"
-          : fileName.endsWith(".map")
-          ? "application/json"
-          : "application/octet-stream";
-
-        res.writeHead(200, {
-          "Content-Type": contentType,
-          "Access-Control-Allow-Origin": "*",
-        });
-        res.end(content);
-        return true;
-      } catch (error) {
-        // File not found, return false to trigger 404
-        return false;
-      }
-    }
-    
-    return false;
   }
 }
 
 export default StaticRoutes;
-
