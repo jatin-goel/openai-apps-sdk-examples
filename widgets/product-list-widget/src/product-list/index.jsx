@@ -5,7 +5,7 @@ import { Button } from "@openai/apps-sdk-ui/components/Button";
 import { Image } from "@openai/apps-sdk-ui/components/Image";
 
 // Payment Overlay Component
-function PaymentOverlay({ isOpen, orderId, baseUrl, onClose, onPaymentSuccess }) {
+function PaymentOverlay({ isOpen, orderId, baseUrl, storeName, onClose, onPaymentSuccess }) {
   const [status, setStatus] = useState('polling'); // 'polling' | 'success' | 'error'
   const [paymentDetails, setPaymentDetails] = useState(null);
   const [checkoutOpened, setCheckoutOpened] = useState(false);
@@ -15,12 +15,16 @@ function PaymentOverlay({ isOpen, orderId, baseUrl, onClose, onPaymentSuccess })
   // Open checkout window when overlay opens
   useEffect(() => {
     if (isOpen && orderId && !checkoutOpened) {
-      // Open magic checkout in new window
-      const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?orderId=${orderId}`;
+      // Open magic checkout in new window with store name as business name
+      const params = new URLSearchParams({ orderId });
+      if (storeName) {
+        params.set('businessName', storeName);
+      }
+      const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?${params.toString()}`;
       checkoutWindowRef.current = window.open(magicCheckoutUrl, '_blank');
       setCheckoutOpened(true);
     }
-  }, [isOpen, orderId, baseUrl, checkoutOpened]);
+  }, [isOpen, orderId, baseUrl, storeName, checkoutOpened]);
 
   // Polling effect - separate from checkout opening
   useEffect(() => {
@@ -565,6 +569,7 @@ function App() {
         isOpen={paymentOverlay.isOpen}
         orderId={paymentOverlay.orderId}
         baseUrl={baseUrl}
+        storeName={storeName}
         onClose={handleClosePaymentOverlay}
         onPaymentSuccess={handlePaymentSuccess}
       />

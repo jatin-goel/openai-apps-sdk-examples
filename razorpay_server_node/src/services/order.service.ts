@@ -92,7 +92,8 @@ export class OrderService {
       status: order.status,
       notes: order.notes,
       created_at: order.created_at,
-      line_items: order.line_items
+      line_items: order.line_items,
+      entity_id: order.entity_id
     };
   }
 }

@@ -147,8 +147,8 @@ export class RazorpayService {
   }): string {
     const {
       orderId,
-      name = 'Razorpay Magic Checkout',
-      businessName = 'Acme Corp',
+      businessName: businessNameParam,
+      name: nameParam,
       customerName = 'Guest Customer',
       customerEmail = '',
       customerPhone = '',
@@ -157,6 +157,9 @@ export class RazorpayService {
       showCoupons = 'true',
       address = ''
     } = params;
+
+    const businessName = businessNameParam || 'Store';
+    const name = nameParam || `${businessName} - Checkout`;
 
 
     return `<!DOCTYPE html>
