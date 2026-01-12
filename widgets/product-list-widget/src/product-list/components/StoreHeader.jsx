@@ -1,26 +1,61 @@
 import React from "react";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingBag, Package } from "lucide-react";
 
 /**
  * StoreHeader - Store name and cart indicator
  */
 export function StoreHeader({ storeName, query, total, cartItemCount }) {
   return (
-    <div className="flex flex-row items-center gap-4 sm:gap-4 border-b border-black/5 py-4">
-      <div className="flex-1">
-        <div className="text-base sm:text-xl font-medium">
-          {storeName || "Store"}
+    <div className="relative overflow-hidden bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-5 sm:p-6 mb-4">
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
+        <div className="absolute -bottom-16 -left-16 w-32 h-32 bg-white/5 rounded-full blur-xl" />
+      </div>
+      
+      <div className="relative flex flex-row items-center gap-4">
+        {/* Store Info */}
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight truncate">
+            {storeName || "Store"}
+          </h1>
+          <div className="flex items-center gap-2 mt-1">
+            <Package className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+            <p className="text-sm text-gray-400 truncate">
+              {query ? (
+                <>
+                  <span className="text-gray-300 font-medium">{total}</span> results for "<span className="text-white">{query}</span>"
+                </>
+              ) : (
+                <>
+                  <span className="text-gray-300 font-medium">{total}</span> products available
+                </>
+              )}
+            </p>
+          </div>
         </div>
-        <div className="text-sm text-black/60">
-          {query ? `${total} products found for "${query}"` : `${total} products`}
+        
+        {/* Cart Badge */}
+        <div className="flex-shrink-0">
+          <div className={`relative flex items-center gap-2.5 px-4 py-2.5 rounded-full transition-all ${
+            cartItemCount > 0 
+              ? 'bg-white text-gray-900' 
+              : 'bg-white/10 text-gray-400'
+          }`}>
+            <ShoppingBag className="w-5 h-5" />
+            {cartItemCount > 0 ? (
+              <>
+                <span className="font-semibold text-sm">{cartItemCount}</span>
+                <span className="hidden sm:inline text-sm font-medium text-gray-600">
+                  {cartItemCount === 1 ? 'item' : 'items'}
+                </span>
+              </>
+            ) : (
+              <span className="text-sm font-medium">Empty</span>
+            )}
+          </div>
         </div>
       </div>
-      {cartItemCount > 0 && (
-        <div className="flex items-center gap-2 text-sm">
-          <ShoppingCart className="h-4 w-4" />
-          <span className="font-medium">{cartItemCount} items</span>
-        </div>
-      )}
     </div>
   );
 }
