@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 
 // Components
@@ -7,6 +7,7 @@ import {
   ProductList,
   SearchBar,
   CartSummary,
+  CartDrawer,
   StoreHeader,
   Pagination,
   LoadingScreen
@@ -61,6 +62,9 @@ function App() {
     closePaymentOverlay
   } = useCheckout(BASE_URL, STORE_ID, cart);
 
+  // Cart drawer state
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
   // Handle successful payment
   const handlePaymentSuccess = () => {
     clearCart();
@@ -78,6 +82,7 @@ function App() {
           query={query}
           total={total}
           cartItemCount={totalItems}
+          onCartClick={() => setIsCartOpen(true)}
         />
 
         <SearchBar
@@ -125,6 +130,19 @@ function App() {
         storeName={storeName}
         onClose={closePaymentOverlay}
         onPaymentSuccess={handlePaymentSuccess}
+      />
+
+      <CartDrawer
+        isOpen={isCartOpen}
+        cart={cart}
+        totalItems={totalItems}
+        totalPrice={totalPrice}
+        getProductQuantity={getProductQuantity}
+        onClose={() => setIsCartOpen(false)}
+        onAddToCart={addToCart}
+        onRemoveFromCart={removeFromCart}
+        onCheckout={processCheckout}
+        isProcessing={isProcessing}
       />
     </div>
   );

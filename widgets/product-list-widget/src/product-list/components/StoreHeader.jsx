@@ -4,7 +4,7 @@ import { ShoppingBag, Package } from "lucide-react";
 /**
  * StoreHeader - Store name and cart indicator
  */
-export function StoreHeader({ storeName, query, total, cartItemCount }) {
+export function StoreHeader({ storeName, query, total, cartItemCount, onCartClick }) {
   return (
     <div className="relative overflow-hidden bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-5 sm:p-6 mb-4">
       {/* Decorative background elements */}
@@ -37,11 +37,14 @@ export function StoreHeader({ storeName, query, total, cartItemCount }) {
         
         {/* Cart Badge */}
         <div className="flex-shrink-0">
-          <div className={`relative flex items-center gap-2.5 px-4 py-2.5 rounded-full transition-all ${
-            cartItemCount > 0 
-              ? 'bg-white text-gray-900' 
-              : 'bg-white/10 text-gray-400'
-          }`}>
+          <button 
+            onClick={onCartClick}
+            className={`relative flex items-center gap-2.5 px-4 py-2.5 rounded-full transition-all cursor-pointer hover:scale-105 active:scale-95 ${
+              cartItemCount > 0 
+                ? 'bg-white text-gray-900 hover:shadow-lg' 
+                : 'bg-white/10 text-gray-400 hover:bg-white/20'
+            }`}
+          >
             <ShoppingBag className="w-5 h-5" />
             {cartItemCount > 0 ? (
               <>
@@ -53,7 +56,7 @@ export function StoreHeader({ storeName, query, total, cartItemCount }) {
             ) : (
               <span className="text-sm font-medium">Empty</span>
             )}
-          </div>
+          </button>
         </div>
       </div>
     </div>
