@@ -33,11 +33,6 @@ export function StoreHeader({ storeName, query, total, cartItemCount, onCartClic
         <span className="text-sm font-medium">
           {cartItemCount > 0 ? `${cartItemCount} items` : 'Cart'}
         </span>
-        {cartItemCount > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-            {cartItemCount > 9 ? '9+' : cartItemCount}
-          </span>
-        )}
       </button>
     </div>
   );
