@@ -4,20 +4,25 @@ import config from "../config/index.js";
 import type { Widget } from "../types/index.js";
 
 /**
- * Build Content Security Policy string for widgets
+ * OpenAI Widget CSP type
+ * @see https://developers.openai.com/apps-sdk/build/mcp-server/#content-security-policy-csp
  */
-function buildWidgetCSP(baseUrl: string): string {
-  return [
-    "default-src 'self'",
-    `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${baseUrl} https: blob:`,
-    `style-src 'self' 'unsafe-inline' ${baseUrl} https:`,
-    `img-src 'self' data: blob: https: ${baseUrl}`,
-    `font-src 'self' data: ${baseUrl} https:`,
-    `connect-src 'self' ${baseUrl} https: wss: blob:`,
-    "worker-src 'self' blob:",
-    "child-src 'self' blob:",
-    "frame-ancestors 'self' https://chatgpt.com https://*.chatgpt.com",
-  ].join("; ");
+export interface WidgetCSP {
+  connect_domains: string[];
+  resource_domains: string[];
+  redirect_domains?: string[];
+  frame_domains?: string[];
+}
+
+/**
+ * Build Widget CSP object for OpenAI
+ * This format is required by OpenAI's widgetCSP metadata field
+ */
+function buildWidgetCSP(baseUrl: string): WidgetCSP {
+  return {
+    connect_domains: [baseUrl],
+    resource_domains: [baseUrl],
+  };
 }
 
 /**
@@ -94,8 +99,8 @@ export function widgetDescriptorMeta(widget: Widget) {
     "openai/toolInvocation/invoking": widget.invoking,
     "openai/toolInvocation/invoked": widget.invoked,
     "openai/widgetAccessible": true,
-    "openai/csp": widget.csp,
-    "openai/domain": widget.domain,
+    "openai/widgetCSP": widget.csp,
+    "openai/widgetDomain": widget.domain,
   } as const;
 }
 

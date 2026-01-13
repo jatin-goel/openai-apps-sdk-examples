@@ -2,6 +2,17 @@
  * Type definitions for the Razorpay MCP Server
  */
 
+/**
+ * OpenAI Widget CSP configuration
+ * @see https://developers.openai.com/apps-sdk/build/mcp-server/#content-security-policy-csp
+ */
+export interface WidgetCSP {
+  connect_domains: string[];
+  resource_domains: string[];
+  redirect_domains?: string[];
+  frame_domains?: string[];
+}
+
 // Widget types
 export interface Widget {
   id: string;
@@ -11,7 +22,7 @@ export interface Widget {
   invoked: string;
   html: string;
   responseText: string;
-  csp: string;
+  csp: WidgetCSP;
   domain: string;
 }
 
