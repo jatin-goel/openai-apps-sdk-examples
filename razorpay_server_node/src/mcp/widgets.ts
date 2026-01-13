@@ -20,8 +20,8 @@ export interface WidgetCSP {
  */
 function buildWidgetCSP(baseUrl: string): WidgetCSP {
   return {
-    connect_domains: [baseUrl],
-    resource_domains: [baseUrl],
+    connect_domains: [baseUrl, "https://s3.ap-south-1.amazonaws.com"],
+    resource_domains: [baseUrl, "https://s3.ap-south-1.amazonaws.com"],
   };
 }
 
