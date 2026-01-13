@@ -5,7 +5,6 @@
   "private": true,
   "description": "Example MCP server that exposes Razorpay payment tools using the official TypeScript SDK.",
   "scripts": {
-    "prestart": "npm install",
     "start": "tsx src/server.ts",
     "dev": "tsx watch src/server.ts"
   },

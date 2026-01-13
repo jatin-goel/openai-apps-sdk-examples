@@ -1,0 +1,31 @@
+# Code Owners for Chat2Checkout
+# These owners will be the default owners for everything in the repo.
+# Unless a later match takes precedence, they will be requested for
+# review when someone opens a pull request.
+
+# Default owners for everything in the repo
+* @razorpay/chat2checkout-maintainers
+
+# MCP Server and Backend
+/razorpay_server_node/ @razorpay/backend-team
+
+# Widgets and Frontend
+/widgets/ @razorpay/frontend-team
+
+# Documentation
+*.md @razorpay/docs-team
+/razorpay_server_node/docs/ @razorpay/docs-team
+
+# CI/CD and Infrastructure
+/.github/ @razorpay/devops-team
+/Dockerfile* @razorpay/devops-team
+railway.json @razorpay/devops-team
+
+# Security-related files
+SECURITY.md @razorpay/security-team
+/.github/workflows/security.yml @razorpay/security-team
+
+# Configuration files
+package.json @razorpay/chat2checkout-maintainers
+tsconfig.json @razorpay/chat2checkout-maintainers
+
