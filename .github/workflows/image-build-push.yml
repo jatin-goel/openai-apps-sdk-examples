@@ -1,0 +1,153 @@
+name: Build Image workflow
+
+# Controls when the action will run. Triggers the workflow on a push
+# if a PR is closed / merged to master.
+on: [push]
+
+jobs:
+  set-cache-validity-flag:
+    runs-on: [self-hosted]
+    name: Set cache Variable
+    outputs:
+      cache-validity-flag: ${{ steps.set-flag.outputs.cache-validity-flag }}
+    steps:
+      - id: set-flag
+        env:
+          COMMIT_VAR: ${{ contains(github.event.head_commit.message, '[ignore-runner-cache]') }}
+        run: |
+          if ${COMMIT_VAR} == true; then
+            echo "::set-output name=cache-validity-flag::1"
+            echo "Cache is being invalidated"
+          else
+            echo "::set-output name=cache-validity-flag::0"
+            echo "cache is kept intact"
+          fi
+  # Job to cancel the previous jobs before running the subsequent jobs
+  cancel:
+    runs-on: [self-hosted]
+    name: Cancel previous runs
+    if: always()
+    steps:
+      - uses: styfle/cancel-workflow-action@0.11.0
+        if: github.ref != 'refs/heads/master'
+        name: cancel old workflows
+        id: cancel
+        with:
+          access_token: ${{ github.token }}
+      - if: github.ref == 'refs/heads/master'
+        name: Don't cancel old workflows
+        id: dont_cancel
+        run: |
+          echo "Don't cancel old workflow"
+  # Job to build api image for deployment
+  build:
+    name: Build docker image - Prod
+    strategy:
+      matrix:
+        node-version: ["20.x"]
+        platform:
+          - linux-amd64
+    runs-on:
+      - k8s-runner
+      - non-api
+      - ${{ matrix.platform }}
+    needs: [cancel, set-cache-validity-flag]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Login to Harbor
+        uses: docker/login-action@v2
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+      - uses: razorpay/create-github-app-token@v1
+        name: Generate Github Token
+        id: app-token
+        with:
+          app-id: ${{ secrets.WORKFLOWGATEKEEPER_APP_ID }}
+          private-key: ${{ secrets.WORKFLOWGATEKEEPER_PRIVATEKEY }}
+          repositories: "goutils,rpc"
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          tags: c.rzp.io/${{ github.repository }}:${{ github.sha }}
+          file: Dockerfile
+          push: true
+          build-args: |
+            VERSION=${{ github.ref_name }}
+            GIT_TOKEN=${{ steps.app-token.outputs.token }}
+  build-devstack:
+    name: Build docker image - Devstack
+    runs-on: [self-hosted]
+    needs: [cancel, set-cache-validity-flag]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Login to Harbor
+        uses: docker/login-action@v2
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+      - uses: razorpay/create-github-app-token@v1
+        name: Generate Github Token
+        id: app-token
+        with:
+          app-id: ${{ secrets.WORKFLOWGATEKEEPER_APP_ID }}
+          private-key: ${{ secrets.WORKFLOWGATEKEEPER_PRIVATEKEY }}
+          repositories: "goutils,rpc"
+      - if: github.ref == 'refs/heads/master'
+        name: Build and push Devstack - Latest
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          tags: c.rzp.io/${{ github.repository }}:api_devstack
+          file: Dockerfile
+          push: true
+          build-args: |
+            VERSION=${{ github.ref_name }}
+            GIT_TOKEN=${{ steps.app-token.outputs.token }}
+      - if: github.ref != 'refs/heads/master'
+        name: Build and push Devstack - image tag
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          tags: c.rzp.io/${{ github.repository }}:devstack-${{ github.sha }}
+          file: Dockerfile
+          push: true
+          build-args: |
+            VERSION=${{ github.ref_name }}
+            GIT_TOKEN=${{ steps.app-token.outputs.token }}
+
+  # Job to update the commit status on success or failure
+  workflow_status:
+    runs-on: [self-hosted]
+    name: Update Status Check
+    needs: [build, build-devstack]
+    if: always()
+    steps:
+      - name: Failed
+        id: failed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          echo 'Failing the workflow for github status check.'
+          curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
+          -d '{ "state" : "failure" , "context" : "github/build-status-check" , "description" : "github/build-status-check", "target_url" : "https://github.com/${{ github.repository }}" }' \
+          https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}
+          exit 1
+      - name: Success
+        if: steps.failed.conclusion == 'skipped'
+        run: |
+          echo 'Status check has passed!'
+          curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
+          -d '{ "state" : "success" , "context" : "github/build-status-check" , "description" : "github/build-status-check", "target_url" : "https://github.com/${{ github.repository }}" }' \
+          https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}
+          exit 0

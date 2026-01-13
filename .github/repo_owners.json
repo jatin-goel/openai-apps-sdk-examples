@@ -1,0 +1,12 @@
+{
+  "ownership": {
+    "type": "Shared",
+    "business_unit": "Payments",
+    "group": "Payment Methods",
+    "sub_group": "Cards, NB and Wallets",
+    "pod": "Payments AI & DevEx",
+    "engineering_manager": {
+      "email": "ankit.choudhary@razorpay.com"
+    }
+  }
+}

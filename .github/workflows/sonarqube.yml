@@ -1,0 +1,277 @@
+name: SonarQube Analysis
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write # Required to post coverage comments on PRs
+
+jobs:
+  sonarqube:
+    name: SonarQube Scan
+    runs-on:
+      - self-hosted
+      - non-api
+      - X64
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0 # Shallow clones should be disabled for better relevancy of analysis
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+
+      - uses: razorpay/create-github-app-token@v1
+        name: Generate Github Token
+        id: app-token
+        with:
+          app-id: ${{ secrets.WORKFLOWGATEKEEPER_APP_ID }}
+          private-key: ${{ secrets.WORKFLOWGATEKEEPER_PRIVATEKEY }}
+          repositories: "goutils,rpc"
+
+      - name: Configure npm for private packages
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" > ~/.npmrc
+          echo "@razorpay:registry=https://npm.pkg.github.com" >> ~/.npmrc
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      # Detect platform for sonar-scanner
+      - name: Detect platform
+        id: detect-platform
+        run: |
+          OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+          ARCH=$(uname -m)
+
+          if [ "$OS" = "darwin" ]; then
+            if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
+              PLATFORM="macosx-aarch64"
+            else
+              PLATFORM="macosx-x64"
+            fi
+          else
+            if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
+              PLATFORM="linux-aarch64"
+            else
+              PLATFORM="linux-x64"
+            fi
+          fi
+
+          echo "platform=$PLATFORM" >> $GITHUB_OUTPUT
+          echo "Detected platform: $PLATFORM"
+
+      # Cache SonarQube Scanner
+      - name: Cache SonarQube Scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/sonar-scanner-7.3.0.5189-${{ steps.detect-platform.outputs.platform }}
+          key: sonar-scanner-7.3.0.5189-${{ steps.detect-platform.outputs.platform }}
+
+      - name: Install SonarQube Scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        run: |
+          SCANNER_VERSION=7.3.0.5189
+          PLATFORM=${{ steps.detect-platform.outputs.platform }}
+
+          echo "Downloading sonar-scanner for platform: $PLATFORM"
+          curl -sL https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SCANNER_VERSION}-${PLATFORM}.zip -o sonar-scanner.zip
+          unzip -q sonar-scanner.zip
+
+      - name: Add SonarQube Scanner to PATH
+        run: |
+          SCANNER_VERSION=7.3.0.5189
+          PLATFORM=${{ steps.detect-platform.outputs.platform }}
+          echo "$GITHUB_WORKSPACE/sonar-scanner-${SCANNER_VERSION}-${PLATFORM}/bin" >> $GITHUB_PATH
+
+      - name: SonarQube Scan
+        id: sonar-scan
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+        run: |
+          # Determine project key based on event type and branch
+          # Production project: only for direct pushes to master
+          # Dev project: all pull requests and other branches
+          if [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref_name }}" == "master" ]; then
+            PROJECT_KEY="chat2checkout"
+            echo "Using production SonarQube project: ${PROJECT_KEY}"
+          else
+            PROJECT_KEY="chat2checkout_dev"
+            echo "Using development SonarQube project: ${PROJECT_KEY}"
+          fi
+
+          # Export for subsequent steps
+          echo "project_key=${PROJECT_KEY}" >> $GITHUB_OUTPUT
+
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "Running SonarQube scan for Pull Request #${{ github.event.pull_request.number }}..."
+            sonar-scanner \
+              -Dsonar.projectKey=${PROJECT_KEY} \
+              -Dsonar.sources=. \
+              -Dsonar.host.url=${SONAR_HOST_URL} \
+              -Dsonar.login=${SONARQUBE_TOKEN}
+          else
+            echo "Running SonarQube scan for branch: ${{ github.ref_name }}"
+            sonar-scanner \
+              -Dsonar.projectKey=${PROJECT_KEY} \
+              -Dsonar.sources=. \
+              -Dsonar.host.url=${SONAR_HOST_URL} \
+              -Dsonar.login=${SONARQUBE_TOKEN}
+          fi
+
+      - name: Wait for SonarQube processing
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Waiting for SonarQube to process results..."
+          sleep 10
+
+      - name: Fetch Coverage from SonarQube
+        if: github.event_name == 'pull_request'
+        id: fetch-coverage
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+        run: |
+          PROJECT_KEY="${{ steps.sonar-scan.outputs.project_key }}"
+
+          echo "Fetching coverage for project: ${PROJECT_KEY}"
+
+          # Construct the curl URL
+          CURL_URL="${SONAR_HOST_URL}/api/measures/component_tree?metricKeys=coverage&component=${PROJECT_KEY}"
+
+          # Fetch coverage from SonarQube API
+          curl --location --request GET $CURL_URL -u ${SONARQUBE_TOKEN}:"" > sonar.json
+
+          # Display the response
+          echo "API Response:"
+          cat sonar.json
+
+          # Extract coverage value using jq
+          COVERAGE=$(cat sonar.json | jq -r '.baseComponent.measures[0].value // "N/A"')
+
+          echo "Coverage: ${COVERAGE}%"
+          echo "coverage=${COVERAGE}" >> $GITHUB_OUTPUT
+
+          # Check if coverage is a valid number
+          if [ "${COVERAGE}" = "N/A" ] || [ -z "${COVERAGE}" ]; then
+            echo "⚠️ Warning: Could not fetch coverage from SonarQube"
+            echo "coverage_status=unknown" >> $GITHUB_OUTPUT
+          elif awk -v cov="${COVERAGE}" 'BEGIN { exit (cov < 90) ? 0 : 1 }'; then
+            echo "❌ Coverage is below 90%"
+            echo "coverage_status=fail" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Coverage is above 90%"
+            echo "coverage_status=pass" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment PR with Coverage
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const coverage = '${{ steps.fetch-coverage.outputs.coverage }}';
+            const status = '${{ steps.fetch-coverage.outputs.coverage_status }}';
+            const projectKey = '${{ steps.sonar-scan.outputs.project_key }}';
+            const sonarUrl = '${{ secrets.SONAR_HOST_URL }}';
+
+            let emoji = '📊';
+            let statusText = '';
+            let color = '🟡';
+
+            if (status === 'pass') {
+              emoji = '✅';
+              statusText = 'Coverage is above the required threshold!';
+              color = '🟢';
+            } else if (status === 'fail') {
+              emoji = '❌';
+              statusText = 'Coverage is below the required 90% threshold!';
+              color = '🔴';
+            } else {
+              emoji = '⚠️';
+              statusText = 'Could not fetch coverage data from SonarQube.';
+              color = '🟡';
+            }
+
+            const body = `## ${emoji} Code Coverage Report
+
+            ${color} **Coverage:** ${coverage}%
+
+            ${statusText}
+
+            **Required:** 90%
+
+            ---
+
+            📈 [View detailed report on SonarQube](${sonarUrl}/dashboard?id=${projectKey})
+            `;
+
+            // Find existing coverage comment
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Code Coverage Report')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+      - name: Fail pipeline if coverage is below threshold
+        if: github.event_name == 'pull_request' && steps.fetch-coverage.outputs.coverage_status == 'fail'
+        run: |
+          echo "❌ Pipeline failed: Coverage (${{ steps.fetch-coverage.outputs.coverage }}%) is below the required 90% threshold"
+          exit 1
+
+  # This job serves as the required status check in GitHub branch protection
+  sonarqube-status:
+    name: SonarQube Status Check
+    runs-on: ubuntu-latest
+    needs: sonarqube
+    if: always()
+    steps:
+      - name: Check SonarQube job status
+        run: |
+          if [ "${{ needs.sonarqube.result }}" == "success" ]; then
+            echo "✅ SonarQube check passed"
+            exit 0
+          else
+            echo "❌ SonarQube check failed"
+            exit 1
+          fi

@@ -15,7 +15,12 @@ export { OrderRoutes } from "./routes/order.routes.js";
 export { StaticRoutes } from "./routes/static.routes.js";
 
 // MCP
-export { createMcpServer, sessions, handleSseRequest, handlePostMessage } from "./mcp/server.js";
+export {
+  createMcpServer,
+  sessions,
+  handleSseRequest,
+  handlePostMessage,
+} from "./mcp/server.js";
 export { widgets, widgetsById, widgetsByUri } from "./mcp/widgets.js";
 
 // Middleware

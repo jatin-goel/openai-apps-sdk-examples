@@ -17,9 +17,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": [
-    "vite.host.config.mts",
-    "vite.config.mts",
-    "build-all.mts"
-  ]
+  "include": ["vite.host.config.mts", "vite.config.mts", "build-all.mts"]
 }

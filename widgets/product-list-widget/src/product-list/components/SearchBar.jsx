@@ -5,11 +5,11 @@ import { Button } from "@openai/apps-sdk-ui/components/Button";
 /**
  * SearchBar - Product search input with button
  */
-export function SearchBar({ 
-  searchInput, 
-  isSearching, 
-  onSearchInputChange, 
-  onSearch 
+export function SearchBar({
+  searchInput,
+  isSearching,
+  onSearchInputChange,
+  onSearch,
 }) {
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -29,9 +29,9 @@ export function SearchBar({
             className="w-full pl-10 pr-3 py-2 border border-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           />
         </div>
-        <Button 
-          color="primary" 
-          variant="solid" 
+        <Button
+          color="primary"
+          variant="solid"
           size="md"
           type="submit"
           disabled={isSearching}
@@ -48,4 +48,3 @@ export function SearchBar({
 }
 
 export default SearchBar;
-

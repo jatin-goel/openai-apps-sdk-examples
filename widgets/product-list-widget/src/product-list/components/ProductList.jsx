@@ -5,12 +5,12 @@ import { ProductCard } from "./ProductCard.jsx";
 /**
  * ProductList - Horizontal scrollable product grid
  */
-export function ProductList({ 
-  products, 
-  isSearching, 
-  getProductQuantity, 
-  onAddToCart, 
-  onRemoveFromCart 
+export function ProductList({
+  products,
+  isSearching,
+  getProductQuantity,
+  onAddToCart,
+  onRemoveFromCart,
 }) {
   if (isSearching) {
     return (
@@ -23,16 +23,14 @@ export function ProductList({
 
   if (products.length === 0) {
     return (
-      <div className="py-6 text-center text-black/60">
-        No products found.
-      </div>
+      <div className="py-6 text-center text-black/60">No products found.</div>
     );
   }
 
   return (
-    <div 
-      className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide" 
-      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+    <div
+      className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide"
+      style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
     >
       {products.map((product) => (
         <ProductCard
@@ -48,4 +46,3 @@ export function ProductList({
 }
 
 export default ProductList;
-

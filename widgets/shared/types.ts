@@ -2,7 +2,7 @@ export type OpenAiGlobals<
   ToolInput = UnknownObject,
   ToolOutput = UnknownObject,
   ToolResponseMetadata = UnknownObject,
-  WidgetState = UnknownObject
+  WidgetState = UnknownObject,
 > = {
   // visuals
   theme: Theme;
@@ -32,7 +32,10 @@ type API = {
 
   // Layout controls
   requestDisplayMode: RequestDisplayMode;
-  requestModal: (args: { title?: string; params?: UnknownObject }) => Promise<unknown>;
+  requestModal: (args: {
+    title?: string;
+    params?: UnknownObject;
+  }) => Promise<unknown>;
   requestClose: () => Promise<void>;
 };
 
@@ -78,7 +81,7 @@ export type CallToolResponse = {
 /** Calling APIs */
 export type CallTool = (
   name: string,
-  args: Record<string, unknown>
+  args: Record<string, unknown>,
 ) => Promise<CallToolResponse>;
 
 /** Extra events */

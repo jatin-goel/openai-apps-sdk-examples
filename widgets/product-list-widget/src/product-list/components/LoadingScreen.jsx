@@ -16,4 +16,3 @@ export function LoadingScreen() {
 }
 
 export default LoadingScreen;
-

@@ -3,13 +3,13 @@ import { useOpenAiGlobal } from "./use-openai-global";
 import type { UnknownObject } from "../types";
 
 export function useWidgetState<T extends UnknownObject>(
-  defaultState: T | (() => T)
+  defaultState: T | (() => T),
 ): readonly [T, (state: SetStateAction<T>) => void];
 export function useWidgetState<T extends UnknownObject>(
-  defaultState?: T | (() => T | null) | null
+  defaultState?: T | (() => T | null) | null,
 ): readonly [T | null, (state: SetStateAction<T | null>) => void];
 export function useWidgetState<T extends UnknownObject>(
-  defaultState?: T | (() => T | null) | null
+  defaultState?: T | (() => T | null) | null,
 ): readonly [T | null, (state: SetStateAction<T | null>) => void] {
   const widgetStateFromWindow = useOpenAiGlobal("widgetState") as T;
 
@@ -27,20 +27,17 @@ export function useWidgetState<T extends UnknownObject>(
     _setWidgetState(widgetStateFromWindow);
   }, [widgetStateFromWindow]);
 
-  const setWidgetState = useCallback(
-    (state: SetStateAction<T | null>) => {
-      _setWidgetState((prevState) => {
-        const newState = typeof state === "function" ? state(prevState) : state;
+  const setWidgetState = useCallback((state: SetStateAction<T | null>) => {
+    _setWidgetState((prevState) => {
+      const newState = typeof state === "function" ? state(prevState) : state;
 
-        if (newState != null && typeof window !== "undefined") {
-          void window.openai?.setWidgetState?.(newState);
-        }
+      if (newState != null && typeof window !== "undefined") {
+        void window.openai?.setWidgetState?.(newState);
+      }
 
-        return newState;
-      });
-    },
-    []
-  );
+      return newState;
+    });
+  }, []);
 
   return [widgetState, setWidgetState] as const;
 }

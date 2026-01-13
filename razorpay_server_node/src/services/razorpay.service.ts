@@ -8,8 +8,8 @@ export class RazorpayService {
   initRazorpay() {
     if (!this.razorpay) {
       this.razorpay = new Razorpay({
-        key_id: config.razorpay.keyId || '',
-        key_secret: config.razorpay.keySecret || '',
+        key_id: config.razorpay.keyId || "",
+        key_secret: config.razorpay.keySecret || "",
       });
     }
     return this.razorpay;
@@ -21,9 +21,9 @@ export class RazorpayService {
   verifyPaymentSignature(
     razorpayOrderId: string,
     razorpayPaymentId: string,
-    razorpaySignature: string
+    razorpaySignature: string,
   ): boolean {
-    const keySecret = config.razorpay.keySecret || '';
+    const keySecret = config.razorpay.keySecret || "";
     const sign = razorpayOrderId + "|" + razorpayPaymentId;
     const expectedSign = crypto
       .createHmac("sha256", keySecret)
@@ -55,18 +55,21 @@ export class RazorpayService {
     const html = await response.text();
 
     // Extract the window.__REACT_QUERY_STATE__ data
-    const scriptMatch = html.match(/window\.__REACT_QUERY_STATE__\s*=\s*({.*?});/s);
-    
+    const scriptMatch = html.match(
+      /window\.__REACT_QUERY_STATE__\s*=\s*({.*?});/s,
+    );
+
     if (!scriptMatch || !scriptMatch[1]) {
       throw new Error("No products data found in the page");
     }
 
     // Parse the JSON data
     const reactQueryState = JSON.parse(scriptMatch[1]);
-    
+
     // Extract products from the nested structure
-    const storeQuery = reactQueryState.queries?.find((q: any) => 
-      q.queryKey && q.queryKey[0] && q.queryKey[0].startsWith('store-st_')
+    const storeQuery = reactQueryState.queries?.find(
+      (q: any) =>
+        q.queryKey && q.queryKey[0] && q.queryKey[0].startsWith("store-st_"),
     );
 
     if (!storeQuery || !storeQuery.state?.data?.store?.products) {
@@ -80,13 +83,13 @@ export class RazorpayService {
       description: storeQuery.state.data.store.description,
       currency: storeQuery.state.data.store.currency,
       categories: storeQuery.state.data.store.categories,
-      merchant: storeQuery.state.data.merchant
+      merchant: storeQuery.state.data.merchant,
     };
 
     return {
       store: storeInfo,
       products: products,
-      totalProducts: products.length
+      totalProducts: products.length,
     };
   }
 
@@ -99,15 +102,18 @@ export class RazorpayService {
     }
 
     const razorpayAuth = Buffer.from(
-      `${config.razorpay.keyId}:${config.razorpay.keySecret}`
-    ).toString('base64');
+      `${config.razorpay.keyId}:${config.razorpay.keySecret}`,
+    ).toString("base64");
 
-    const response = await fetch(`https://api.razorpay.com/v1/orders/${orderId}/payments`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Basic ${razorpayAuth}`
-      }
-    });
+    const response = await fetch(
+      `https://api.razorpay.com/v1/orders/${orderId}/payments`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Basic ${razorpayAuth}`,
+        },
+      },
+    );
 
     if (!response.ok) {
       const errorData = await response.text();
@@ -117,8 +123,9 @@ export class RazorpayService {
     const data = await response.json();
 
     // Check if there's any captured payment
-    const capturedPayment = data.items?.find((payment: any) => 
-      payment.status === 'captured' && payment.captured === true
+    const capturedPayment = data.items?.find(
+      (payment: any) =>
+        payment.status === "captured" && payment.captured === true,
     );
 
     return {
@@ -126,7 +133,7 @@ export class RazorpayService {
       payments: data.items || [],
       count: data.count || 0,
       hasCapturedPayment: !!capturedPayment,
-      capturedPayment: capturedPayment || null
+      capturedPayment: capturedPayment || null,
     };
   }
 
@@ -149,18 +156,17 @@ export class RazorpayService {
       orderId,
       businessName: businessNameParam,
       name: nameParam,
-      customerName = 'Guest Customer',
-      customerEmail = '',
-      customerPhone = '',
-      couponCode = '',
-      callbackUrl = 'https://example.com/payment-success',
-      showCoupons = 'true',
-      address = ''
+      customerName = "Guest Customer",
+      customerEmail = "",
+      customerPhone = "",
+      couponCode = "",
+      callbackUrl = "https://example.com/payment-success",
+      showCoupons = "true",
+      address = "",
     } = params;
 
-    const businessName = businessNameParam || 'Store';
+    const businessName = businessNameParam || "Store";
     const name = nameParam || `${businessName} - Checkout`;
-
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -177,27 +183,27 @@ export class RazorpayService {
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p class="text-gray-600">Opening checkout...</p>
         </div>
-            
+
         <!-- Payment Status (shown after successful payment) -->
         <div id="payment-status" class="hidden max-w-md w-full bg-white rounded-lg shadow-lg p-8">
                 <div id="status-message" class="text-center"></div>
             </div>
-            
+
         <!-- Hidden fallback button -->
         <button id="rzp-button1" class="hidden">Pay Now</button>
     </div>
-    
+
     <script src="https://checkout.razorpay.com/v1/magic-checkout.js"></script>
     <script>
     const orderId = "${orderId}";
     let pollingInterval = null;
     let paymentWindow = null;
-    
+
     // Razorpay options
-    var callbackUrl = "${callbackUrl}" === "https://example.com/payment-success" 
-        ? window.location.origin + "/payment-success" 
+    var callbackUrl = "${callbackUrl}" === "https://example.com/payment-success"
+        ? window.location.origin + "/payment-success"
         : "${callbackUrl}";
-    
+
     var options = {
         "key": "${config.razorpay.keyId}",
         "one_click_checkout": true,
@@ -207,15 +213,15 @@ export class RazorpayService {
         "callback_url": callbackUrl,
         "redirect": "true"
     };
-    
+
     var rzp1 = new Razorpay(options);
-    
+
     // Function to check payment status
     async function checkPaymentStatus() {
         try {
             const response = await fetch(window.location.origin + '/api/razorpay/payment-status?orderId=' + orderId);
             const data = await response.json();
-            
+
             if (data.success && data.data.hasCapturedPayment) {
                 // Payment captured!
                 clearInterval(pollingInterval);
@@ -228,16 +234,16 @@ export class RazorpayService {
             return false;
         }
     }
-    
+
     // Function to show payment success
     function showPaymentSuccess(payment) {
         const statusDiv = document.getElementById('payment-status');
         const messageDiv = document.getElementById('status-message');
         const loadingDiv = document.getElementById('loading-indicator');
-        
+
         // Hide loading indicator
         if (loadingDiv) loadingDiv.classList.add('hidden');
-        
+
         statusDiv.className = 'max-w-md w-full bg-white rounded-lg shadow-lg p-8 bg-green-50 border border-green-200';
         messageDiv.innerHTML = \`
             <div class="text-green-800">
@@ -250,10 +256,10 @@ export class RazorpayService {
             </div>
         \`;
         statusDiv.classList.remove('hidden');
-        
+
         // Hide pay button
         document.getElementById('rzp-button1').classList.add('hidden');
-        
+
         // Redirect after 3 seconds if callback URL is set
         if ("${callbackUrl}" && "${callbackUrl}" !== "https://example.com/payment-success") {
             setTimeout(() => {
@@ -261,21 +267,21 @@ export class RazorpayService {
             }, 3000);
         }
     }
-    
+
     // Start polling when pay button is clicked
     document.getElementById('rzp-button1').onclick = function(e){
         e.preventDefault();
         rzp1.open();
-        
+
         // Start polling every 2 seconds
         if (!pollingInterval) {
             pollingInterval = setInterval(checkPaymentStatus, 2000);
         }
     };
-    
+
     // Check payment status on page load (in case user returns)
     checkPaymentStatus();
-    
+
     // Automatically open Razorpay checkout on page load
     window.addEventListener('load', function() {
         setTimeout(function() {
@@ -321,33 +327,47 @@ export class RazorpayService {
         </div>
         <h1 class="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
         <p class="text-gray-600 mb-6">Your order has been placed successfully.</p>
-        
-        ${amount ? `
+
+        ${
+          amount
+            ? `
         <div class="bg-green-50 rounded-lg p-4 mb-6">
             <p class="text-sm text-gray-600">Amount Paid</p>
-            <p class="text-3xl font-bold text-green-600">₹${(amount / 100).toFixed(2)}</p>
+            <p class="text-3xl font-bold text-green-600">₹${(
+              amount / 100
+            ).toFixed(2)}</p>
         </div>
-        ` : ''}
-        
+        `
+            : ""
+        }
+
         <div class="border-t border-gray-100 pt-4 space-y-2">
-            ${paymentId ? `
+            ${
+              paymentId
+                ? `
             <div class="flex justify-between text-sm">
                 <span class="text-gray-500">Payment ID</span>
                 <span class="font-mono text-gray-900">${paymentId}</span>
             </div>
-            ` : ''}
-            ${orderId ? `
+            `
+                : ""
+            }
+            ${
+              orderId
+                ? `
             <div class="flex justify-between text-sm">
                 <span class="text-gray-500">Order ID</span>
                 <span class="font-mono text-gray-900">${orderId}</span>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
         </div>
-        
+
         <div class="mt-8">
             <p class="text-sm text-gray-500">You will receive a confirmation email shortly.</p>
         </div>
-        
+
         <button onclick="window.close()" class="mt-6 w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors">
             Close Window
         </button>
@@ -371,21 +391,27 @@ export class RazorpayService {
             </svg>
         </div>
         <h1 class="text-2xl font-bold text-gray-900 mb-2">Payment Failed</h1>
-        <p class="text-gray-600 mb-6">${errorMessage || 'Unfortunately, your payment could not be processed.'}</p>
-        
+        <p class="text-gray-600 mb-6">${
+          errorMessage || "Unfortunately, your payment could not be processed."
+        }</p>
+
         <div class="bg-red-50 rounded-lg p-4 mb-6">
             <p class="text-sm text-red-700">Please try again or use a different payment method.</p>
         </div>
-        
-        ${orderId ? `
+
+        ${
+          orderId
+            ? `
         <div class="border-t border-gray-100 pt-4">
             <div class="flex justify-between text-sm">
                 <span class="text-gray-500">Order ID</span>
                 <span class="font-mono text-gray-900">${orderId}</span>
             </div>
         </div>
-        ` : ''}
-        
+        `
+            : ""
+        }
+
         <button onclick="window.close()" class="mt-6 w-full bg-red-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-700 transition-colors">
             Close Window
         </button>

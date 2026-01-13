@@ -1,13 +1,17 @@
 /**
  * Razorpay MCP Server
- * 
+ *
  * Backend server providing:
  * - MCP (Model Context Protocol) integration for widgets
  * - Razorpay payment integration
  * - Order management
  */
 
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import {
+  createServer,
+  type IncomingMessage,
+  type ServerResponse,
+} from "node:http";
 import { URL } from "node:url";
 
 import config from "./config/index.js";
@@ -28,7 +32,7 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
 
   const host = req.headers.host || "localhost";
   let url: URL;
-  
+
   try {
     url = new URL(req.url, `http://${host}`);
   } catch {
@@ -37,7 +41,11 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
   }
 
   // MCP Endpoints
-  if (req.method === "OPTIONS" && (url.pathname === config.mcp.ssePath || url.pathname === config.mcp.postPath)) {
+  if (
+    req.method === "OPTIONS" &&
+    (url.pathname === config.mcp.ssePath ||
+      url.pathname === config.mcp.postPath)
+  ) {
     handleCorsOptions(res);
     return;
   }
@@ -68,7 +76,10 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
     return;
   }
 
-  if ((req.method === "POST" || req.method === "GET") && url.pathname === "/api/razorpay/parse-store") {
+  if (
+    (req.method === "POST" || req.method === "GET") &&
+    url.pathname === "/api/razorpay/parse-store"
+  ) {
     await RazorpayRoutes.parseStore(req, res, url);
     return;
   }
@@ -78,7 +89,10 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
     return;
   }
 
-  if ((req.method === "GET" || req.method === "POST") && url.pathname === "/payment-success") {
+  if (
+    (req.method === "GET" || req.method === "POST") &&
+    url.pathname === "/payment-success"
+  ) {
     await RazorpayRoutes.paymentSuccessPage(req, res, url);
     return;
   }
@@ -129,9 +143,13 @@ httpServer.listen(port, () => {
   console.log(`   Message Post:   POST ${config.mcp.postPath}?sessionId=...`);
   console.log(`\n💳 Razorpay Endpoints:`);
   console.log(`   Create Order:   POST /api/razorpay/create-order`);
-  console.log(`   Payment Status: GET  /api/razorpay/payment-status?orderId=...`);
+  console.log(
+    `   Payment Status: GET  /api/razorpay/payment-status?orderId=...`,
+  );
   console.log(`   Parse Store:    GET  /api/razorpay/parse-store?url=...`);
-  console.log(`   Magic Checkout: GET  /api/razorpay/magic-checkout?orderId=...`);
+  console.log(
+    `   Magic Checkout: GET  /api/razorpay/magic-checkout?orderId=...`,
+  );
   console.log(`\n📦 Order Endpoints:`);
   console.log(`   Checkout:       POST /api/checkout/proceed`);
   console.log(`   Get Order:      GET  /api/orders/:orderId`);

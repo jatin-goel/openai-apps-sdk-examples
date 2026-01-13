@@ -15,22 +15,22 @@ export const config = {
 
   // Razorpay
   razorpay: {
-    keyId: process.env.RAZORPAY_KEY_ID || '',
-    keySecret: process.env.RAZORPAY_KEY_SECRET || ''
+    keyId: process.env.RAZORPAY_KEY_ID || "",
+    keySecret: process.env.RAZORPAY_KEY_SECRET || "",
   },
 
   // MCP
   mcp: {
     ssePath: "/mcp",
-    postPath: "/mcp/messages"
+    postPath: "/mcp/messages",
   },
 
   // CORS
   cors: {
     allowOrigin: "*",
     allowMethods: "GET, POST, OPTIONS",
-    allowHeaders: "content-type, authorization"
-  }
+    allowHeaders: "content-type, authorization",
+  },
 } as const;
 
 export default config;

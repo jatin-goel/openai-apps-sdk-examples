@@ -4,7 +4,7 @@ const orders = new Map<string, any>();
 export class OrderService {
   /**
    * Create a checkout order using Razorpay public cart API
-   * 
+   *
    * @param lineItems - Array of { quantity: number, line_item_id: string }
    * @param entityId - Store ID (e.g., "st_S0ycYwzFMLGY6s")
    * @param notes - Optional notes object
@@ -12,7 +12,7 @@ export class OrderService {
   static async createCheckoutOrder(
     lineItems: Array<{ quantity: number; line_item_id: string }>,
     entityId: string,
-    notes: Record<string, any> = {}
+    notes: Record<string, any> = {},
   ) {
     if (!lineItems || !Array.isArray(lineItems) || lineItems.length === 0) {
       throw new Error("lineItems array is required");
@@ -23,50 +23,58 @@ export class OrderService {
     }
 
     const payload = {
-      line_items: lineItems.map(item => ({
+      line_items: lineItems.map((item) => ({
         quantity: item.quantity || 1,
-        line_item_id: item.line_item_id
+        line_item_id: item.line_item_id,
       })),
       notes,
       entity_id: entityId,
-      entity_type: "payment_store"
+      entity_type: "payment_store",
     };
 
-    console.log('Creating Razorpay cart with payload:', JSON.stringify(payload, null, 2));
+    console.log(
+      "Creating Razorpay cart with payload:",
+      JSON.stringify(payload, null, 2),
+    );
 
-    const response = await fetch('https://api.razorpay.com/v1/stores/public/carts', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json',
-        'Origin': 'https://pages.razorpay.com',
-        'Referer': 'https://pages.razorpay.com/'
+    const response = await fetch(
+      "https://api.razorpay.com/v1/stores/public/carts",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+          Origin: "https://pages.razorpay.com",
+          Referer: "https://pages.razorpay.com/",
+        },
+        body: JSON.stringify(payload),
       },
-      body: JSON.stringify(payload)
-    });
+    );
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('Razorpay Cart API Error:', errorData);
-      throw new Error(`Razorpay Cart API Error: ${response.status} - ${errorData}`);
+      console.error("Razorpay Cart API Error:", errorData);
+      throw new Error(
+        `Razorpay Cart API Error: ${response.status} - ${errorData}`,
+      );
     }
 
     const cartData = await response.json();
-    console.log('Razorpay cart created successfully:', cartData);
+    console.log("Razorpay cart created successfully:", cartData);
 
     // Store order in memory
     if (cartData.order_id) {
       orders.set(cartData.order_id, {
         ...cartData,
         entity_id: entityId,
-        line_items: lineItems
+        line_items: lineItems,
       });
     }
 
     return {
       cart: cartData,
       order_id: cartData.order_id,
-      entity_id: entityId
+      entity_id: entityId,
     };
   }
 
@@ -93,7 +101,7 @@ export class OrderService {
       notes: order.notes,
       created_at: order.created_at,
       line_items: order.line_items,
-      entity_id: order.entity_id
+      entity_id: order.entity_id,
     };
   }
 }

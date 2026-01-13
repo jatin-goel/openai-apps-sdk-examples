@@ -7,24 +7,29 @@ export function useCart() {
   const [cart, setCart] = useState([]);
 
   const addToCart = (product) => {
-    setCart(prevCart => {
-      const currentQuantity = prevCart.filter(item => item.id === product.id).length;
+    setCart((prevCart) => {
+      const currentQuantity = prevCart.filter(
+        (item) => item.id === product.id,
+      ).length;
       if (currentQuantity >= product.stockAvailable) {
         return prevCart;
       }
-      
-      return [...prevCart, {
-        id: product.id,
-        title: product.title,
-        price: product.price,
-        thumbnail: product.thumbnail
-      }];
+
+      return [
+        ...prevCart,
+        {
+          id: product.id,
+          title: product.title,
+          price: product.price,
+          thumbnail: product.thumbnail,
+        },
+      ];
     });
   };
 
   const removeFromCart = (productId) => {
-    setCart(prevCart => {
-      const index = prevCart.findIndex(item => item.id === productId);
+    setCart((prevCart) => {
+      const index = prevCart.findIndex((item) => item.id === productId);
       if (index === -1) return prevCart;
       const newCart = [...prevCart];
       newCart.splice(index, 1);
@@ -33,7 +38,7 @@ export function useCart() {
   };
 
   const getProductQuantity = (productId) => {
-    return cart.filter(item => item.id === productId).length;
+    return cart.filter((item) => item.id === productId).length;
   };
 
   const clearCart = () => {
@@ -41,7 +46,8 @@ export function useCart() {
   };
 
   const totalItems = cart.length;
-  const totalPrice = cart.reduce((sum, item) => sum + item.price, 0).toFixed(2);
+  const totalPrice = cart.reduce((sum, item) => sum + item.price, 0); // numeric total
+  const totalPriceFormatted = totalPrice.toFixed(2); // string for display
 
   return {
     cart,
@@ -50,9 +56,8 @@ export function useCart() {
     getProductQuantity,
     clearCart,
     totalItems,
-    totalPrice
+    totalPrice,
   };
 }
 
 export default useCart;
-

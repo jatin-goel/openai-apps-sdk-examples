@@ -6,29 +6,29 @@ import { useState } from "react";
 export function useCheckout(baseUrl, storeId, cart) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
-  const [paymentOverlay, setPaymentOverlay] = useState({ 
-    isOpen: false, 
-    orderId: null 
+  const [paymentOverlay, setPaymentOverlay] = useState({
+    isOpen: false,
+    orderId: null,
   });
 
   const processCheckout = async () => {
     setIsProcessing(true);
     setError("");
-    
+
     try {
-      const lineItems = cart.map(item => ({
+      const lineItems = cart.map((item) => ({
         line_item_id: item.id,
-        quantity: 1
+        quantity: 1,
       }));
 
       const response = await fetch(`${baseUrl}/api/checkout/proceed`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           lineItems,
           entityId: storeId,
-          notes: {}
-        })
+          notes: {},
+        }),
       });
 
       const data = await response.json();
@@ -36,11 +36,11 @@ export function useCheckout(baseUrl, storeId, cart) {
       if (data.success) {
         setPaymentOverlay({ isOpen: true, orderId: data.order_id });
       } else {
-        setError(data.error || 'Failed to create order');
+        setError(data.error || "Failed to create order");
       }
     } catch (err) {
-      console.error('Checkout error:', err);
-      setError('Network error. Please try again.');
+      console.error("Checkout error:", err);
+      setError("Network error. Please try again.");
     } finally {
       setIsProcessing(false);
     }
@@ -55,9 +55,8 @@ export function useCheckout(baseUrl, storeId, cart) {
     error,
     paymentOverlay,
     processCheckout,
-    closePaymentOverlay
+    closePaymentOverlay,
   };
 }
 
 export default useCheckout;
-

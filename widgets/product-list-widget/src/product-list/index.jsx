@@ -10,7 +10,7 @@ import {
   CartDrawer,
   StoreHeader,
   Pagination,
-  LoadingScreen
+  LoadingScreen,
 } from "./components/index.js";
 
 // Hooks
@@ -39,7 +39,7 @@ function App() {
     setSearchInput,
     handleSearch,
     handlePrevious,
-    handleNext
+    handleNext,
   } = useStore(BASE_URL, STORE_ID);
 
   // Cart management
@@ -50,7 +50,7 @@ function App() {
     getProductQuantity,
     clearCart,
     totalItems,
-    totalPrice
+    totalPrice,
   } = useCart();
 
   // Checkout process
@@ -59,7 +59,7 @@ function App() {
     error: checkoutError,
     paymentOverlay,
     processCheckout,
-    closePaymentOverlay
+    closePaymentOverlay,
   } = useCheckout(BASE_URL, STORE_ID, cart);
 
   // Cart drawer state
@@ -77,7 +77,7 @@ function App() {
   return (
     <div className="antialiased w-full text-black px-4 pb-2 border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
       <div className="max-w-full">
-        <StoreHeader 
+        <StoreHeader
           storeName={storeName}
           query={query}
           total={total}

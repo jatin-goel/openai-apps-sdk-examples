@@ -1,5 +1,5 @@
 {
-  "name": "openai-apps-sdk-examples",
+  "name": "chat2checkout",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -32,7 +32,9 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No tests specified\" && exit 0",
+    "build": "echo \"Build step not required for this project\" && exit 0",
+    "lint": "echo \"Lint step not required for this project\" && exit 0"
   },
   "author": "",
   "license": "ISC"

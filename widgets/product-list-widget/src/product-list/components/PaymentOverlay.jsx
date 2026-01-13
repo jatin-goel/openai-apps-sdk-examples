@@ -5,15 +5,15 @@ import { Loader2, CheckCircle, ExternalLink } from "lucide-react";
  * PaymentOverlay - Modal overlay for payment status polling
  * Shows loading state while polling, success state when payment is captured
  */
-export function PaymentOverlay({ 
-  isOpen, 
-  orderId, 
-  baseUrl, 
-  storeName, 
-  onClose, 
-  onPaymentSuccess 
+export function PaymentOverlay({
+  isOpen,
+  orderId,
+  baseUrl,
+  storeName,
+  onClose,
+  onPaymentSuccess,
 }) {
-  const [status, setStatus] = useState('polling');
+  const [status, setStatus] = useState("polling");
   const [paymentDetails, setPaymentDetails] = useState(null);
   const [checkoutOpened, setCheckoutOpened] = useState(false);
   const pollingRef = useRef(null);
@@ -24,39 +24,41 @@ export function PaymentOverlay({
     if (isOpen && orderId && !checkoutOpened) {
       const params = new URLSearchParams({ orderId });
       if (storeName) {
-        params.set('businessName', storeName);
+        params.set("businessName", storeName);
       }
       const magicCheckoutUrl = `${baseUrl}/api/razorpay/magic-checkout?${params.toString()}`;
-      checkoutWindowRef.current = window.open(magicCheckoutUrl, '_blank');
+      checkoutWindowRef.current = window.open(magicCheckoutUrl, "_blank");
       setCheckoutOpened(true);
     }
   }, [isOpen, orderId, baseUrl, storeName, checkoutOpened]);
 
   // Polling effect
   useEffect(() => {
-    if (!isOpen || !orderId || status === 'success') {
+    if (!isOpen || !orderId || status === "success") {
       return;
     }
 
     const checkPaymentStatus = async () => {
       try {
-        const response = await fetch(`${baseUrl}/api/razorpay/payment-status?orderId=${orderId}`);
+        const response = await fetch(
+          `${baseUrl}/api/razorpay/payment-status?orderId=${orderId}`,
+        );
         const data = await response.json();
-        
+
         if (data.success && data.hasCapturedPayment) {
-          setStatus('success');
+          setStatus("success");
           setPaymentDetails(data.capturedPayment);
           onPaymentSuccess?.();
         }
       } catch (error) {
-        console.error('Error checking payment status:', error);
+        console.error("Error checking payment status:", error);
       }
     };
 
     checkPaymentStatus();
     const intervalId = setInterval(checkPaymentStatus, 2000);
     pollingRef.current = intervalId;
-    
+
     return () => {
       clearInterval(intervalId);
       pollingRef.current = null;
@@ -66,7 +68,7 @@ export function PaymentOverlay({
   // Reset state when overlay closes
   useEffect(() => {
     if (!isOpen) {
-      setStatus('polling');
+      setStatus("polling");
       setPaymentDetails(null);
       setCheckoutOpened(false);
     }
@@ -77,20 +79,17 @@ export function PaymentOverlay({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={status === 'success' ? onClose : undefined}
+        onClick={status === "success" ? onClose : undefined}
       />
-      
+
       {/* Modal */}
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-[90%] mx-4 overflow-hidden">
-        {status === 'polling' ? (
+        {status === "polling" ? (
           <PollingState onClose={onClose} />
-        ) : status === 'success' ? (
-          <SuccessState 
-            paymentDetails={paymentDetails} 
-            onClose={onClose} 
-          />
+        ) : status === "success" ? (
+          <SuccessState paymentDetails={paymentDetails} onClose={onClose} />
         ) : null}
       </div>
     </div>
@@ -110,19 +109,20 @@ function PollingState({ onClose }) {
           </div>
         </div>
       </div>
-      
+
       <h3 className="text-lg font-bold text-gray-900 mb-2">
         Waiting for Payment
       </h3>
       <p className="text-sm text-gray-500 mb-6">
-        Complete your payment in the checkout window. This page will update automatically.
+        Complete your payment in the checkout window. This page will update
+        automatically.
       </p>
-      
+
       <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
         <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
         <span>Checking payment status...</span>
       </div>
-      
+
       <button
         onClick={onClose}
         className="mt-6 text-sm text-gray-500 hover:text-gray-700 underline transition-colors"
@@ -141,31 +141,35 @@ function SuccessState({ paymentDetails, onClose }) {
           <CheckCircle className="w-12 h-12 text-green-600" />
         </div>
       </div>
-      
+
       <h3 className="text-xl font-bold text-gray-900 mb-2">
         Payment Successful!
       </h3>
       <p className="text-sm text-gray-500 mb-6">
         Thank you for your purchase. Your order has been confirmed.
       </p>
-      
+
       {paymentDetails && (
         <div className="bg-white border border-green-200 rounded-xl p-4 mb-6 text-left">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-xs text-gray-500 uppercase tracking-wide">Amount Paid</span>
+            <span className="text-xs text-gray-500 uppercase tracking-wide">
+              Amount Paid
+            </span>
             <span className="text-lg font-bold text-green-600">
               ₹{(paymentDetails.amount / 100).toFixed(2)}
             </span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-xs text-gray-500 uppercase tracking-wide">Payment ID</span>
+            <span className="text-xs text-gray-500 uppercase tracking-wide">
+              Payment ID
+            </span>
             <span className="text-xs font-mono text-gray-600">
               {paymentDetails.id?.slice(0, 20)}...
             </span>
           </div>
         </div>
       )}
-      
+
       <button
         onClick={onClose}
         className="w-full bg-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-green-700 active:scale-[0.98] transition-all"
@@ -177,4 +181,3 @@ function SuccessState({ paymentDetails, onClose }) {
 }
 
 export default PaymentOverlay;
-

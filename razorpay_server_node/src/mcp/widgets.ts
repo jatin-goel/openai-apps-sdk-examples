@@ -23,17 +23,23 @@ export function readWidgetHtml(componentName: string): string {
     const candidates = fs
       .readdirSync(config.assetsDir)
       .filter(
-        (file) => file.startsWith(`${componentName}-`) && file.endsWith(".html")
+        (file) =>
+          file.startsWith(`${componentName}-`) && file.endsWith(".html"),
       )
       .sort();
     const fallback = candidates[candidates.length - 1];
     if (fallback) {
-      htmlContents = fs.readFileSync(path.join(config.assetsDir, fallback), "utf8");
+      htmlContents = fs.readFileSync(
+        path.join(config.assetsDir, fallback),
+        "utf8",
+      );
     }
   }
 
   if (!htmlContents) {
-    console.warn(`Widget HTML for "${componentName}" not found, using placeholder`);
+    console.warn(
+      `Widget HTML for "${componentName}" not found, using placeholder`,
+    );
     return getPlaceholderHtml(componentName);
   }
 

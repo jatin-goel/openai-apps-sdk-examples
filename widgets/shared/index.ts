@@ -11,4 +11,3 @@ export { useWidgetState } from "./hooks/use-widget-state";
 // Utils
 export * from "./utils/media-queries";
 export * from "./utils/locale";
-

@@ -5,17 +5,17 @@ import { Image } from "@openai/apps-sdk-ui/components/Image";
 /**
  * CartDrawer - Slide-out panel showing cart items
  */
-export function CartDrawer({ 
-  isOpen, 
-  cart, 
-  totalItems, 
+export function CartDrawer({
+  isOpen,
+  cart,
+  totalItems,
   totalPrice,
   getProductQuantity,
-  onClose, 
-  onAddToCart, 
+  onClose,
+  onAddToCart,
   onRemoveFromCart,
   onCheckout,
-  isProcessing
+  isProcessing,
 }) {
   // Group cart items by product ID
   const groupedItems = cart.reduce((acc, item) => {
@@ -31,17 +31,17 @@ export function CartDrawer({
   return (
     <>
       {/* Backdrop */}
-      <div 
+      <div
         className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300 ${
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={onClose}
       />
-      
+
       {/* Drawer */}
-      <div 
+      <div
         className={`fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-out flex flex-col ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+          isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Header */}
@@ -52,10 +52,12 @@ export function CartDrawer({
             </div>
             <div>
               <h2 className="font-bold text-gray-900 text-lg">Your Cart</h2>
-              <p className="text-sm text-gray-500">{totalItems} {totalItems === 1 ? 'item' : 'items'}</p>
+              <p className="text-sm text-gray-500">
+                {totalItems} {totalItems === 1 ? "item" : "items"}
+              </p>
             </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
             aria-label="Close cart"
@@ -72,7 +74,9 @@ export function CartDrawer({
                 <ShoppingBag className="w-10 h-10 text-gray-300" />
               </div>
               <p className="text-gray-500 font-medium">Your cart is empty</p>
-              <p className="text-gray-400 text-sm mt-1">Add items to get started</p>
+              <p className="text-gray-400 text-sm mt-1">
+                Add items to get started
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -93,7 +97,9 @@ export function CartDrawer({
           <div className="border-t border-gray-100 p-4 bg-gray-50">
             <div className="flex items-center justify-between mb-4">
               <span className="text-gray-600">Subtotal</span>
-              <span className="text-2xl font-bold text-gray-900">₹{totalPrice}</span>
+              <span className="text-2xl font-bold text-gray-900">
+                ₹{totalPrice}
+              </span>
             </div>
             <button
               onClick={() => {
@@ -112,7 +118,7 @@ export function CartDrawer({
                 <>
                   Checkout
                   <span className="bg-white/20 px-2 py-0.5 rounded-lg text-sm">
-                    {totalItems} {totalItems === 1 ? 'item' : 'items'}
+                    {totalItems} {totalItems === 1 ? "item" : "items"}
                   </span>
                 </>
               )}
@@ -135,22 +141,22 @@ function CartItem({ item, onAddToCart, onRemoveFromCart }) {
           className="w-full h-full object-cover"
         />
       </div>
-      
+
       {/* Item Details */}
       <div className="flex-1 min-w-0 flex flex-col">
         <h3 className="font-medium text-gray-900 text-sm line-clamp-2 leading-tight">
           {item.title}
         </h3>
-        <p className="text-lg font-bold text-gray-900 mt-auto">
-          ₹{item.price}
-        </p>
+        <p className="text-lg font-bold text-gray-900 mt-auto">₹{item.price}</p>
       </div>
-      
+
       {/* Quantity Controls */}
       <div className="flex flex-col items-end justify-between">
         <div className="flex items-center bg-gray-100 rounded-full overflow-hidden">
           <button
-            aria-label={item.quantity === 1 ? "Remove from cart" : "Decrease quantity"}
+            aria-label={
+              item.quantity === 1 ? "Remove from cart" : "Decrease quantity"
+            }
             className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 active:bg-gray-300 transition-colors"
             onClick={() => onRemoveFromCart(item.id)}
           >
@@ -181,23 +187,23 @@ function CartItem({ item, onAddToCart, onRemoveFromCart }) {
 
 function LoadingSpinner() {
   return (
-    <svg 
-      className="animate-spin h-5 w-5" 
-      xmlns="http://www.w3.org/2000/svg" 
-      fill="none" 
+    <svg
+      className="animate-spin h-5 w-5"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
       viewBox="0 0 24 24"
     >
-      <circle 
-        className="opacity-25" 
-        cx="12" 
-        cy="12" 
-        r="10" 
-        stroke="currentColor" 
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
         strokeWidth="4"
       />
-      <path 
-        className="opacity-75" 
-        fill="currentColor" 
+      <path
+        className="opacity-75"
+        fill="currentColor"
         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
       />
     </svg>
@@ -205,4 +211,3 @@ function LoadingSpinner() {
 }
 
 export default CartDrawer;
-

@@ -37,7 +37,7 @@ export const sendJsonResponse = (
   res: any,
   statusCode: number,
   data: any,
-  headers: Record<string, string> = {}
+  headers: Record<string, string> = {},
 ) => {
   res.writeHead(statusCode, {
     "Content-Type": "application/json",
@@ -53,7 +53,7 @@ export const sendJsonResponse = (
 export const sendErrorResponse = (
   res: any,
   statusCode: number,
-  error: string
+  error: string,
 ) => {
   sendJsonResponse(res, statusCode, {
     success: false,
@@ -67,11 +67,10 @@ export const sendErrorResponse = (
 export const sendSuccessResponse = (
   res: any,
   data: any,
-  statusCode: number = 200
+  statusCode: number = 200,
 ) => {
   sendJsonResponse(res, statusCode, {
     success: true,
     ...data,
   });
 };
-

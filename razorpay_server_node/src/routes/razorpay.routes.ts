@@ -1,7 +1,11 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { RazorpayService } from "../services/razorpay.service.js";
 import { OrderService } from "../services/order.service.js";
-import { parseJsonBody, sendSuccessResponse, sendErrorResponse } from "../utils/helpers.js";
+import {
+  parseJsonBody,
+  sendSuccessResponse,
+  sendErrorResponse,
+} from "../utils/helpers.js";
 
 const razorpayService = new RazorpayService();
 
@@ -9,7 +13,7 @@ export class RazorpayRoutes {
   /**
    * POST /api/razorpay/create-order
    * Creates an order using Razorpay public cart API
-   * 
+   *
    * Request body:
    * - lineItems: Array of { quantity: number, line_item_id: string }
    * - entityId: Store ID (e.g., "st_S0ycYwzFMLGY6s")
@@ -18,7 +22,11 @@ export class RazorpayRoutes {
   static async createOrder(req: IncomingMessage, res: ServerResponse) {
     try {
       const { lineItems, entityId, notes } = await parseJsonBody(req);
-      const result = await OrderService.createCheckoutOrder(lineItems, entityId, notes);
+      const result = await OrderService.createCheckoutOrder(
+        lineItems,
+        entityId,
+        notes,
+      );
       sendSuccessResponse(res, result);
     } catch (error: any) {
       console.error("Error creating Razorpay order:", error);
@@ -29,14 +37,18 @@ export class RazorpayRoutes {
   /**
    * GET /api/razorpay/payment-status
    * Get payment status for an order
-   * 
+   *
    * Query params:
    * - orderId (required): Razorpay order ID
    */
-  static async getPaymentStatus(req: IncomingMessage, res: ServerResponse, url: URL) {
+  static async getPaymentStatus(
+    req: IncomingMessage,
+    res: ServerResponse,
+    url: URL,
+  ) {
     try {
-      const orderId = url.searchParams.get('orderId');
-      
+      const orderId = url.searchParams.get("orderId");
+
       if (!orderId) {
         sendErrorResponse(res, 400, "orderId is required in query parameters");
         return;
@@ -57,14 +69,18 @@ export class RazorpayRoutes {
   static async parseStore(req: IncomingMessage, res: ServerResponse, url: URL) {
     try {
       let razorpayUrl: string | null;
-      
+
       if (req.method === "POST") {
         const body = await parseJsonBody(req);
         razorpayUrl = body.url;
       } else {
-        razorpayUrl = url.searchParams.get('url');
+        razorpayUrl = url.searchParams.get("url");
         if (!razorpayUrl) {
-          sendErrorResponse(res, 400, "Razorpay store URL is required. Use ?url=https://pages.razorpay.com/stores/st_XXXXX");
+          sendErrorResponse(
+            res,
+            400,
+            "Razorpay store URL is required. Use ?url=https://pages.razorpay.com/stores/st_XXXXX",
+          );
           return;
         }
       }
@@ -73,16 +89,24 @@ export class RazorpayRoutes {
       sendSuccessResponse(res, result);
     } catch (error: any) {
       console.error("Error parsing Razorpay store:", error);
-      const statusCode = error.message.includes("required") || error.message.includes("Invalid") ? 400 :
-                         error.message.includes("not found") ? 404 : 500;
-      sendErrorResponse(res, statusCode, error.message || "Failed to parse Razorpay store");
+      const statusCode =
+        error.message.includes("required") || error.message.includes("Invalid")
+          ? 400
+          : error.message.includes("not found")
+            ? 404
+            : 500;
+      sendErrorResponse(
+        res,
+        statusCode,
+        error.message || "Failed to parse Razorpay store",
+      );
     }
   }
 
   /**
    * GET /api/razorpay/magic-checkout
    * Returns HTML page with Magic Checkout embedded
-   * 
+   *
    * Query params:
    * - orderId (required): Razorpay order ID
    * - name: Page title
@@ -95,10 +119,14 @@ export class RazorpayRoutes {
    * - showCoupons: Show coupon widget (true/false)
    * - address: Customer address
    */
-  static async magicCheckoutHTML(req: IncomingMessage, res: ServerResponse, url: URL) {
+  static async magicCheckoutHTML(
+    req: IncomingMessage,
+    res: ServerResponse,
+    url: URL,
+  ) {
     try {
-      const orderId = url.searchParams.get('orderId');
-      
+      const orderId = url.searchParams.get("orderId");
+
       if (!orderId) {
         sendErrorResponse(res, 400, "orderId is required in query parameters");
         return;
@@ -106,15 +134,15 @@ export class RazorpayRoutes {
 
       const params = {
         orderId,
-        name: url.searchParams.get('name') || undefined,
-        businessName: url.searchParams.get('businessName') || undefined,
-        customerName: url.searchParams.get('customerName') || undefined,
-        customerEmail: url.searchParams.get('customerEmail') || undefined,
-        customerPhone: url.searchParams.get('customerPhone') || undefined,
-        couponCode: url.searchParams.get('couponCode') || undefined,
-        callbackUrl: url.searchParams.get('callbackUrl') || undefined,
-        showCoupons: url.searchParams.get('showCoupons') || undefined,
-        address: url.searchParams.get('address') || undefined,
+        name: url.searchParams.get("name") || undefined,
+        businessName: url.searchParams.get("businessName") || undefined,
+        customerName: url.searchParams.get("customerName") || undefined,
+        customerEmail: url.searchParams.get("customerEmail") || undefined,
+        customerPhone: url.searchParams.get("customerPhone") || undefined,
+        couponCode: url.searchParams.get("couponCode") || undefined,
+        callbackUrl: url.searchParams.get("callbackUrl") || undefined,
+        showCoupons: url.searchParams.get("showCoupons") || undefined,
+        address: url.searchParams.get("address") || undefined,
       };
 
       const html = razorpayService.generateMagicCheckoutHTML(params);
@@ -126,43 +154,51 @@ export class RazorpayRoutes {
       res.end(html);
     } catch (error: any) {
       console.error("Error generating Magic Checkout HTML:", error);
-      sendErrorResponse(res, 500, error.message || "Failed to generate Magic Checkout HTML");
+      sendErrorResponse(
+        res,
+        500,
+        error.message || "Failed to generate Magic Checkout HTML",
+      );
     }
   }
 
   /**
    * GET/POST /payment-success
    * Payment callback page - shows success or failure based on payment verification
-   * 
+   *
    * Razorpay sends data as POST with form-urlencoded body:
    * - razorpay_payment_id: Payment ID
    * - razorpay_order_id: Order ID
    * - razorpay_signature: Signature for verification
    */
-  static async paymentSuccessPage(req: IncomingMessage, res: ServerResponse, url: URL) {
+  static async paymentSuccessPage(
+    req: IncomingMessage,
+    res: ServerResponse,
+    url: URL,
+  ) {
     try {
       let paymentId: string | null = null;
       let orderId: string | null = null;
       let signature: string | null = null;
 
       // Check if it's a POST request with form data
-      if (req.method === 'POST') {
+      if (req.method === "POST") {
         // Parse form-urlencoded body
         const body = await new Promise<string>((resolve) => {
-          let data = '';
-          req.on('data', chunk => data += chunk);
-          req.on('end', () => resolve(data));
+          let data = "";
+          req.on("data", (chunk) => (data += chunk));
+          req.on("end", () => resolve(data));
         });
-        
+
         const params = new URLSearchParams(body);
-        paymentId = params.get('razorpay_payment_id');
-        orderId = params.get('razorpay_order_id');
-        signature = params.get('razorpay_signature');
+        paymentId = params.get("razorpay_payment_id");
+        orderId = params.get("razorpay_order_id");
+        signature = params.get("razorpay_signature");
       } else {
         // GET request - use query params
-        paymentId = url.searchParams.get('razorpay_payment_id');
-        orderId = url.searchParams.get('razorpay_order_id');
-        signature = url.searchParams.get('razorpay_signature');
+        paymentId = url.searchParams.get("razorpay_payment_id");
+        orderId = url.searchParams.get("razorpay_order_id");
+        signature = url.searchParams.get("razorpay_signature");
       }
 
       let isSuccess = false;
@@ -170,12 +206,17 @@ export class RazorpayRoutes {
 
       if (paymentId && orderId && signature) {
         // Verify signature
-        isSuccess = razorpayService.verifyPaymentSignature(orderId, paymentId, signature);
-        
+        isSuccess = razorpayService.verifyPaymentSignature(
+          orderId,
+          paymentId,
+          signature,
+        );
+
         if (isSuccess) {
           // Get payment details
           try {
-            const statusResult = await razorpayService.getPaymentStatus(orderId);
+            const statusResult =
+              await razorpayService.getPaymentStatus(orderId);
             paymentDetails = statusResult.capturedPayment || { id: paymentId };
           } catch (e) {
             paymentDetails = { id: paymentId };
@@ -211,4 +252,3 @@ export class RazorpayRoutes {
 }
 
 export default RazorpayRoutes;
-

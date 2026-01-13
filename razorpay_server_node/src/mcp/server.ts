@@ -97,14 +97,14 @@ export function createMcpServer(): Server {
         resources: {},
         tools: {},
       },
-    }
+    },
   );
 
   server.setRequestHandler(
     ListResourcesRequestSchema,
     async (_request: ListResourcesRequest) => ({
       resources,
-    })
+    }),
   );
 
   server.setRequestHandler(
@@ -126,21 +126,21 @@ export function createMcpServer(): Server {
           },
         ],
       };
-    }
+    },
   );
 
   server.setRequestHandler(
     ListResourceTemplatesRequestSchema,
     async (_request: ListResourceTemplatesRequest) => ({
       resourceTemplates,
-    })
+    }),
   );
 
   server.setRequestHandler(
     ListToolsRequestSchema,
     async (_request: ListToolsRequest) => ({
       tools,
-    })
+    }),
   );
 
   server.setRequestHandler(
@@ -167,7 +167,7 @@ export function createMcpServer(): Server {
         },
         _meta: widgetInvocationMeta(widget),
       };
-    }
+    },
   );
 
   return server;
@@ -236,4 +236,3 @@ export async function handlePostMessage(req: any, res: any, url: URL) {
     }
   }
 }
-

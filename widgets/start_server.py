@@ -14,12 +14,13 @@ if __name__ == "__main__":
     # Change to script directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
-    
+
     # Run the main module
     import shopping_cart_python.main as main_module
-    
+
     # If main is callable, run it
     if hasattr(main_module, '__name__') and main_module.__name__ == '__main__':
         # Re-execute as if run directly
         exec(open('shopping_cart_python/main.py').read())
+
 

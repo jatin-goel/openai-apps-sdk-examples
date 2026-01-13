@@ -16,18 +16,18 @@ export function Pagination({ skip, limit, total, onPrevious, onNext }) {
 
   return (
     <div className="flex gap-2">
-      <Button 
-        color="secondary" 
-        variant="outline" 
+      <Button
+        color="secondary"
+        variant="outline"
         size="sm"
         disabled={!hasPrevious}
         onClick={onPrevious}
       >
         Previous
       </Button>
-      <Button 
-        color="secondary" 
-        variant="outline" 
+      <Button
+        color="secondary"
+        variant="outline"
         size="sm"
         disabled={!hasNext}
         onClick={onNext}
@@ -42,4 +42,3 @@ export function Pagination({ skip, limit, total, onPrevious, onNext }) {
 }
 
 export default Pagination;
-

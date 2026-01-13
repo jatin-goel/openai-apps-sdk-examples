@@ -5,11 +5,11 @@ import { Image } from "@openai/apps-sdk-ui/components/Image";
 /**
  * ProductCard - Individual product display with add to cart functionality
  */
-export function ProductCard({ 
-  product, 
-  quantity, 
-  onAddToCart, 
-  onRemoveFromCart 
+export function ProductCard({
+  product,
+  quantity,
+  onAddToCart,
+  onRemoveFromCart,
 }) {
   const isMaxQuantity = quantity >= product.stockAvailable;
 
@@ -22,7 +22,7 @@ export function ProductCard({
           alt={product.title}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
         />
-        
+
         {/* Stock Badge */}
         {product.stockAvailable <= 5 && product.stockAvailable > 0 && (
           <span className="absolute top-3 left-3 bg-rose-500 text-white text-[10px] font-semibold px-2.5 py-1 rounded-full shadow-md">
@@ -43,19 +43,17 @@ export function ProductCard({
           </div>
         )}
       </div>
-      
+
       {/* Product Info */}
       <div className="p-4 flex flex-col flex-1">
         <ProductCategory category={product.category} />
         <h3 className="font-medium text-gray-900 text-sm leading-snug line-clamp-2 min-h-[2.5rem]">
           {product.title}
         </h3>
-        
+
         <div className="mt-auto pt-3 flex items-end justify-between gap-2">
-          <p className="text-xl font-bold text-gray-900">
-            ₹{product.price}
-          </p>
-          
+          <p className="text-xl font-bold text-gray-900">₹{product.price}</p>
+
           {/* Quantity Controls */}
           {quantity > 0 && (
             <QuantitySelector
@@ -73,10 +71,14 @@ export function ProductCard({
 }
 
 function ProductCategory({ category }) {
-  if (!category || category.toLowerCase() === 'others' || category.toLowerCase() === 'uncategorized') {
+  if (
+    !category ||
+    category.toLowerCase() === "others" ||
+    category.toLowerCase() === "uncategorized"
+  ) {
     return null;
   }
-  
+
   return (
     <p className="text-[10px] text-gray-500 mb-1 truncate uppercase tracking-wider font-medium">
       {category}
@@ -84,11 +86,21 @@ function ProductCategory({ category }) {
   );
 }
 
-function QuantitySelector({ quantity, isMaxQuantity, productTitle, onAdd, onRemove }) {
+function QuantitySelector({
+  quantity,
+  isMaxQuantity,
+  productTitle,
+  onAdd,
+  onRemove,
+}) {
   return (
     <div className="flex items-center bg-gray-100 rounded-full overflow-hidden">
       <button
-        aria-label={quantity === 1 ? `Remove ${productTitle} from cart` : `Decrease ${productTitle} quantity`}
+        aria-label={
+          quantity === 1
+            ? `Remove ${productTitle} from cart`
+            : `Decrease ${productTitle} quantity`
+        }
         className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 active:bg-gray-300 transition-colors"
         onClick={onRemove}
       >
@@ -104,9 +116,9 @@ function QuantitySelector({ quantity, isMaxQuantity, productTitle, onAdd, onRemo
       <button
         aria-label={`Increase ${productTitle} quantity`}
         className={`w-8 h-8 flex items-center justify-center transition-colors ${
-          isMaxQuantity 
-            ? 'opacity-40 cursor-not-allowed' 
-            : 'hover:bg-gray-200 active:bg-gray-300'
+          isMaxQuantity
+            ? "opacity-40 cursor-not-allowed"
+            : "hover:bg-gray-200 active:bg-gray-300"
         }`}
         onClick={onAdd}
         disabled={isMaxQuantity}
@@ -118,4 +130,3 @@ function QuantitySelector({ quantity, isMaxQuantity, productTitle, onAdd, onRemo
 }
 
 export default ProductCard;
-
