@@ -11,6 +11,8 @@ export interface Widget {
   invoked: string;
   html: string;
   responseText: string;
+  csp: string;
+  domain: string;
 }
 
 // Session types

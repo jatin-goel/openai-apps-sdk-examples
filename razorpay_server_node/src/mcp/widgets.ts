@@ -4,6 +4,23 @@ import config from "../config/index.js";
 import type { Widget } from "../types/index.js";
 
 /**
+ * Build Content Security Policy string for widgets
+ */
+function buildWidgetCSP(baseUrl: string): string {
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${baseUrl} https: blob:`,
+    `style-src 'self' 'unsafe-inline' ${baseUrl} https:`,
+    `img-src 'self' data: blob: https: ${baseUrl}`,
+    `font-src 'self' data: ${baseUrl} https:`,
+    `connect-src 'self' ${baseUrl} https: wss: blob:`,
+    "worker-src 'self' blob:",
+    "child-src 'self' blob:",
+    "frame-ancestors 'self' https://chatgpt.com https://*.chatgpt.com",
+  ].join("; ");
+}
+
+/**
  * Read widget HTML from assets directory
  * Returns placeholder HTML if widget not found
  */
@@ -77,6 +94,8 @@ export function widgetDescriptorMeta(widget: Widget) {
     "openai/toolInvocation/invoking": widget.invoking,
     "openai/toolInvocation/invoked": widget.invoked,
     "openai/widgetAccessible": true,
+    "openai/csp": widget.csp,
+    "openai/domain": widget.domain,
   } as const;
 }
 
@@ -91,6 +110,12 @@ export function widgetInvocationMeta(widget: Widget) {
 }
 
 /**
+ * Widget CSP and domain derived from config
+ */
+const widgetCSP = buildWidgetCSP(config.baseUrl);
+const widgetDomain = config.baseUrl;
+
+/**
  * Define all available widgets
  */
 export const widgets: Widget[] = [
@@ -102,6 +127,8 @@ export const widgets: Widget[] = [
     invoked: "Products found",
     html: readWidgetHtml("product-list"),
     responseText: "Product search results displayed!",
+    csp: widgetCSP,
+    domain: widgetDomain,
   },
 ];
 
