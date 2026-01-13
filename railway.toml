@@ -1,6 +1,6 @@
 [build]
 builder = "RAILPACK"
-buildCommand = "npm i -g pnpm && cd widgets && pnpm install && pnpm run build && cd ../razorpay_server_node && pnpm install"
+buildCommand = "npm i -g pnpm && cd widgets && pnpm install --no-frozen-lockfile && pnpm run build && cd ../razorpay_server_node && pnpm install --no-frozen-lockfile"
 
 [deploy]
 startCommand = "cd razorpay_server_node && npm start"
