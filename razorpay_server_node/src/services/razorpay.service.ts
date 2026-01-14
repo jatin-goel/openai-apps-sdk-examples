@@ -187,7 +187,30 @@ export class RazorpayService {
         "order_id": orderId,
         "show_coupons": ${showCoupons},
         "callback_url": callbackUrl,
-        "redirect": "false"
+        "redirect": "false",
+        "handler": function (response) {
+            console.log("Payment successful!", response);
+            
+            // Notify parent window about payment success
+            if (window.opener && !window.opener.closed) {
+                try {
+                    window.opener.postMessage({
+                        type: 'PAYMENT_SUCCESS',
+                        orderId: response.razorpay_order_id,
+                        paymentId: response.razorpay_payment_id,
+                        amount: 0
+                    }, '*');
+                    console.log("Sent payment success message to parent");
+                } catch (e) {
+                    console.error("Failed to notify parent:", e);
+                }
+            }
+            
+            // Close window after notifying parent
+            setTimeout(() => {
+                window.close();
+            }, 1000);
+        }
     };
 
     var rzp1 = new Razorpay(options);
