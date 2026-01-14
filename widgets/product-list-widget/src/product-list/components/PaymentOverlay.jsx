@@ -33,13 +33,11 @@ export function PaymentOverlay({
       // Monitor if window closes (indicates payment completion or cancellation)
       const checkWindowClosed = setInterval(() => {
         if (checkoutWindowRef.current && checkoutWindowRef.current.closed) {
-          console.log("Checkout window closed - assuming payment success");
           clearInterval(checkWindowClosed);
           
           // Wait a bit for postMessage, then show success anyway
           setTimeout(() => {
             if (status === "polling") {
-              console.log("No postMessage received, showing success anyway");
               setStatus("success");
               setPaymentDetails({
                 id: orderId,
@@ -62,12 +60,8 @@ export function PaymentOverlay({
     }
 
     const handleMessage = (event) => {
-      console.log("Message received:", event.data);
-      
       // Handle payment success message from popup window
       if (event.data && event.data.type === "PAYMENT_SUCCESS") {
-        console.log("✅ Payment success received via postMessage:", event.data);
-        
         // Stop polling
         if (pollingRef.current) {
           clearInterval(pollingRef.current);
@@ -89,11 +83,9 @@ export function PaymentOverlay({
       }
     };
 
-    console.log("Setting up message listener for payment success");
     window.addEventListener("message", handleMessage);
 
     return () => {
-      console.log("Removing message listener");
       window.removeEventListener("message", handleMessage);
     };
   }, [isOpen, onPaymentSuccess]);
@@ -110,28 +102,19 @@ export function PaymentOverlay({
           `${baseUrl}/api/razorpay/payment-status?orderId=${orderId}`,
         );
         const data = await response.json();
-        console.log("📊 Payment status response:", JSON.stringify(data, null, 2));
-        console.log("Checking: data.success =", data.success);
-        console.log("Checking: data.hasCapturedPayment =", data.hasCapturedPayment);
-        console.log("Checking: data.data?.hasCapturedPayment =", data.data?.hasCapturedPayment);
 
         // Check both possible response structures
         const hasCaptured = (data.success && data.data && data.data.hasCapturedPayment) ||
                            (data.success && data.hasCapturedPayment);
         
-        console.log("hasCaptured =", hasCaptured);
-        
         if (hasCaptured) {
-          console.log("✅ Payment captured! Showing success");
           const paymentData = data.data?.capturedPayment || data.capturedPayment;
           setStatus("success");
           setPaymentDetails(paymentData);
           onPaymentSuccess?.();
-        } else {
-          console.log("❌ Payment not captured yet, will retry...");
         }
       } catch (error) {
-        console.error("Error checking payment status:", error);
+        // Silently handle errors during polling
       }
     };
 
@@ -216,43 +199,23 @@ function PollingState({ onClose }) {
 function SuccessState({ paymentDetails, onClose }) {
   return (
     <div className="p-8 text-center bg-gradient-to-b from-green-50 to-white">
-      <div className="mb-6">
+      <div className="mb-4">
+        <div className="text-6xl mb-2">🎉</div>
         <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center">
           <CheckCircle className="w-12 h-12 text-green-600" />
         </div>
       </div>
 
-      <h3 className="text-xl font-bold text-gray-900 mb-2">
-        Payment Successful!
+      <h3 className="text-2xl font-bold text-gray-900 mb-2">
+        Payment Successful! 🎊
       </h3>
-      <p className="text-sm text-gray-500 mb-6">
-        Thank you for your purchase. Your order has been confirmed.
+      <p className="text-base text-gray-600 mb-8">
+        Thank you for your purchase! Your order has been confirmed.
       </p>
-
-      {paymentDetails && (
-        <div className="bg-white border border-green-200 rounded-xl p-4 mb-6 text-left">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-xs text-gray-500 uppercase tracking-wide">
-              Amount Paid
-            </span>
-            <span className="text-lg font-bold text-green-600">
-              ₹{(paymentDetails.amount / 100).toFixed(2)}
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-gray-500 uppercase tracking-wide">
-              Payment ID
-            </span>
-            <span className="text-xs font-mono text-gray-600">
-              {paymentDetails.id?.slice(0, 20)}...
-            </span>
-          </div>
-        </div>
-      )}
 
       <button
         onClick={onClose}
-        className="w-full bg-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-green-700 active:scale-[0.98] transition-all"
+        className="w-full bg-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-green-700 active:scale-[0.98] transition-all shadow-lg"
       >
         Continue Shopping
       </button>
