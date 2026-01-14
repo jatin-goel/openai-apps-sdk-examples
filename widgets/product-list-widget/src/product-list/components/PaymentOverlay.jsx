@@ -34,14 +34,16 @@ export function PaymentOverlay({
 
   // Listen for postMessage from payment success page
   useEffect(() => {
-    if (!isOpen || status === "success") {
+    if (!isOpen) {
       return;
     }
 
     const handleMessage = (event) => {
+      console.log("Message received:", event.data);
+      
       // Handle payment success message from popup window
       if (event.data && event.data.type === "PAYMENT_SUCCESS") {
-        console.log("Payment success received via postMessage:", event.data);
+        console.log("✅ Payment success received via postMessage:", event.data);
         
         // Stop polling
         if (pollingRef.current) {
@@ -64,12 +66,14 @@ export function PaymentOverlay({
       }
     };
 
+    console.log("Setting up message listener for payment success");
     window.addEventListener("message", handleMessage);
 
     return () => {
+      console.log("Removing message listener");
       window.removeEventListener("message", handleMessage);
     };
-  }, [isOpen, status, onPaymentSuccess]);
+  }, [isOpen, onPaymentSuccess]);
 
   // Polling effect (backup mechanism)
   useEffect(() => {

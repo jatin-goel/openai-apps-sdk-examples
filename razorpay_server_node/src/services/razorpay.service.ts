@@ -351,21 +351,39 @@ export class RazorpayService {
 
     <script>
     // Notify parent window (OpenAI widget) about payment success
-    if (window.opener && !window.opener.closed) {
-        try {
-            window.opener.postMessage({
-                type: 'PAYMENT_SUCCESS',
-                orderId: '${orderId || ""}',
-                paymentId: '${paymentId || ""}',
-                amount: ${amount || 0}
-            }, '*');
-        } catch (e) {
-            console.error('Failed to notify parent window:', e);
+    function notifyParent() {
+        if (window.opener && !window.opener.closed) {
+            try {
+                const message = {
+                    type: 'PAYMENT_SUCCESS',
+                    orderId: '${orderId || ""}',
+                    paymentId: '${paymentId || ""}',
+                    amount: ${amount || 0}
+                };
+                console.log('Sending payment success message to parent:', message);
+                window.opener.postMessage(message, '*');
+                return true;
+            } catch (e) {
+                console.error('Failed to notify parent window:', e);
+                return false;
+            }
+        } else {
+            console.warn('No opener window found or window is closed');
+            return false;
         }
     }
 
+    // Send message immediately
+    notifyParent();
+
+    // Send message again after a short delay (in case listener wasn't ready)
+    setTimeout(notifyParent, 100);
+    setTimeout(notifyParent, 500);
+    setTimeout(notifyParent, 1000);
+
     // Auto-close window after 3 seconds
     setTimeout(() => {
+        console.log('Auto-closing payment success window');
         window.close();
     }, 3000);
     </script>
