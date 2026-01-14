@@ -1,0 +1,73 @@
+FROM c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-golden-image-base-node-20-alpine3.21 AS builder
+
+# Install git
+RUN apk add --no-cache git
+
+WORKDIR /app
+
+# Add build arg for git token
+ARG GIT_TOKEN
+ENV GIT_TOKEN=${GIT_TOKEN}
+
+RUN git config --global url."https://x-access-token:${GIT_TOKEN}@github.com/".insteadOf "https://github.com/"
+
+# Install pnpm globally
+# Install pnpm globally with a pinned version for supply chain security
+RUN npm i -g pnpm@8.15.4
+
+# Copy workspace configuration and package files
+COPY widgets/pnpm-workspace.yaml ./widgets/
+COPY widgets/package.json widgets/pnpm-lock.yaml ./widgets/
+COPY razorpay_server_node/package.json ./razorpay_server_node/
+
+# Install dependencies for widgets workspace
+WORKDIR /app/widgets
+RUN pnpm install --no-frozen-lockfile
+
+# Copy widgets source and build
+COPY widgets/ ./
+RUN pnpm run build
+
+# Install dependencies for razorpay_server_node
+WORKDIR /app/razorpay_server_node
+COPY razorpay_server_node/pnpm-lock.yaml ./
+RUN pnpm install --no-frozen-lockfile
+
+# Copy razorpay_server_node source code
+COPY razorpay_server_node/src ./src
+COPY razorpay_server_node/tsconfig.json ./tsconfig.json
+
+FROM c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-golden-image-base-node-20-alpine3.21
+
+RUN apk --no-cache add ca-certificates
+
+# Create a non-root user to run the application
+RUN addgroup -S rzpgroup && adduser -S rzp -G rzpgroup
+
+WORKDIR /app/razorpay_server_node
+
+# Copy node_modules and application from builder
+COPY --from=builder /app/razorpay_server_node/node_modules ./node_modules
+COPY --from=builder /app/razorpay_server_node/package*.json ./
+COPY --from=builder /app/razorpay_server_node/src ./src
+COPY --from=builder /app/razorpay_server_node/tsconfig.json ./tsconfig.json
+
+# Copy built widgets (if needed by the server)
+COPY --from=builder /app/widgets/product-list-widget/assets ../widgets/assets
+
+# Change ownership of the application to the non-root user
+RUN chown -R rzp:rzpgroup /app
+
+ENV NODE_ENV=production \
+    PORT="8090" \
+    MODE="sse" \
+    ADDRESS="chat2checkout.razorpay.com"
+
+# Switch to the non-root user
+USER rzp
+
+# Expose the application port
+EXPOSE ${PORT}
+
+# Start the application (uses tsx from node_modules)
+CMD ["npm", "start"]
