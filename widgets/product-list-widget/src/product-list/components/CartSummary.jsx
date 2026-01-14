@@ -30,8 +30,11 @@ export function CartSummary({
         size="md"
         block
         onClick={() => {
-          if (onOpenCart) onOpenCart();
-          onCheckout();
+          if (onOpenCart) {
+            onOpenCart();
+          } else {
+            onCheckout();
+          }
         }}
         disabled={isProcessing}
       >
