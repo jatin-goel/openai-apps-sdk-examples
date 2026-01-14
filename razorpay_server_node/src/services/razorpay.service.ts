@@ -189,27 +189,43 @@ export class RazorpayService {
         "callback_url": callbackUrl,
         "redirect": "false",
         "handler": function (response) {
-            console.log("Payment successful!", response);
+            console.log("🎉 Payment handler called!", response);
             
-            // Notify parent window about payment success
-            if (window.opener && !window.opener.closed) {
-                try {
-                    window.opener.postMessage({
-                        type: 'PAYMENT_SUCCESS',
-                        orderId: response.razorpay_order_id,
-                        paymentId: response.razorpay_payment_id,
-                        amount: 0
-                    }, '*');
-                    console.log("Sent payment success message to parent");
-                } catch (e) {
-                    console.error("Failed to notify parent:", e);
+            // Function to send message to parent
+            function notifyParent() {
+                if (window.opener && !window.opener.closed) {
+                    try {
+                        const message = {
+                            type: 'PAYMENT_SUCCESS',
+                            orderId: response.razorpay_order_id,
+                            paymentId: response.razorpay_payment_id,
+                            amount: 0
+                        };
+                        window.opener.postMessage(message, '*');
+                        console.log("✅ Sent payment success message to parent:", message);
+                        return true;
+                    } catch (e) {
+                        console.error("❌ Failed to notify parent:", e);
+                        return false;
+                    }
+                } else {
+                    console.warn("⚠️ No opener window found");
+                    return false;
                 }
             }
             
+            // Send message multiple times to ensure delivery
+            notifyParent();
+            setTimeout(notifyParent, 100);
+            setTimeout(notifyParent, 300);
+            setTimeout(notifyParent, 500);
+            setTimeout(notifyParent, 1000);
+            
             // Close window after notifying parent
             setTimeout(() => {
+                console.log("Closing checkout window...");
                 window.close();
-            }, 1000);
+            }, 2000);
         }
     };
 
