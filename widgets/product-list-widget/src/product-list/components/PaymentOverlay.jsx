@@ -200,7 +200,6 @@ function SuccessState({ paymentDetails, onClose }) {
   return (
     <div className="p-8 text-center bg-gradient-to-b from-green-50 to-white">
       <div className="mb-4">
-        <div className="text-6xl mb-2">🎉</div>
         <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center">
           <CheckCircle className="w-12 h-12 text-green-600" />
         </div>
