@@ -139,10 +139,14 @@ export class RazorpayService {
       throw new Error("Order ID is required");
     }
 
+    console.log(`🔍 Checking payment status for order: ${orderId}`);
+    
     // Check in-memory store
     const status = this.checkPaymentStatus(orderId);
+    console.log(`📦 Store status for ${orderId}:`, status);
     
     if (status && status.status === 'success') {
+      console.log(`✅ Returning success for order: ${orderId}`);
       return {
         orderId,
         payments: [],
@@ -157,6 +161,7 @@ export class RazorpayService {
       };
     }
 
+    console.log(`❌ No payment found in store for order: ${orderId}`);
     // Return no payment found - widget will keep polling
     return {
       orderId,
@@ -241,7 +246,7 @@ export class RazorpayService {
         "order_id": orderId,
         "show_coupons": ${showCoupons},
         "callback_url": callbackUrl,
-        "redirect": "false",
+        "redirect": true,
         "handler": function (response) {
             console.log("🎉 Payment handler called!", response);
             console.log("Order ID:", response.razorpay_order_id);
@@ -483,7 +488,14 @@ export class RazorpayService {
     </div>
 
     <script>
-    // Notify parent window using ChatKit sendAction
+    console.log('💳 Payment success page loaded');
+    console.log('Order ID: ${orderId || ""}');
+    console.log('Payment ID: ${paymentId || ""}');
+    
+    // The payment is already marked as successful on the server side
+    // when this page loads (see paymentSuccessPage route)
+    // So we just need to notify the parent window
+    
     async function notifyParent() {
         if (window.opener && !window.opener.closed) {
             try {

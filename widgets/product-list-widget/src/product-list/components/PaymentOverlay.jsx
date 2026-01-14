@@ -110,11 +110,16 @@ export function PaymentOverlay({
           `${baseUrl}/api/razorpay/payment-status?orderId=${orderId}`,
         );
         const data = await response.json();
-        console.log("📊 Payment status response:", data);
+        console.log("📊 Payment status response:", JSON.stringify(data, null, 2));
+        console.log("Checking: data.success =", data.success);
+        console.log("Checking: data.hasCapturedPayment =", data.hasCapturedPayment);
+        console.log("Checking: data.data?.hasCapturedPayment =", data.data?.hasCapturedPayment);
 
         // Check both possible response structures
         const hasCaptured = (data.success && data.data && data.data.hasCapturedPayment) ||
                            (data.success && data.hasCapturedPayment);
+        
+        console.log("hasCaptured =", hasCaptured);
         
         if (hasCaptured) {
           console.log("✅ Payment captured! Showing success");
@@ -122,6 +127,8 @@ export function PaymentOverlay({
           setStatus("success");
           setPaymentDetails(paymentData);
           onPaymentSuccess?.();
+        } else {
+          console.log("❌ Payment not captured yet, will retry...");
         }
       } catch (error) {
         console.error("Error checking payment status:", error);
@@ -129,7 +136,7 @@ export function PaymentOverlay({
     };
 
     checkPaymentStatus();
-    const intervalId = setInterval(checkPaymentStatus, 2000);
+    const intervalId = setInterval(checkPaymentStatus, 500); // Poll every 500ms for faster detection
     pollingRef.current = intervalId;
 
     return () => {
