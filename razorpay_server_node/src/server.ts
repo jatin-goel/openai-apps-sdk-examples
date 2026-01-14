@@ -40,6 +40,19 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
     return;
   }
 
+  // Health Check Endpoints
+  if (req.method === "GET" && url.pathname === "/live") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ status: "ok" }));
+    return;
+  }
+
+  if (req.method === "GET" && url.pathname === "/ready") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ status: "ok" }));
+    return;
+  }
+
   // MCP Endpoints
   if (
     req.method === "OPTIONS" &&
@@ -138,6 +151,9 @@ httpServer.listen(port, () => {
   console.log(`\n🚀 Razorpay MCP Server`);
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
   console.log(`📡 Server listening on http://localhost:${port}`);
+  console.log(`\n❤️  Health Check Endpoints:`);
+  console.log(`   Liveness:       GET  /live`);
+  console.log(`   Readiness:      GET  /ready`);
   console.log(`\n🔌 MCP Endpoints:`);
   console.log(`   SSE Stream:     GET  ${config.mcp.ssePath}`);
   console.log(`   Message Post:   POST ${config.mcp.postPath}?sessionId=...`);

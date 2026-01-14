@@ -22,5 +22,3 @@ if __name__ == "__main__":
     if hasattr(main_module, '__name__') and main_module.__name__ == '__main__':
         # Re-execute as if run directly
         exec(open('shopping_cart_python/main.py').read())
-
-

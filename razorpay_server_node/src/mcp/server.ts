@@ -187,9 +187,17 @@ export async function handleSseRequest(res: any, postPath: string) {
 
   sessions.set(sessionId, { server, transport });
 
+  let isClosing = false;
   transport.onclose = async () => {
+    if (isClosing) return; // Prevent recursive calls
+    isClosing = true;
+    
     sessions.delete(sessionId);
-    await server.close();
+    try {
+      await server.close();
+    } catch (err) {
+      console.error("Error closing server:", err);
+    }
   };
 
   transport.onerror = (error) => {

@@ -33,6 +33,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"No tests specified\" && exit 0",
+    "test:coverage": "echo \"No coverage tests specified\" && exit 0",
     "build": "echo \"Build step not required for this project\" && exit 0",
     "lint": "echo \"Lint step not required for this project\" && exit 0"
   },
