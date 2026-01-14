@@ -183,17 +183,39 @@ export class RazorpayRoutes {
 
       // Check if it's a POST request with form data
       if (req.method === "POST") {
-        // Parse form-urlencoded body
-        const body = await new Promise<string>((resolve) => {
-          let data = "";
-          req.on("data", (chunk) => (data += chunk));
-          req.on("end", () => resolve(data));
-        });
+        try {
+          // Parse form-urlencoded body with error handling
+          const body = await new Promise<string>((resolve, reject) => {
+            let data = "";
+            const timeout = setTimeout(() => {
+              reject(new Error("Request timeout"));
+            }, 5000);
 
-        const params = new URLSearchParams(body);
-        paymentId = params.get("razorpay_payment_id");
-        orderId = params.get("razorpay_order_id");
-        signature = params.get("razorpay_signature");
+            req.on("data", (chunk) => {
+              data += chunk.toString();
+            });
+
+            req.on("end", () => {
+              clearTimeout(timeout);
+              resolve(data);
+            });
+
+            req.on("error", (err) => {
+              clearTimeout(timeout);
+              reject(err);
+            });
+          });
+
+          if (body) {
+            const params = new URLSearchParams(body);
+            paymentId = params.get("razorpay_payment_id");
+            orderId = params.get("razorpay_order_id");
+            signature = params.get("razorpay_signature");
+          }
+        } catch (parseError) {
+          console.error("Error parsing POST body:", parseError);
+          // Continue with null values
+        }
       } else {
         // GET request - use query params
         paymentId = url.searchParams.get("razorpay_payment_id");
