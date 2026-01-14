@@ -32,7 +32,46 @@ export function PaymentOverlay({
     }
   }, [isOpen, orderId, baseUrl, storeName, checkoutOpened]);
 
-  // Polling effect
+  // Listen for postMessage from payment success page
+  useEffect(() => {
+    if (!isOpen || status === "success") {
+      return;
+    }
+
+    const handleMessage = (event) => {
+      // Handle payment success message from popup window
+      if (event.data && event.data.type === "PAYMENT_SUCCESS") {
+        console.log("Payment success received via postMessage:", event.data);
+        
+        // Stop polling
+        if (pollingRef.current) {
+          clearInterval(pollingRef.current);
+          pollingRef.current = null;
+        }
+
+        // Update status to success
+        setStatus("success");
+        setPaymentDetails({
+          id: event.data.paymentId,
+          amount: event.data.amount,
+        });
+        onPaymentSuccess?.();
+
+        // Close the checkout window if still open
+        if (checkoutWindowRef.current && !checkoutWindowRef.current.closed) {
+          checkoutWindowRef.current.close();
+        }
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, [isOpen, status, onPaymentSuccess]);
+
+  // Polling effect (backup mechanism)
   useEffect(() => {
     if (!isOpen || !orderId || status === "success") {
       return;
@@ -45,9 +84,9 @@ export function PaymentOverlay({
         );
         const data = await response.json();
 
-        if (data.success && data.hasCapturedPayment) {
+        if (data.success && data.data && data.data.hasCapturedPayment) {
           setStatus("success");
-          setPaymentDetails(data.capturedPayment);
+          setPaymentDetails(data.data.capturedPayment);
           onPaymentSuccess?.();
         }
       } catch (error) {

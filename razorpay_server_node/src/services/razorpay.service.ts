@@ -95,45 +95,21 @@ export class RazorpayService {
 
   /**
    * Get payment status for an order
+   * Returns no payment found (polling will continue until redirect happens)
    */
   async getPaymentStatus(orderId: string) {
     if (!orderId) {
       throw new Error("Order ID is required");
     }
 
-    const razorpayAuth = Buffer.from(
-      `${config.razorpay.keyId}:${config.razorpay.keySecret}`,
-    ).toString("base64");
-
-    const response = await fetch(
-      `https://api.razorpay.com/v1/orders/${orderId}/payments`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Basic ${razorpayAuth}`,
-        },
-      },
-    );
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      throw new Error(`Razorpay API Error: ${response.status} - ${errorData}`);
-    }
-
-    const data = await response.json();
-
-    // Check if there's any captured payment
-    const capturedPayment = data.items?.find(
-      (payment: any) =>
-        payment.status === "captured" && payment.captured === true,
-    );
-
+    // Return no payment found - widget will keep polling
+    // Success will be triggered via postMessage from payment success page
     return {
       orderId,
-      payments: data.items || [],
-      count: data.count || 0,
-      hasCapturedPayment: !!capturedPayment,
-      capturedPayment: capturedPayment || null,
+      payments: [],
+      count: 0,
+      hasCapturedPayment: false,
+      capturedPayment: null,
     };
   }
 
@@ -372,6 +348,27 @@ export class RazorpayService {
             Close Window
         </button>
     </div>
+
+    <script>
+    // Notify parent window (OpenAI widget) about payment success
+    if (window.opener && !window.opener.closed) {
+        try {
+            window.opener.postMessage({
+                type: 'PAYMENT_SUCCESS',
+                orderId: '${orderId || ""}',
+                paymentId: '${paymentId || ""}',
+                amount: ${amount || 0}
+            }, '*');
+        } catch (e) {
+            console.error('Failed to notify parent window:', e);
+        }
+    }
+
+    // Auto-close window after 3 seconds
+    setTimeout(() => {
+        window.close();
+    }, 3000);
+    </script>
 </body>
 </html>`;
     } else {
