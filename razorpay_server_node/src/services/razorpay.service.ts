@@ -242,38 +242,37 @@ export class RazorpayService {
         "show_coupons": ${showCoupons},
         "callback_url": callbackUrl,
         "redirect": "false",
-        "handler": async function (response) {
+        "handler": function (response) {
             console.log("🎉 Payment handler called!", response);
             console.log("Order ID:", response.razorpay_order_id);
             console.log("Payment ID:", response.razorpay_payment_id);
             
-            // Mark payment as successful via API call
+            // Mark payment as successful via SYNCHRONOUS API call
             const apiUrl = window.location.origin + '/api/razorpay/mark-payment-success';
-            console.log("Calling API:", apiUrl);
+            console.log("Calling API synchronously:", apiUrl);
             
             try {
-                const res = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        orderId: response.razorpay_order_id,
-                        paymentId: response.razorpay_payment_id,
-                        signature: response.razorpay_signature
-                    })
-                });
-                const data = await res.json();
-                console.log("✅ Payment marked as successful via API:", data);
+                // Use synchronous XHR to ensure it completes before window can close
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', apiUrl, false); // false = synchronous
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.send(JSON.stringify({
+                    orderId: response.razorpay_order_id,
+                    paymentId: response.razorpay_payment_id,
+                    signature: response.razorpay_signature
+                }));
+                
+                if (xhr.status === 200) {
+                    console.log("✅ Payment marked as successful:", xhr.responseText);
+                } else {
+                    console.error("❌ API returned status:", xhr.status);
+                }
             } catch (err) {
                 console.error("❌ Failed to mark payment as successful:", err);
             }
             
-            // Close window immediately after API call completes
-            console.log("Payment marked, you can close this window now");
-            setTimeout(() => {
-                window.close();
-            }, 500);
+            // Payment is marked, window can be closed anytime now
+            console.log("✅ Payment marked successfully! You can close this window.");
         }
     };
 
