@@ -110,10 +110,17 @@ export function PaymentOverlay({
           `${baseUrl}/api/razorpay/payment-status?orderId=${orderId}`,
         );
         const data = await response.json();
+        console.log("📊 Payment status response:", data);
 
-        if (data.success && data.data && data.data.hasCapturedPayment) {
+        // Check both possible response structures
+        const hasCaptured = (data.success && data.data && data.data.hasCapturedPayment) ||
+                           (data.success && data.hasCapturedPayment);
+        
+        if (hasCaptured) {
+          console.log("✅ Payment captured! Showing success");
+          const paymentData = data.data?.capturedPayment || data.capturedPayment;
           setStatus("success");
-          setPaymentDetails(data.data.capturedPayment);
+          setPaymentDetails(paymentData);
           onPaymentSuccess?.();
         }
       } catch (error) {

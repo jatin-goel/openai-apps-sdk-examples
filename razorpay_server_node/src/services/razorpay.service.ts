@@ -244,9 +244,14 @@ export class RazorpayService {
         "redirect": "false",
         "handler": function (response) {
             console.log("🎉 Payment handler called!", response);
+            console.log("Order ID:", response.razorpay_order_id);
+            console.log("Payment ID:", response.razorpay_payment_id);
             
             // Mark payment as successful via API call
-            fetch(window.location.origin + '/api/razorpay/mark-payment-success', {
+            const apiUrl = window.location.origin + '/api/razorpay/mark-payment-success';
+            console.log("Calling API:", apiUrl);
+            
+            fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -256,17 +261,17 @@ export class RazorpayService {
                     paymentId: response.razorpay_payment_id,
                     signature: response.razorpay_signature
                 })
-            }).then(res => {
-                console.log("✅ Payment marked as successful via API");
+            }).then(res => res.json()).then(data => {
+                console.log("✅ Payment marked as successful via API:", data);
             }).catch(err => {
                 console.error("❌ Failed to mark payment as successful:", err);
             });
             
             // Close window after a short delay
             setTimeout(() => {
-                console.log("Closing checkout window...");
+                console.log("Closing checkout window in 2 seconds...");
                 window.close();
-            }, 1500);
+            }, 2000);
         }
     };
 
@@ -430,33 +435,46 @@ export class RazorpayService {
     </div>
 
     <script>
-    // Notify parent window (OpenAI widget) about payment success
-    function notifyParent() {
+    // Notify parent window using ChatKit sendAction
+    async function notifyParent() {
         if (window.opener && !window.opener.closed) {
             try {
+                // Try ChatKit sendAction first
+                if (window.opener.chatKit && window.opener.chatKit.sendAction) {
+                    await window.opener.chatKit.sendAction({
+                        type: 'payment_success',
+                        payload: {
+                            orderId: '${orderId || ""}',
+                            paymentId: '${paymentId || ""}',
+                            amount: ${amount || 0}
+                        }
+                    });
+                    console.log('✅ Sent payment success via ChatKit sendAction');
+                    return true;
+                }
+                
+                // Fallback to postMessage
                 const message = {
                     type: 'PAYMENT_SUCCESS',
                     orderId: '${orderId || ""}',
                     paymentId: '${paymentId || ""}',
                     amount: ${amount || 0}
                 };
-                console.log('Sending payment success message to parent:', message);
                 window.opener.postMessage(message, '*');
+                console.log('✅ Sent payment success via postMessage');
                 return true;
             } catch (e) {
-                console.error('Failed to notify parent window:', e);
+                console.error('❌ Failed to notify parent window:', e);
                 return false;
             }
         } else {
-            console.warn('No opener window found or window is closed');
+            console.warn('⚠️ No opener window found or window is closed');
             return false;
         }
     }
 
-    // Send message immediately
+    // Send notification multiple times to ensure delivery
     notifyParent();
-
-    // Send message again after a short delay (in case listener wasn't ready)
     setTimeout(notifyParent, 100);
     setTimeout(notifyParent, 500);
     setTimeout(notifyParent, 1000);
