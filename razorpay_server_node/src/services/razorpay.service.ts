@@ -297,7 +297,6 @@ export class RazorpayService {
     // Ensure payment is marked even if window closes manually
     window.addEventListener('beforeunload', function(e) {
         if (paymentCompleted && paymentResponse) {
-            // Use sendBeacon for reliable delivery even when page is closing
             const apiUrl = window.location.origin + '/api/razorpay/mark-payment-success';
             const data = JSON.stringify({
                 orderId: paymentResponse.razorpay_order_id,
@@ -305,11 +304,24 @@ export class RazorpayService {
                 signature: paymentResponse.razorpay_signature
             });
             
-            // sendBeacon is more reliable for requests during page unload
+            console.log("📤 Window closing, sending payment success...");
+            
+            // Try sendBeacon first (modern browsers)
             if (navigator.sendBeacon) {
                 const blob = new Blob([data], { type: 'application/json' });
-                navigator.sendBeacon(apiUrl, blob);
-                console.log("📤 Sent payment success via sendBeacon on window close");
+                const sent = navigator.sendBeacon(apiUrl, blob);
+                console.log("sendBeacon result:", sent);
+            }
+            
+            // Also use synchronous XHR as fallback (blocks until complete)
+            try {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', apiUrl, false); // false = synchronous
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.send(data);
+                console.log("✅ Synchronous XHR sent, status:", xhr.status);
+            } catch (err) {
+                console.error("❌ XHR failed:", err);
             }
         }
     });
