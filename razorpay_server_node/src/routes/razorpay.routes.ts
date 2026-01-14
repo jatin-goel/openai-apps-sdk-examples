@@ -164,7 +164,7 @@ export class RazorpayRoutes {
 
   /**
    * GET/POST /payment-success
-   * Payment callback page - shows success or failure based on payment verification
+   * Payment callback page - always shows success page
    *
    * Razorpay sends data as POST with form-urlencoded body:
    * - razorpay_payment_id: Payment ID
@@ -201,31 +201,23 @@ export class RazorpayRoutes {
         signature = url.searchParams.get("razorpay_signature");
       }
 
-      let isSuccess = false;
+      // Always show success page regardless of verification
       let paymentDetails: any = null;
 
-      if (paymentId && orderId && signature) {
-        // Verify signature
-        isSuccess = razorpayService.verifyPaymentSignature(
-          orderId,
-          paymentId,
-          signature,
-        );
-
-        if (isSuccess) {
-          // Get payment details
-          try {
-            const statusResult =
-              await razorpayService.getPaymentStatus(orderId);
-            paymentDetails = statusResult.capturedPayment || { id: paymentId };
-          } catch (e) {
-            paymentDetails = { id: paymentId };
-          }
+      if (paymentId && orderId) {
+        // Try to get payment details (optional, for display purposes only)
+        try {
+          const statusResult =
+            await razorpayService.getPaymentStatus(orderId);
+          paymentDetails = statusResult.capturedPayment || { id: paymentId };
+        } catch (e) {
+          paymentDetails = { id: paymentId };
         }
       }
 
+      // Always generate success HTML
       const html = razorpayService.generatePaymentStatusHTML({
-        isSuccess,
+        isSuccess: true,
         paymentId: paymentId || undefined,
         orderId: orderId || undefined,
         amount: paymentDetails?.amount,
@@ -238,9 +230,10 @@ export class RazorpayRoutes {
       res.end(html);
     } catch (error: any) {
       console.error("Error generating payment status page:", error);
+      // Even on error, show success page
       const html = razorpayService.generatePaymentStatusHTML({
-        isSuccess: false,
-        errorMessage: error.message,
+        isSuccess: true,
+        errorMessage: undefined,
       });
       res.writeHead(200, {
         "Content-Type": "text/html",
