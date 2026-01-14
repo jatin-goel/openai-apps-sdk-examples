@@ -118,6 +118,7 @@ function App() {
               isProcessing={isProcessing}
               error={checkoutError}
               onCheckout={processCheckout}
+              onOpenCart={() => setIsCartOpen(true)}
             />
           )}
         </div>
@@ -130,9 +131,6 @@ function App() {
         storeName={storeName}
         onClose={closePaymentOverlay}
         onPaymentSuccess={handlePaymentSuccess}
-        cart={cart}
-        totalItems={totalItems}
-        totalPrice={totalPrice}
       />
 
       <CartDrawer

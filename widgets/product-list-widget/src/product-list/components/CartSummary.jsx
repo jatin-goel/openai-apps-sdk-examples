@@ -11,6 +11,7 @@ export function CartSummary({
   isProcessing,
   error,
   onCheckout,
+  onOpenCart,
 }) {
   return (
     <div className="pt-2 border-t border-black/5">
@@ -28,7 +29,10 @@ export function CartSummary({
         variant="solid"
         size="md"
         block
-        onClick={onCheckout}
+        onClick={() => {
+          if (onOpenCart) onOpenCart();
+          onCheckout();
+        }}
         disabled={isProcessing}
       >
         {isProcessing ? (
