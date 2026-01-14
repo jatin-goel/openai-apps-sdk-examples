@@ -255,27 +255,30 @@ export class RazorpayRoutes {
         signature = url.searchParams.get("razorpay_signature");
       }
 
-      // Always show success page regardless of verification
+      // Check if payment was successful
+      let isSuccess = false;
       let paymentDetails: any = null;
 
-      if (paymentId && orderId) {
-        // Mark payment as successful in store
+      if (paymentId && orderId && signature) {
+        // We have all required fields - mark as successful
         razorpayService.markPaymentSuccess(orderId, paymentId, 0);
-        console.log(`✅ Marked payment as successful for order: ${orderId}`);
+        console.log(`✅ Marked payment as successful for order: ${orderId}, payment: ${paymentId}`);
         
+        isSuccess = true;
         paymentDetails = { id: paymentId };
-      } else if (orderId) {
-        // Even without payment ID, mark as successful
-        razorpayService.markPaymentSuccess(orderId);
-        console.log(`✅ Marked payment as successful for order: ${orderId} (no payment ID)`);
+      } else {
+        // Missing payment details - this is likely a failure or cancelled payment
+        console.log(`❌ Payment failed or cancelled for order: ${orderId} (no payment ID or signature)`);
+        isSuccess = false;
       }
 
-      // Always generate success HTML
+      // Generate appropriate HTML based on success/failure
       const html = razorpayService.generatePaymentStatusHTML({
-        isSuccess: true,
+        isSuccess,
         paymentId: paymentId || undefined,
         orderId: orderId || undefined,
         amount: paymentDetails?.amount,
+        errorMessage: isSuccess ? undefined : "Payment was not completed",
       });
 
       res.writeHead(200, {
