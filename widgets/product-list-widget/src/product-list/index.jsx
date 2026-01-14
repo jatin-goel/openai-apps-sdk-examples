@@ -130,6 +130,9 @@ function App() {
         storeName={storeName}
         onClose={closePaymentOverlay}
         onPaymentSuccess={handlePaymentSuccess}
+        cart={cart}
+        totalItems={totalItems}
+        totalPrice={totalPrice}
       />
 
       <CartDrawer
