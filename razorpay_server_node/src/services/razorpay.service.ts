@@ -2,6 +2,24 @@ import Razorpay from "razorpay";
 import crypto from "node:crypto";
 import config from "../config/index.js";
 
+// In-memory store for payment status
+const paymentStatusStore = new Map<string, {
+  status: 'pending' | 'success' | 'failed';
+  paymentId?: string;
+  amount?: number;
+  timestamp: number;
+}>();
+
+// Clean up old entries every 5 minutes
+setInterval(() => {
+  const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+  for (const [orderId, data] of paymentStatusStore.entries()) {
+    if (data.timestamp < fiveMinutesAgo) {
+      paymentStatusStore.delete(orderId);
+    }
+  }
+}, 5 * 60 * 1000);
+
 export class RazorpayService {
   private razorpay: Razorpay | null = null;
 
@@ -13,6 +31,25 @@ export class RazorpayService {
       });
     }
     return this.razorpay;
+  }
+
+  /**
+   * Mark payment as successful
+   */
+  markPaymentSuccess(orderId: string, paymentId?: string, amount?: number) {
+    paymentStatusStore.set(orderId, {
+      status: 'success',
+      paymentId,
+      amount,
+      timestamp: Date.now(),
+    });
+  }
+
+  /**
+   * Check payment status from store
+   */
+  checkPaymentStatus(orderId: string) {
+    return paymentStatusStore.get(orderId);
   }
 
   /**
@@ -95,15 +132,32 @@ export class RazorpayService {
 
   /**
    * Get payment status for an order
-   * Returns no payment found (polling will continue until redirect happens)
+   * Checks in-memory store for payment status
    */
   async getPaymentStatus(orderId: string) {
     if (!orderId) {
       throw new Error("Order ID is required");
     }
 
+    // Check in-memory store
+    const status = this.checkPaymentStatus(orderId);
+    
+    if (status && status.status === 'success') {
+      return {
+        orderId,
+        payments: [],
+        count: 1,
+        hasCapturedPayment: true,
+        capturedPayment: {
+          id: status.paymentId || `pay_${orderId}`,
+          amount: status.amount || 0,
+          status: 'captured',
+          captured: true,
+        },
+      };
+    }
+
     // Return no payment found - widget will keep polling
-    // Success will be triggered via postMessage from payment success page
     return {
       orderId,
       payments: [],
@@ -191,41 +245,28 @@ export class RazorpayService {
         "handler": function (response) {
             console.log("🎉 Payment handler called!", response);
             
-            // Function to send message to parent
-            function notifyParent() {
-                if (window.opener && !window.opener.closed) {
-                    try {
-                        const message = {
-                            type: 'PAYMENT_SUCCESS',
-                            orderId: response.razorpay_order_id,
-                            paymentId: response.razorpay_payment_id,
-                            amount: 0
-                        };
-                        window.opener.postMessage(message, '*');
-                        console.log("✅ Sent payment success message to parent:", message);
-                        return true;
-                    } catch (e) {
-                        console.error("❌ Failed to notify parent:", e);
-                        return false;
-                    }
-                } else {
-                    console.warn("⚠️ No opener window found");
-                    return false;
-                }
-            }
+            // Mark payment as successful via API call
+            fetch(window.location.origin + '/api/razorpay/mark-payment-success', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    orderId: response.razorpay_order_id,
+                    paymentId: response.razorpay_payment_id,
+                    signature: response.razorpay_signature
+                })
+            }).then(res => {
+                console.log("✅ Payment marked as successful via API");
+            }).catch(err => {
+                console.error("❌ Failed to mark payment as successful:", err);
+            });
             
-            // Send message multiple times to ensure delivery
-            notifyParent();
-            setTimeout(notifyParent, 100);
-            setTimeout(notifyParent, 300);
-            setTimeout(notifyParent, 500);
-            setTimeout(notifyParent, 1000);
-            
-            // Close window after notifying parent
+            // Close window after a short delay
             setTimeout(() => {
                 console.log("Closing checkout window...");
                 window.close();
-            }, 2000);
+            }, 1500);
         }
     };
 

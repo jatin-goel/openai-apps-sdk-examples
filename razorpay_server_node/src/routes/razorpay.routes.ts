@@ -11,6 +11,38 @@ const razorpayService = new RazorpayService();
 
 export class RazorpayRoutes {
   /**
+   * POST /api/razorpay/mark-payment-success
+   * Marks a payment as successful in the in-memory store
+   *
+   * Request body:
+   * - orderId: Razorpay order ID
+   * - paymentId: Razorpay payment ID
+   * - signature: Payment signature (optional)
+   */
+  static async markPaymentSuccess(req: IncomingMessage, res: ServerResponse) {
+    try {
+      const { orderId, paymentId, signature } = await parseJsonBody(req);
+      
+      if (!orderId) {
+        sendErrorResponse(res, 400, "orderId is required");
+        return;
+      }
+
+      razorpayService.markPaymentSuccess(orderId, paymentId, 0);
+      console.log(`✅ Payment marked as successful: ${orderId}, ${paymentId}`);
+      
+      sendSuccessResponse(res, { 
+        success: true, 
+        orderId,
+        paymentId 
+      });
+    } catch (error: any) {
+      console.error("Error marking payment as successful:", error);
+      sendErrorResponse(res, 500, error.message);
+    }
+  }
+
+  /**
    * POST /api/razorpay/create-order
    * Creates an order using Razorpay public cart API
    *
@@ -227,14 +259,15 @@ export class RazorpayRoutes {
       let paymentDetails: any = null;
 
       if (paymentId && orderId) {
-        // Try to get payment details (optional, for display purposes only)
-        try {
-          const statusResult =
-            await razorpayService.getPaymentStatus(orderId);
-          paymentDetails = statusResult.capturedPayment || { id: paymentId };
-        } catch (e) {
-          paymentDetails = { id: paymentId };
-        }
+        // Mark payment as successful in store
+        razorpayService.markPaymentSuccess(orderId, paymentId, 0);
+        console.log(`✅ Marked payment as successful for order: ${orderId}`);
+        
+        paymentDetails = { id: paymentId };
+      } else if (orderId) {
+        // Even without payment ID, mark as successful
+        razorpayService.markPaymentSuccess(orderId);
+        console.log(`✅ Marked payment as successful for order: ${orderId} (no payment ID)`);
       }
 
       // Always generate success HTML

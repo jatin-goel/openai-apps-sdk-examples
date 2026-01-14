@@ -84,6 +84,11 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
     return;
   }
 
+  if (req.method === "POST" && url.pathname === "/api/razorpay/mark-payment-success") {
+    await RazorpayRoutes.markPaymentSuccess(req, res);
+    return;
+  }
+
   if (req.method === "GET" && url.pathname === "/api/razorpay/payment-status") {
     await RazorpayRoutes.getPaymentStatus(req, res, url);
     return;
