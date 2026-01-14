@@ -211,7 +211,7 @@ export class RazorpayService {
         "order_id": orderId,
         "show_coupons": ${showCoupons},
         "callback_url": callbackUrl,
-        "redirect": "true"
+        "redirect": "false"
     };
 
     var rzp1 = new Razorpay(options);
