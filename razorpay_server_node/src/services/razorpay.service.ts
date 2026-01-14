@@ -242,7 +242,7 @@ export class RazorpayService {
         "show_coupons": ${showCoupons},
         "callback_url": callbackUrl,
         "redirect": "false",
-        "handler": function (response) {
+        "handler": async function (response) {
             console.log("🎉 Payment handler called!", response);
             console.log("Order ID:", response.razorpay_order_id);
             console.log("Payment ID:", response.razorpay_payment_id);
@@ -251,31 +251,68 @@ export class RazorpayService {
             const apiUrl = window.location.origin + '/api/razorpay/mark-payment-success';
             console.log("Calling API:", apiUrl);
             
-            fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    orderId: response.razorpay_order_id,
-                    paymentId: response.razorpay_payment_id,
-                    signature: response.razorpay_signature
-                })
-            }).then(res => res.json()).then(data => {
+            try {
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        orderId: response.razorpay_order_id,
+                        paymentId: response.razorpay_payment_id,
+                        signature: response.razorpay_signature
+                    })
+                });
+                const data = await res.json();
                 console.log("✅ Payment marked as successful via API:", data);
-            }).catch(err => {
+            } catch (err) {
                 console.error("❌ Failed to mark payment as successful:", err);
-            });
+            }
             
-            // Close window after a short delay
+            // Close window immediately after API call completes
+            console.log("Payment marked, you can close this window now");
             setTimeout(() => {
-                console.log("Closing checkout window in 2 seconds...");
                 window.close();
-            }, 2000);
+            }, 500);
         }
     };
 
+    // Track if payment was successful
+    let paymentCompleted = false;
+    let paymentResponse = null;
+    
+    // Store original handler
+    const originalHandler = options.handler;
+    options.handler = async function(response) {
+        paymentCompleted = true;
+        paymentResponse = response;
+        console.log("💾 Payment response stored for beforeunload");
+        if (originalHandler) {
+            await originalHandler(response);
+        }
+    };
+    
     var rzp1 = new Razorpay(options);
+    
+    // Ensure payment is marked even if window closes manually
+    window.addEventListener('beforeunload', function(e) {
+        if (paymentCompleted && paymentResponse) {
+            // Use sendBeacon for reliable delivery even when page is closing
+            const apiUrl = window.location.origin + '/api/razorpay/mark-payment-success';
+            const data = JSON.stringify({
+                orderId: paymentResponse.razorpay_order_id,
+                paymentId: paymentResponse.razorpay_payment_id,
+                signature: paymentResponse.razorpay_signature
+            });
+            
+            // sendBeacon is more reliable for requests during page unload
+            if (navigator.sendBeacon) {
+                const blob = new Blob([data], { type: 'application/json' });
+                navigator.sendBeacon(apiUrl, blob);
+                console.log("📤 Sent payment success via sendBeacon on window close");
+            }
+        }
+    });
 
     // Function to check payment status
     async function checkPaymentStatus() {
