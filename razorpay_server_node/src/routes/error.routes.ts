@@ -21,7 +21,7 @@ export class ErrorRoutes {
     
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #000000;
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -55,7 +55,8 @@ export class ErrorRoutes {
       width: 120px;
       height: 120px;
       margin: 0 auto 24px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #000000;
+      border: 3px solid #ffffff;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -98,8 +99,8 @@ export class ErrorRoutes {
     }
     
     .info-box {
-      background: #f7fafc;
-      border: 2px solid #e2e8f0;
+      background: #f9f9f9;
+      border: 2px solid #e0e0e0;
       border-radius: 12px;
       padding: 24px;
       margin-bottom: 32px;
@@ -109,7 +110,7 @@ export class ErrorRoutes {
     .info-box h2 {
       font-size: 18px;
       font-weight: 600;
-      color: #2d3748;
+      color: #000000;
       margin-bottom: 12px;
       display: flex;
       align-items: center;
@@ -119,7 +120,7 @@ export class ErrorRoutes {
     .info-box h2 svg {
       width: 20px;
       height: 20px;
-      stroke: #667eea;
+      stroke: #000000;
     }
     
     .info-box p {
@@ -130,13 +131,13 @@ export class ErrorRoutes {
     }
     
     .endpoint {
-      background: white;
-      border: 1px solid #cbd5e0;
+      background: #000000;
+      border: 2px solid #000000;
       border-radius: 8px;
       padding: 12px 16px;
       font-family: 'Monaco', 'Courier New', monospace;
       font-size: 14px;
-      color: #667eea;
+      color: #ffffff;
       font-weight: 600;
       display: inline-block;
       margin-top: 8px;
@@ -151,32 +152,34 @@ export class ErrorRoutes {
     
     .feature {
       padding: 16px;
-      background: #f7fafc;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
       border-radius: 12px;
       transition: transform 0.2s, box-shadow 0.2s;
     }
     
     .feature:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border-color: #000000;
     }
     
     .feature svg {
       width: 32px;
       height: 32px;
-      stroke: #667eea;
+      stroke: #000000;
       margin-bottom: 8px;
     }
     
     .feature-title {
       font-size: 14px;
       font-weight: 600;
-      color: #2d3748;
+      color: #000000;
     }
     
     .cta {
       display: inline-block;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #000000;
       color: white;
       padding: 16px 32px;
       border-radius: 12px;
@@ -184,12 +187,14 @@ export class ErrorRoutes {
       font-weight: 600;
       font-size: 16px;
       transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border: 2px solid #000000;
     }
     
     .cta:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      background: #1a1a1a;
     }
     
     @media (max-width: 640px) {

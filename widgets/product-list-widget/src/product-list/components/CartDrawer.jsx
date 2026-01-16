@@ -116,7 +116,7 @@ export function CartDrawer({
                 </>
               ) : (
                 <>
-                  Checkout
+                  Proceed to Payment
                   <span className="bg-white/20 px-2 py-0.5 rounded-lg text-sm">
                     {totalItems} {totalItems === 1 ? "item" : "items"}
                   </span>
