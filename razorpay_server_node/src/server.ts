@@ -20,6 +20,7 @@ import { handleCorsOptions } from "./middleware/cors.js";
 import RazorpayRoutes from "./routes/razorpay.routes.js";
 import OrderRoutes from "./routes/order.routes.js";
 import StaticRoutes from "./routes/static.routes.js";
+import ErrorRoutes from "./routes/error.routes.js";
 
 /**
  * Main HTTP server request handler
@@ -139,7 +140,8 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
     }
   }
 
-  res.writeHead(404).end("Not Found");
+  // Custom 404 page
+  ErrorRoutes.serve404Page(res);
 };
 
 // Create and start server
