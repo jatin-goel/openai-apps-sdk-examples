@@ -33,7 +33,6 @@ pnpm install
 export DB_CONNECT_URL="postgresql://<USERNAME>:<PASSWORD>@<HOST>/<DATABASE>"
 export JWT_SECRET="<YOUR_JWT_SECRET>"
 export RAZORPAY_KEY_ID="<YOUR_RAZORPAY_KEY_ID>"
-export RAZORPAY_KEY_SECRET="<YOUR_RAZORPAY_KEY_SECRET>"
 ```
 
 ### Run the Server

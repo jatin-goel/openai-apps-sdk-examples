@@ -1,5 +1,4 @@
 import Razorpay from "razorpay";
-import crypto from "node:crypto";
 import config from "../config/index.js";
 
 // In-memory store for payment status
@@ -27,7 +26,6 @@ export class RazorpayService {
     if (!this.razorpay) {
       this.razorpay = new Razorpay({
         key_id: config.razorpay.keyId || "",
-        key_secret: config.razorpay.keySecret || "",
       });
     }
     return this.razorpay;
@@ -50,24 +48,6 @@ export class RazorpayService {
    */
   checkPaymentStatus(orderId: string) {
     return paymentStatusStore.get(orderId);
-  }
-
-  /**
-   * Verify payment signature
-   */
-  verifyPaymentSignature(
-    razorpayOrderId: string,
-    razorpayPaymentId: string,
-    razorpaySignature: string,
-  ): boolean {
-    const keySecret = config.razorpay.keySecret || "";
-    const sign = razorpayOrderId + "|" + razorpayPaymentId;
-    const expectedSign = crypto
-      .createHmac("sha256", keySecret)
-      .update(sign)
-      .digest("hex");
-
-    return expectedSign === razorpaySignature;
   }
 
   /**

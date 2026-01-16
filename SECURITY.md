@@ -72,7 +72,6 @@ Store sensitive information in `.env` files:
 ```bash
 # NEVER commit this file to git
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxx
-RAZORPAY_KEY_SECRET=xxxxxxxxxxxxx
 ```
 
 Add `.env` to your `.gitignore`:
