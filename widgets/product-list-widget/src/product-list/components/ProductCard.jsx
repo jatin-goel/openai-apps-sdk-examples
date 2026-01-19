@@ -32,32 +32,35 @@ export function ProductCard({
       </div>
 
       {/* Product Info */}
-      <div className="flex flex-col gap-3">
-        <ProductCategory category={product.category} />
-        
-        {/* Product name - left-aligned */}
-        <h3 className="font-light text-[#3d3d3d] text-base leading-snug line-clamp-2 min-h-[2.5rem]">
-          {product.title}
-        </h3>
-
-        {/* Price as rounded pill/badge */}
-        <div className="flex items-center gap-2">
-          <span className="inline-block bg-[#3d3d3d] text-white text-sm font-light px-4 py-1.5 rounded-full">
+      <div className="flex flex-col">
+        {/* Title and Price Row */}
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <h3 className="text-lg font-normal text-[#1a1a1a] leading-tight flex-1">
+            {product.title}
+          </h3>
+          <span className="inline-block bg-[#e8dcc8] text-[#1a1a1a] text-base font-normal px-4 py-1 rounded-full whitespace-nowrap">
             ₹{product.price}
           </span>
-          
-          {/* Quantity indicator if in cart */}
-          {quantity > 0 && (
+        </div>
+
+        {/* Description */}
+        <p className="text-sm text-[#666666] leading-relaxed mb-4 line-clamp-2">
+          {product.description || "Handcrafted curves and natural grain brought together in perfect harmony."}
+        </p>
+
+        {/* Quantity indicator if in cart */}
+        {quantity > 0 && (
+          <div className="mb-3">
             <span className="inline-block bg-[#8a8a8a] text-white text-xs font-light px-3 py-1.5 rounded-full">
               {quantity} in bag
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Add to Bag button - solid, earthy/dark CTA */}
         {quantity === 0 ? (
           <button
-            className="w-full bg-[#3d3d3d] text-white py-3 rounded-full text-sm font-light hover:bg-[#2a2a2a] active:scale-[0.98] transition-all duration-200"
+            className="w-full bg-[#3d3d3d] text-white py-3.5 rounded-xl text-base font-normal hover:bg-[#2a2a2a] active:scale-[0.98] transition-all duration-200"
             onClick={() => onAddToCart(product)}
           >
             Add To Bag
