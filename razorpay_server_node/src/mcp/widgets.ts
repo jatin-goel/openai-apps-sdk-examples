@@ -1,18 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import config from "../config/index.js";
-import type { Widget } from "../types/index.js";
-
-/**
- * OpenAI Widget CSP type
- * @see https://developers.openai.com/apps-sdk/build/mcp-server/#content-security-policy-csp
- */
-export interface WidgetCSP {
-  connect_domains: string[];
-  resource_domains: string[];
-  redirect_domains?: string[];
-  frame_domains?: string[];
-}
+import type { Widget, WidgetCSP } from "../types/index.js";
 
 /**
  * Build Widget CSP object for OpenAI

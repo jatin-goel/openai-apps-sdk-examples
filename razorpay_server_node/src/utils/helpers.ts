@@ -1,9 +1,9 @@
 import { IncomingMessage } from "node:http";
 
 /**
- * Reads the request body from an HTTP request
+ * Reads the request body from an HTTP request (internal use only)
  */
-export const getRequestBody = (req: IncomingMessage): Promise<string> => {
+const getRequestBody = (req: IncomingMessage): Promise<string> => {
   return new Promise((resolve, reject) => {
     let body = "";
     req.on("data", (chunk) => {
@@ -31,9 +31,9 @@ export const parseJsonBody = async (req: IncomingMessage): Promise<any> => {
 };
 
 /**
- * Sends a JSON response
+ * Sends a JSON response (internal use only)
  */
-export const sendJsonResponse = (
+const sendJsonResponse = (
   res: any,
   statusCode: number,
   data: any,

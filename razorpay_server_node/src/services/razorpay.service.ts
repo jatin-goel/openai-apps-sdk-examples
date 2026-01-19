@@ -1,4 +1,3 @@
-import Razorpay from "razorpay";
 import config from "../config/index.js";
 
 // In-memory store for payment status
@@ -20,17 +19,6 @@ setInterval(() => {
 }, 5 * 60 * 1000);
 
 export class RazorpayService {
-  private razorpay: Razorpay | null = null;
-
-  initRazorpay() {
-    if (!this.razorpay) {
-      this.razorpay = new Razorpay({
-        key_id: config.razorpay.keyId || "",
-      });
-    }
-    return this.razorpay;
-  }
-
   /**
    * Mark payment as successful
    */

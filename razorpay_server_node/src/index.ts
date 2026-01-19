@@ -24,13 +24,11 @@ export {
 export { widgets, widgetsById, widgetsByUri } from "./mcp/widgets.js";
 
 // Middleware
-export { handleCorsOptions, setCorsHeaders } from "./middleware/cors.js";
+export { handleCorsOptions } from "./middleware/cors.js";
 
 // Utils
 export {
-  getRequestBody,
   parseJsonBody,
-  sendJsonResponse,
   sendErrorResponse,
   sendSuccessResponse,
 } from "./utils/helpers.js";
