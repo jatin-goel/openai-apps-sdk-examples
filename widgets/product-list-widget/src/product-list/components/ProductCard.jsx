@@ -114,25 +114,15 @@ function QuantitySelector({
             ? `Remove ${productTitle} from cart`
             : `Decrease ${productTitle} quantity`
         }
-        className="flex-1 bg-[#e8e6e1] text-[#3d3d3d] py-3 rounded-full text-sm font-light hover:bg-[#ddd9d2] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
+        className="flex-1 bg-[#e8e6e1] text-[#3d3d3d] py-3 rounded-xl text-lg font-light hover:bg-[#ddd9d2] active:scale-[0.98] transition-all duration-200 flex items-center justify-center"
         onClick={onRemove}
       >
-        {quantity === 1 ? (
-          <>
-            <Trash2 className="w-4 h-4" />
-            <span>Remove</span>
-          </>
-        ) : (
-          <>
-            <Minus className="w-4 h-4" strokeWidth={1.5} />
-            <span>Less</span>
-          </>
-        )}
+        <Minus className="w-5 h-5" strokeWidth={2} />
       </button>
       
       <button
         aria-label={`Increase ${productTitle} quantity`}
-        className={`flex-1 py-3 rounded-full text-sm font-light transition-all duration-200 flex items-center justify-center gap-2 ${
+        className={`flex-1 py-3 rounded-xl text-lg font-light transition-all duration-200 flex items-center justify-center ${
           isMaxQuantity
             ? "bg-[#e8e6e1] text-[#8a8a8a] opacity-50 cursor-not-allowed"
             : "bg-[#3d3d3d] text-white hover:bg-[#2a2a2a] active:scale-[0.98]"
@@ -140,8 +130,7 @@ function QuantitySelector({
         onClick={onAdd}
         disabled={isMaxQuantity}
       >
-        <Plus className="w-4 h-4" strokeWidth={1.5} />
-        <span>More</span>
+        <Plus className="w-5 h-5" strokeWidth={2} />
       </button>
     </div>
   );
