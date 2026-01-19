@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { ProductCard } from "./ProductCard.jsx";
 
 /**
- * ProductList - Grid layout for products
+ * ProductList - Horizontal scrollable product grid
  */
 export function ProductList({
   products,
@@ -14,21 +14,24 @@ export function ProductList({
 }) {
   if (isSearching) {
     return (
-      <div className="py-16 flex flex-col items-center justify-center gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-        <span className="text-gray-500">Loading products...</span>
+      <div className="py-12 flex flex-col items-center justify-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        <span className="text-black/60">Searching products...</span>
       </div>
     );
   }
 
   if (products.length === 0) {
     return (
-      <div className="py-12 text-center text-gray-500">No products found.</div>
+      <div className="py-6 text-center text-black/60">No products found.</div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 py-6">
+    <div
+      className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide"
+      style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+    >
       {products.map((product) => (
         <ProductCard
           key={product.id}
