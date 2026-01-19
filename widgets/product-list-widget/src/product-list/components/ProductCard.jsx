@@ -43,13 +43,14 @@ export function ProductCard({
           </span>
         </div>
 
-        {/* Description */}
-        {product.description && (
-          <p className="text-sm text-[#666666] leading-relaxed mb-4 line-clamp-2 overflow-hidden">
-            {product.description}
-          </p>
-        )}
-        {!product.description && <div className="mb-4"></div>}
+        {/* Description - Fixed height for consistent card sizing */}
+        <div className="h-[2.75rem] mb-4">
+          {product.description && (
+            <p className="text-sm text-[#666666] leading-relaxed line-clamp-2 overflow-hidden">
+              {product.description}
+            </p>
+          )}
+        </div>
 
         {/* Quantity indicator if in cart */}
         {quantity > 0 && (
