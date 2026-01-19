@@ -52,14 +52,14 @@ export function ProductCard({
           )}
         </div>
 
-        {/* Quantity indicator if in cart */}
-        {quantity > 0 && (
-          <div className="mb-3">
+        {/* Fixed height container for quantity indicator - maintains consistent spacing */}
+        <div className="h-[2rem] mb-3">
+          {quantity > 0 && (
             <span className="inline-block bg-[#8a8a8a] text-white text-xs font-light px-3 py-1.5 rounded-full">
               {quantity} in bag
             </span>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Add to Bag button - solid, earthy/dark CTA */}
         {quantity === 0 ? (
