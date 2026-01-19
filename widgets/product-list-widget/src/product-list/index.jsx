@@ -81,32 +81,41 @@ function App() {
         {/* Inner container with generous padding */}
         <div className="px-6 sm:px-10 py-8">
           {/* Header: Brand/Logo and Search */}
-          <div className="flex items-start justify-between gap-6 mb-8">
-            {/* Brand/Logo area - left */}
-            <div className="flex-shrink-0">
-              <h1 className="text-2xl sm:text-3xl font-light text-[#3d3d3d] tracking-tight mb-1">
-                {storeName || "alder & arc"}
-              </h1>
-              <p className="text-sm text-[#8a8a8a] font-light">
-                {query ? (
-                  <span>{total} results for "{query}"</span>
-                ) : (
-                  <span>{total} pieces</span>
-                )}
-              </p>
-            </div>
+          <div className="mb-8">
+            <div className="flex items-center justify-between gap-12 mb-6">
+              {/* Brand/Logo area - left */}
+              <div className="flex-shrink-0">
+                <h1 className="text-2xl sm:text-3xl font-light text-[#3d3d3d] tracking-tight">
+                  {storeName || "alder & arc"}
+                </h1>
+              </div>
 
-            {/* Search input - right */}
-            <div className="flex-1 max-w-md">
-              <SearchBar
-                searchInput={searchInput}
-                isSearching={isSearching}
-                onSearchInputChange={setSearchInput}
-                onSearch={handleSearch}
-                cartItemCount={totalItems}
-                onCartClick={() => setIsCartOpen(true)}
-              />
+              {/* Search input - right */}
+              <div className="flex-1 max-w-md">
+                <SearchBar
+                  searchInput={searchInput}
+                  isSearching={isSearching}
+                  onSearchInputChange={setSearchInput}
+                  onSearch={handleSearch}
+                  cartItemCount={totalItems}
+                  onCartClick={() => setIsCartOpen(true)}
+                />
+              </div>
             </div>
+            
+            {/* Horizontal line */}
+            <div className="border-t border-[#e0ddd8]"></div>
+            
+            {/* Product count below line */}
+            {query ? (
+              <p className="text-sm text-[#8a8a8a] font-light mt-6">
+                {total} results for "{query}"
+              </p>
+            ) : (
+              <p className="text-sm text-[#8a8a8a] font-light mt-6">
+                {total} pieces
+              </p>
+            )}
           </div>
 
           {/* Product strip with overflow */}

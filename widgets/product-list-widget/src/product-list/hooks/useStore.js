@@ -43,6 +43,7 @@ export function useStore(baseUrl, storeId) {
           const mappedProducts = (data.products || []).map((product) => ({
             id: product.id,
             title: product.name,
+            description: product.description || "",
             price: product.discounted_price / 100,
             thumbnail: product.images?.[0] || "https://via.placeholder.com/100",
             category: product.categories?.[0]?.name || "Uncategorized",
