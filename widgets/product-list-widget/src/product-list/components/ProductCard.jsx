@@ -44,9 +44,12 @@ export function ProductCard({
         </div>
 
         {/* Description */}
-        <p className="text-sm text-[#666666] leading-relaxed mb-4 line-clamp-2">
-          {product.description || "Handcrafted curves and natural grain brought together in perfect harmony."}
-        </p>
+        {product.description && (
+          <p className="text-sm text-[#666666] leading-relaxed mb-4 line-clamp-2">
+            {product.description}
+          </p>
+        )}
+        {!product.description && <div className="mb-4"></div>}
 
         {/* Quantity indicator if in cart */}
         {quantity > 0 && (
