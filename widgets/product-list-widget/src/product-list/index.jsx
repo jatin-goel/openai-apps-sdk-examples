@@ -75,7 +75,7 @@ function App() {
   }
 
   return (
-    <div className="antialiased w-full text-black px-4 pb-2 border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
+    <div className="antialiased w-full text-black px-6 pb-4 border border-gray-200 rounded-3xl overflow-hidden bg-white">
       <div className="max-w-full">
         <StoreHeader 
           storeName={storeName}
@@ -85,24 +85,15 @@ function App() {
           onCartClick={() => setIsCartOpen(true)}
         />
 
-        <SearchBar
-          searchInput={searchInput}
+        <ProductList
+          products={products}
           isSearching={isSearching}
-          onSearchInputChange={setSearchInput}
-          onSearch={handleSearch}
+          getProductQuantity={getProductQuantity}
+          onAddToCart={addToCart}
+          onRemoveFromCart={removeFromCart}
         />
 
-        <div className="py-4">
-          <ProductList
-            products={products}
-            isSearching={isSearching}
-            getProductQuantity={getProductQuantity}
-            onAddToCart={addToCart}
-            onRemoveFromCart={removeFromCart}
-          />
-        </div>
-
-        <div className="flex flex-col gap-2 pt-2">
+        <div className="flex flex-col gap-3 pt-4 border-t border-gray-200">
           <Pagination
             skip={skip}
             limit={limit}

@@ -1,9 +1,9 @@
 import React from "react";
-import { Plus, Minus, ShoppingBag, Trash2 } from "lucide-react";
+import { Plus, Minus, Trash2 } from "lucide-react";
 import { Image } from "@openai/apps-sdk-ui/components/Image";
 
 /**
- * ProductCard - Individual product display with add to cart functionality
+ * ProductCard - Elegant furniture-style product card
  */
 export function ProductCard({
   product,
@@ -14,48 +14,41 @@ export function ProductCard({
   const isMaxQuantity = quantity >= product.stockAvailable;
 
   return (
-    <div className="group flex-shrink-0 w-[200px] sm:w-[220px] flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 snap-start">
+    <div className="group flex flex-col bg-white rounded-3xl overflow-hidden transition-all duration-300">
       {/* Product Image */}
-      <div className="aspect-[4/5] bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden">
+      <div className="aspect-[3/4] bg-gray-100 relative overflow-hidden rounded-3xl">
         <Image
           src={product.thumbnail}
           alt={product.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
-
-        {/* Stock Badge */}
-        {product.stockAvailable <= 5 && product.stockAvailable > 0 && (
-          <span className="absolute top-3 left-3 bg-rose-500 text-white text-[10px] font-semibold px-2.5 py-1 rounded-full shadow-md">
-            Only {product.stockAvailable} left
-          </span>
-        )}
-
-        {/* Quick Add Overlay - shows on hover when not in cart */}
-        {quantity === 0 && (
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-end justify-center pb-4 opacity-0 group-hover:opacity-100">
-            <button
-              className="bg-black text-white px-5 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 shadow-lg hover:bg-gray-900 active:scale-95 transition-all transform translate-y-4 group-hover:translate-y-0 duration-300"
-              onClick={() => onAddToCart(product)}
-            >
-              <ShoppingBag className="w-3.5 h-3.5" />
-              Add to Bag
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Product Info */}
-      <div className="p-4 flex flex-col flex-1">
-        <ProductCategory category={product.category} />
-        <h3 className="font-medium text-gray-900 text-sm leading-snug line-clamp-2 min-h-[2.5rem]">
+      <div className="pt-4 flex flex-col">
+        <h3 className="font-normal text-gray-900 text-base leading-snug line-clamp-2 mb-2">
           {product.title}
         </h3>
+        
+        <p className="text-xs text-gray-500 mb-3 line-clamp-1">
+          {product.category !== 'Uncategorized' ? product.category : 'Handcrafted curves and natural grain brought together in perfect harmony.'}
+        </p>
 
-        <div className="mt-auto pt-3 flex items-end justify-between gap-2">
-          <p className="text-xl font-bold text-gray-900">₹{product.price}</p>
+        <div className="flex items-center justify-between gap-3">
+          {/* Price Badge */}
+          <div className="bg-amber-50 text-amber-900 px-4 py-2 rounded-full">
+            <span className="text-lg font-semibold">₹{product.price}</span>
+          </div>
 
-          {/* Quantity Controls */}
-          {quantity > 0 && (
+          {/* Add to Bag Button */}
+          {quantity === 0 ? (
+            <button
+              onClick={() => onAddToCart(product)}
+              className="flex-1 bg-gray-900 text-white py-2.5 rounded-full text-sm font-medium hover:bg-gray-800 active:scale-95 transition-all"
+            >
+              Add To Bag
+            </button>
+          ) : (
             <QuantitySelector
               quantity={quantity}
               isMaxQuantity={isMaxQuantity}
