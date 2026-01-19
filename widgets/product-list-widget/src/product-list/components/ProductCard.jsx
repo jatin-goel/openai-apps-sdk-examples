@@ -14,7 +14,7 @@ export function ProductCard({
   const isMaxQuantity = quantity >= product.stockAvailable;
 
   return (
-    <div className="group flex-shrink-0 w-[280px] sm:w-[320px] flex flex-col">
+    <div className="group flex-shrink-0 w-[240px] sm:w-[280px] flex flex-col">
       {/* Product Image - Large square with soft rounded corners */}
       <div className="aspect-square bg-[#e8e6e1] relative overflow-hidden rounded-2xl mb-4">
         <Image
