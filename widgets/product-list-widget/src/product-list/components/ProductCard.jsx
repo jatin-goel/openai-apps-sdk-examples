@@ -33,7 +33,7 @@ export function ProductCard({
         <Image
           src={images[currentImageIndex]}
           alt={product.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-out"
         />
 
         {/* Stock Badge - subtle */}
