@@ -20,12 +20,10 @@ function buildWidgetCSP(baseUrl: string): WidgetCSP {
  */
 export function readWidgetHtml(componentName: string): string {
   if (!fs.existsSync(config.assetsDir)) {
-    console.warn(`Widget assets directory not found: ${config.assetsDir}`);
     return getPlaceholderHtml(componentName);
   }
 
   const directPath = path.join(config.assetsDir, `${componentName}.html`);
-  console.log("asset path is " + directPath);
   let htmlContents: string | null = null;
 
   if (fs.existsSync(directPath)) {
@@ -48,9 +46,6 @@ export function readWidgetHtml(componentName: string): string {
   }
 
   if (!htmlContents) {
-    console.warn(
-      `Widget HTML for "${componentName}" not found, using placeholder`,
-    );
     return getPlaceholderHtml(componentName);
   }
 

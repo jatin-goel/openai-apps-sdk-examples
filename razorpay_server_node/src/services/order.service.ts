@@ -1,5 +1,17 @@
 // In-memory order storage
-const orders = new Map<string, any>();
+interface StoredOrder {
+  order_id: string;
+  amount: number;
+  currency: string;
+  receipt?: string;
+  status: string;
+  notes?: Record<string, any>;
+  created_at: number;
+  entity_id: string;
+  line_items: Array<{ quantity: number; line_item_id: string }>;
+}
+
+const orderStore = new Map<string, StoredOrder>();
 
 export class OrderService {
   /**
@@ -32,11 +44,6 @@ export class OrderService {
       entity_type: "payment_store",
     };
 
-    console.log(
-      "Creating Razorpay cart with payload:",
-      JSON.stringify(payload, null, 2),
-    );
-
     const response = await fetch(
       "https://api.razorpay.com/v1/stores/public/carts",
       {
@@ -53,18 +60,16 @@ export class OrderService {
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error("Razorpay Cart API Error:", errorData);
       throw new Error(
         `Razorpay Cart API Error: ${response.status} - ${errorData}`,
       );
     }
 
     const cartData = await response.json();
-    console.log("Razorpay cart created successfully:", cartData);
 
     // Store order in memory
     if (cartData.order_id) {
-      orders.set(cartData.order_id, {
+      orderStore.set(cartData.order_id, {
         ...cartData,
         entity_id: entityId,
         line_items: lineItems,
@@ -86,7 +91,7 @@ export class OrderService {
       throw new Error("Order ID is required");
     }
 
-    const order = orders.get(orderId);
+    const order = orderStore.get(orderId);
 
     if (!order) {
       throw new Error("Order not found");

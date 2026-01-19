@@ -66,13 +66,11 @@ export function useStore(baseUrl, storeId) {
           setProducts(paginatedProducts);
           setTotal(filteredProducts.length);
         } else {
-          console.error("Error fetching products:", data.error);
           setProducts([]);
           setTotal(0);
         }
       })
-      .catch((err) => {
-        console.error("Error fetching products:", err);
+      .catch(() => {
         setProducts([]);
         setTotal(0);
       })

@@ -58,16 +58,13 @@ fs.rmSync(outDir, { recursive: true, force: true });
 const API_BASE_URL = process.env.BASE_URL || process.env.DEFAULT_BASE_URL || "http://localhost:8000";
 const RAZORPAY_STORE_ID = process.env.RAZORPAY_STORE_ID || "";
 
-console.log(`Injecting API_BASE_URL: ${API_BASE_URL}`);
-console.log(`Injecting RAZORPAY_STORE_ID: ${RAZORPAY_STORE_ID}`);
-
-for (const file of entries) {
-  const name = path.basename(path.dirname(file));
-  if (targets.length && !targets.includes(name)) {
+for (const entryFile of entries) {
+  const widgetName = path.basename(path.dirname(entryFile));
+  if (targets.length && !targets.includes(widgetName)) {
     continue;
   }
 
-  const entryAbs = path.resolve(file);
+  const entryAbs = path.resolve(entryFile);
   const entryDir = path.dirname(entryAbs);
 
   // Collect CSS for this entry using the glob(s) rooted at its directory
@@ -123,11 +120,11 @@ for (const file of entries) {
         input: virtualId,
         output: {
           format: "es",
-          entryFileNames: `${name}.js`,
+          entryFileNames: `${widgetName}.js`,
           inlineDynamicImports: true,
           assetFileNames: (info) =>
             (info.name || "").endsWith(".css")
-              ? `${name}.css`
+              ? `${widgetName}.css`
               : `[name]-[hash][extname]`,
         },
         preserveEntrySignatures: "allow-extension",
@@ -136,11 +133,8 @@ for (const file of entries) {
     },
   });
 
-  console.group(`Building ${name} (react)`);
   await build(createConfig());
-  console.groupEnd();
-  builtNames.push(name);
-  console.log(`Built ${name}`);
+  builtNames.push(widgetName);
 }
 
 const outputs = fs
@@ -149,36 +143,30 @@ const outputs = fs
   .map((f) => path.join(outDir, f))
   .filter((p) => fs.existsSync(p));
 
-const h = crypto
+const versionHash = crypto
   .createHash("sha256")
   .update(pkg.version, "utf8")
   .digest("hex")
   .slice(0, 4);
 
-console.group("Hashing outputs");
-for (const out of outputs) {
-  const dir = path.dirname(out);
-  const ext = path.extname(out);
-  const base = path.basename(out, ext);
-  const newName = path.join(dir, `${base}-${h}${ext}`);
+for (const outputPath of outputs) {
+  const dir = path.dirname(outputPath);
+  const ext = path.extname(outputPath);
+  const base = path.basename(outputPath, ext);
+  const hashedName = path.join(dir, `${base}-${versionHash}${ext}`);
 
-  fs.renameSync(out, newName);
-  console.log(`${out} -> ${newName}`);
+  fs.renameSync(outputPath, hashedName);
 }
-console.groupEnd();
-
-console.log("new hash: ", h);
 
 const defaultBaseUrl = process.env.DEFAULT_BASE_URL || "https://localhost:4444";
 const baseUrlCandidate = process.env.BASE_URL?.trim() ?? "";
 const baseUrlRaw = baseUrlCandidate.length > 0 ? baseUrlCandidate : defaultBaseUrl;
 const normalizedBaseUrl = baseUrlRaw.replace(/\/+$/, "") || defaultBaseUrl;
-console.log(`Using BASE_URL ${normalizedBaseUrl} for generated HTML`);
 
-for (const name of builtNames) {
+for (const widgetName of builtNames) {
   const dir = outDir;
-  const hashedHtmlPath = path.join(dir, `${name}-${h}.html`);
-  const liveHtmlPath = path.join(dir, `${name}.html`);
+  const hashedHtmlPath = path.join(dir, `${widgetName}-${versionHash}.html`);
+  const liveHtmlPath = path.join(dir, `${widgetName}.html`);
   const html = `<!doctype html>
 <html>
 <head>
@@ -186,15 +174,14 @@ for (const name of builtNames) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' ${normalizedBaseUrl} https: blob:; style-src 'self' 'unsafe-inline' ${normalizedBaseUrl} https:; img-src 'self' data: blob: https: ${normalizedBaseUrl}; font-src 'self' data: ${normalizedBaseUrl} https:; connect-src 'self' ${normalizedBaseUrl} https: wss: blob:; worker-src 'self' blob:; child-src 'self' blob:; frame-ancestors 'self' https://chatgpt.com https://*.chatgpt.com;">
   <meta name="widget-domain" content="${normalizedBaseUrl}">
-  <script type="module" src="${normalizedBaseUrl}/${name}-${h}.js"></script>
-  <link rel="stylesheet" href="${normalizedBaseUrl}/${name}-${h}.css">
+  <script type="module" src="${normalizedBaseUrl}/${widgetName}-${versionHash}.js"></script>
+  <link rel="stylesheet" href="${normalizedBaseUrl}/${widgetName}-${versionHash}.css">
 </head>
 <body>
-  <div id="${name}-root"></div>
+  <div id="${widgetName}-root"></div>
 </body>
 </html>
 `;
   fs.writeFileSync(hashedHtmlPath, html, { encoding: "utf8" });
   fs.writeFileSync(liveHtmlPath, html, { encoding: "utf8" });
-  console.log(`${liveHtmlPath}`);
 }

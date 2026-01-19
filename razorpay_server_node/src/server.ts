@@ -147,8 +147,7 @@ const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
 // Create and start server
 const httpServer = createServer(requestHandler);
 
-httpServer.on("clientError", (err: Error, socket) => {
-  console.error("HTTP client error", err);
+httpServer.on("clientError", (_err: Error, socket) => {
   socket.end("HTTP/1.1 400 Bad Request\r\n\r\n");
 });
 

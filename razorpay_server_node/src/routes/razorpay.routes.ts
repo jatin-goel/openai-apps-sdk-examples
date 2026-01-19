@@ -29,7 +29,6 @@ export class RazorpayRoutes {
       }
 
       razorpayService.markPaymentSuccess(orderId, paymentId, 0);
-      console.log(`✅ Payment marked as successful: ${orderId}, ${paymentId}`);
       
       sendSuccessResponse(res, { 
         success: true, 
@@ -37,7 +36,6 @@ export class RazorpayRoutes {
         paymentId 
       });
     } catch (error: any) {
-      console.error("Error marking payment as successful:", error);
       sendErrorResponse(res, 500, error.message);
     }
   }
@@ -61,7 +59,6 @@ export class RazorpayRoutes {
       );
       sendSuccessResponse(res, result);
     } catch (error: any) {
-      console.error("Error creating Razorpay order:", error);
       sendErrorResponse(res, 500, error.message);
     }
   }
@@ -89,7 +86,6 @@ export class RazorpayRoutes {
       const result = await razorpayService.getPaymentStatus(orderId);
       sendSuccessResponse(res, result);
     } catch (error: any) {
-      console.error("Error getting payment status:", error);
       sendErrorResponse(res, 500, error.message);
     }
   }
@@ -120,7 +116,6 @@ export class RazorpayRoutes {
       const result = await razorpayService.parseStore(razorpayUrl!);
       sendSuccessResponse(res, result);
     } catch (error: any) {
-      console.error("Error parsing Razorpay store:", error);
       const statusCode =
         error.message.includes("required") || error.message.includes("Invalid")
           ? 400
@@ -185,7 +180,6 @@ export class RazorpayRoutes {
       });
       res.end(html);
     } catch (error: any) {
-      console.error("Error generating Magic Checkout HTML:", error);
       sendErrorResponse(
         res,
         500,
@@ -245,8 +239,7 @@ export class RazorpayRoutes {
             signature = params.get("razorpay_signature");
           }
         } catch (parseError) {
-          console.error("Error parsing POST body:", parseError);
-          // Continue with null values
+          // Continue with null values - parsing failed
         }
       } else {
         // GET request - use query params
@@ -270,18 +263,16 @@ export class RazorpayRoutes {
           // In a real scenario, you'd fetch the order details to get the amount
           amount = undefined; // Will be fetched from order if needed
         } catch (e) {
-          console.log("Could not fetch payment details, continuing with success");
+          // Could not fetch payment details, continuing with success
         }
         
         // Mark as successful (amount will be 0 in store, but displayed from order)
         razorpayService.markPaymentSuccess(orderId, paymentId, amount || 0);
-        console.log(`✅ Marked payment as successful for order: ${orderId}, payment: ${paymentId}`);
         
         isSuccess = true;
         paymentDetails = { id: paymentId, amount: amount || 0 };
       } else {
         // Missing payment details - this is likely a failure or cancelled payment
-        console.log(`❌ Payment failed or cancelled for order: ${orderId} (no payment ID or signature)`);
         isSuccess = false;
       }
 
@@ -300,7 +291,6 @@ export class RazorpayRoutes {
       });
       res.end(html);
     } catch (error: any) {
-      console.error("Error generating payment status page:", error);
       // Even on error, show success page
       const html = razorpayService.generatePaymentStatusHTML({
         isSuccess: true,

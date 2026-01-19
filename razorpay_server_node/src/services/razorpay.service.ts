@@ -1,22 +1,27 @@
 import config from "../config/index.js";
 
 // In-memory store for payment status
-const paymentStatusStore = new Map<string, {
+interface PaymentStatus {
   status: 'pending' | 'success' | 'failed';
   paymentId?: string;
   amount?: number;
   timestamp: number;
-}>();
+}
+
+const paymentStatusStore = new Map<string, PaymentStatus>();
 
 // Clean up old entries every 5 minutes
+const PAYMENT_CACHE_DURATION_MS = 5 * 60 * 1000;
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+
 setInterval(() => {
-  const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+  const expiryThreshold = Date.now() - PAYMENT_CACHE_DURATION_MS;
   for (const [orderId, data] of paymentStatusStore.entries()) {
-    if (data.timestamp < fiveMinutesAgo) {
+    if (data.timestamp < expiryThreshold) {
       paymentStatusStore.delete(orderId);
     }
   }
-}, 5 * 60 * 1000);
+}, CLEANUP_INTERVAL_MS);
 
 export class RazorpayService {
   /**
@@ -106,15 +111,11 @@ export class RazorpayService {
     if (!orderId) {
       throw new Error("Order ID is required");
     }
-
-    console.log(`🔍 Checking payment status for order: ${orderId}`);
     
     // Check in-memory store
     const status = this.checkPaymentStatus(orderId);
-    console.log(`📦 Store status for ${orderId}:`, status);
     
     if (status && status.status === 'success') {
-      console.log(`✅ Returning success for order: ${orderId}`);
       return {
         orderId,
         payments: [],
@@ -129,7 +130,6 @@ export class RazorpayService {
       };
     }
 
-    console.log(`❌ No payment found in store for order: ${orderId}`);
     // Return no payment found - widget will keep polling
     return {
       orderId,

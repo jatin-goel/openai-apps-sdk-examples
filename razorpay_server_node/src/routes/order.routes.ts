@@ -28,7 +28,6 @@ export class OrderRoutes {
         message: "Razorpay order created successfully",
       });
     } catch (error: any) {
-      console.error("Error creating Razorpay order for checkout:", error);
       const statusCode = error.message.includes("required") ? 400 : 500;
       sendErrorResponse(
         res,
@@ -55,7 +54,6 @@ export class OrderRoutes {
       const order = await OrderService.getOrderById(orderId);
       sendSuccessResponse(res, { order });
     } catch (error: any) {
-      console.error("Error fetching order:", error);
       const statusCode = error.message.includes("not found") ? 404 : 500;
       sendErrorResponse(
         res,

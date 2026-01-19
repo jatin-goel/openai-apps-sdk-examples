@@ -38,8 +38,7 @@ export function useCheckout(baseUrl, storeId, cart) {
       } else {
         setError(data.error || "Failed to create order");
       }
-    } catch (err) {
-      console.error("Checkout error:", err);
+    } catch {
       setError("Network error. Please try again.");
     } finally {
       setIsProcessing(false);
