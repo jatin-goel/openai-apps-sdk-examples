@@ -46,6 +46,7 @@ export function useStore(baseUrl, storeId) {
             description: product.description || "",
             price: product.discounted_price / 100,
             thumbnail: product.images?.[0] || "https://via.placeholder.com/100",
+            images: product.images || [],
             category: product.categories?.[0]?.name || "Uncategorized",
             stockAvailable: product.stock_available || 0,
           }));

@@ -1,5 +1,5 @@
-import React from "react";
-import { Plus, Minus, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import { Plus, Minus, ChevronLeft, ChevronRight } from "lucide-react";
 import { Image } from "@openai/apps-sdk-ui/components/Image";
 
 /**
@@ -12,22 +12,74 @@ export function ProductCard({
   onRemoveFromCart,
 }) {
   const isMaxQuantity = quantity >= product.stockAvailable;
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const images = product.images && product.images.length > 0 ? product.images : [product.thumbnail];
+  const hasMultipleImages = images.length > 1;
+
+  const handlePrevImage = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
 
   return (
     <div className="group flex-shrink-0 w-[240px] sm:w-[280px] flex flex-col">
       {/* Product Image - Large square with soft rounded corners */}
       <div className="aspect-square bg-[#e8e6e1] relative overflow-hidden rounded-2xl mb-4">
         <Image
-          src={product.thumbnail}
+          src={images[currentImageIndex]}
           alt={product.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
         />
 
         {/* Stock Badge - subtle */}
         {product.stockAvailable <= 5 && product.stockAvailable > 0 && (
-          <span className="absolute top-4 left-4 bg-[#3d3d3d] text-white text-[10px] font-light px-3 py-1.5 rounded-full">
+          <span className="absolute top-4 left-4 bg-[#3d3d3d] text-white text-[10px] font-light px-3 py-1.5 rounded-full z-10">
             Only {product.stockAvailable} left
           </span>
+        )}
+
+        {/* Image Navigation - Only show if multiple images */}
+        {hasMultipleImages && (
+          <>
+            <button
+              onClick={handlePrevImage}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="w-5 h-5 text-[#3d3d3d]" strokeWidth={2} />
+            </button>
+            <button
+              onClick={handleNextImage}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+              aria-label="Next image"
+            >
+              <ChevronRight className="w-5 h-5 text-[#3d3d3d]" strokeWidth={2} />
+            </button>
+
+            {/* Image Indicators */}
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+              {images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImageIndex(index);
+                  }}
+                  className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                    index === currentImageIndex
+                      ? "bg-white w-4"
+                      : "bg-white/60 hover:bg-white/80"
+                  }`}
+                  aria-label={`View image ${index + 1}`}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
 
