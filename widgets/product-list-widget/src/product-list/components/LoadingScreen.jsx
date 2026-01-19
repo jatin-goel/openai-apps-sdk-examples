@@ -6,10 +6,12 @@ import { Loader2 } from "lucide-react";
  */
 export function LoadingScreen() {
   return (
-    <div className="antialiased w-full text-black px-4 pb-2 border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
-      <div className="py-16 flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
-        <span className="text-black/60 text-sm">Loading store...</span>
+    <div className="antialiased w-full text-black bg-[#faf9f7] p-4 sm:p-6">
+      <div className="max-w-[1400px] mx-auto bg-[#f5f4f0] rounded-3xl shadow-sm overflow-hidden">
+        <div className="py-24 flex flex-col items-center justify-center gap-4">
+          <Loader2 className="h-10 w-10 animate-spin text-[#8a8a8a]" />
+          <span className="text-[#8a8a8a] text-sm font-light">Loading store...</span>
+        </div>
       </div>
     </div>
   );

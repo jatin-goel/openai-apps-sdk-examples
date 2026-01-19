@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { ProductCard } from "./ProductCard.jsx";
 
 /**
- * ProductList - Horizontal scrollable product grid
+ * ProductList - Horizontal scrollable product strip (editorial style)
  */
 export function ProductList({
   products,
@@ -14,24 +14,33 @@ export function ProductList({
 }) {
   if (isSearching) {
     return (
-      <div className="py-12 flex flex-col items-center justify-center gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-        <span className="text-black/60">Searching products...</span>
+      <div className="py-16 flex flex-col items-center justify-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-[#8a8a8a]" />
+        <span className="text-[#8a8a8a] font-light text-sm">Searching pieces...</span>
       </div>
     );
   }
 
   if (products.length === 0) {
     return (
-      <div className="py-6 text-center text-black/60">No products found.</div>
+      <div className="py-16 text-center text-[#8a8a8a] font-light">No pieces found.</div>
     );
   }
 
   return (
     <div
-      className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide"
-      style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      className="flex gap-6 overflow-x-auto pb-2 pr-6 sm:pr-10"
+      style={{ 
+        scrollbarWidth: "none", 
+        msOverflowStyle: "none",
+        scrollBehavior: "smooth"
+      }}
     >
+      <style jsx>{`
+        div::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
       {products.map((product) => (
         <ProductCard
           key={product.id}

@@ -32,7 +32,7 @@ export function CartDrawer({
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-[#3d3d3d]/40 backdrop-blur-sm z-40 transition-opacity duration-300 ${
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={onClose}
@@ -40,42 +40,42 @@ export function CartDrawer({
 
       {/* Drawer */}
       <div
-        className={`fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-out flex flex-col ${
+        className={`fixed right-0 top-0 bottom-0 w-full max-w-md bg-[#faf9f7] shadow-2xl z-50 transform transition-transform duration-300 ease-out flex flex-col ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <div className="flex items-center justify-between p-6 border-b border-[#e0ddd8]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-900 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#3d3d3d] rounded-full flex items-center justify-center">
               <ShoppingBag className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="font-bold text-gray-900 text-lg">Your Cart</h2>
-              <p className="text-sm text-gray-500">
-                {totalItems} {totalItems === 1 ? "item" : "items"}
+              <h2 className="font-light text-[#3d3d3d] text-xl">Your Bag</h2>
+              <p className="text-sm text-[#8a8a8a] font-light">
+                {totalItems} {totalItems === 1 ? "piece" : "pieces"}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[#e8e6e1] transition-colors"
             aria-label="Close cart"
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-5 h-5 text-[#8a8a8a]" />
           </button>
         </div>
 
         {/* Cart Items */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-6">
           {uniqueItems.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center py-12">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <ShoppingBag className="w-10 h-10 text-gray-300" />
+              <div className="w-20 h-20 bg-[#e8e6e1] rounded-full flex items-center justify-center mb-4">
+                <ShoppingBag className="w-10 h-10 text-[#8a8a8a]" />
               </div>
-              <p className="text-gray-500 font-medium">Your cart is empty</p>
-              <p className="text-gray-400 text-sm mt-1">
-                Add items to get started
+              <p className="text-[#8a8a8a] font-light">Your bag is empty</p>
+              <p className="text-[#8a8a8a] text-sm mt-1 font-light">
+                Add pieces to get started
               </p>
             </div>
           ) : (
@@ -94,10 +94,10 @@ export function CartDrawer({
 
         {/* Footer with total and checkout */}
         {uniqueItems.length > 0 && (
-          <div className="border-t border-gray-100 p-4 bg-gray-50">
+          <div className="border-t border-[#e0ddd8] p-6 bg-[#f5f4f0]">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-600">Subtotal</span>
-              <span className="text-2xl font-bold text-gray-900">
+              <span className="text-[#8a8a8a] font-light">Subtotal</span>
+              <span className="text-2xl font-light text-[#3d3d3d]">
                 ₹{totalPrice}
               </span>
             </div>
@@ -107,7 +107,7 @@ export function CartDrawer({
                 onClose();
               }}
               disabled={isProcessing}
-              className="w-full bg-gray-900 text-white py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 hover:bg-gray-800 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#3d3d3d] text-white py-4 rounded-full font-light text-base flex items-center justify-center gap-2 hover:bg-[#2a2a2a] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isProcessing ? (
                 <>
@@ -117,8 +117,8 @@ export function CartDrawer({
               ) : (
                 <>
                   Proceed to Payment
-                  <span className="bg-white/20 px-2 py-0.5 rounded-lg text-sm">
-                    {totalItems} {totalItems === 1 ? "item" : "items"}
+                  <span className="bg-white/20 px-3 py-0.5 rounded-full text-sm">
+                    {totalItems} {totalItems === 1 ? "piece" : "pieces"}
                   </span>
                 </>
               )}
@@ -132,9 +132,9 @@ export function CartDrawer({
 
 function CartItem({ item, onAddToCart, onRemoveFromCart }) {
   return (
-    <div className="flex gap-4 p-3 bg-white rounded-2xl shadow-sm border border-gray-100">
+    <div className="flex gap-4 p-4 bg-white rounded-2xl">
       {/* Item Image */}
-      <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
+      <div className="w-24 h-24 bg-[#e8e6e1] rounded-xl overflow-hidden flex-shrink-0">
         <Image
           src={item.thumbnail}
           alt={item.title}
@@ -144,40 +144,40 @@ function CartItem({ item, onAddToCart, onRemoveFromCart }) {
 
       {/* Item Details */}
       <div className="flex-1 min-w-0 flex flex-col">
-        <h3 className="font-medium text-gray-900 text-sm line-clamp-2 leading-tight">
+        <h3 className="font-light text-[#3d3d3d] text-sm line-clamp-2 leading-tight">
           {item.title}
         </h3>
-        <p className="text-lg font-bold text-gray-900 mt-auto">₹{item.price}</p>
+        <p className="text-lg font-light text-[#3d3d3d] mt-auto">₹{item.price}</p>
       </div>
 
       {/* Quantity Controls */}
       <div className="flex flex-col items-end justify-between">
-        <div className="flex items-center bg-gray-100 rounded-full overflow-hidden">
+        <div className="flex items-center bg-[#e8e6e1] rounded-full overflow-hidden">
           <button
             aria-label={
               item.quantity === 1 ? "Remove from cart" : "Decrease quantity"
             }
-            className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 active:bg-gray-300 transition-colors"
+            className="w-8 h-8 flex items-center justify-center hover:bg-[#ddd9d2] active:bg-[#d3cfc8] transition-colors"
             onClick={() => onRemoveFromCart(item.id)}
           >
             {item.quantity === 1 ? (
-              <Trash2 className="w-3.5 h-3.5 text-gray-700" />
+              <Trash2 className="w-3.5 h-3.5 text-[#3d3d3d]" />
             ) : (
-              <Minus className="w-3.5 h-3.5 text-gray-700" strokeWidth={2.5} />
+              <Minus className="w-3.5 h-3.5 text-[#3d3d3d]" strokeWidth={1.5} />
             )}
           </button>
-          <span className="w-7 text-center font-semibold text-gray-900 text-sm tabular-nums">
+          <span className="w-7 text-center font-light text-[#3d3d3d] text-sm tabular-nums">
             {item.quantity}
           </span>
           <button
             aria-label="Increase quantity"
-            className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 active:bg-gray-300 transition-colors"
+            className="w-8 h-8 flex items-center justify-center hover:bg-[#ddd9d2] active:bg-[#d3cfc8] transition-colors"
             onClick={() => onAddToCart(item)}
           >
-            <Plus className="w-3.5 h-3.5 text-gray-700" strokeWidth={2.5} />
+            <Plus className="w-3.5 h-3.5 text-[#3d3d3d]" strokeWidth={1.5} />
           </button>
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-[#8a8a8a] font-light">
           ₹{(item.price * item.quantity).toFixed(2)}
         </p>
       </div>

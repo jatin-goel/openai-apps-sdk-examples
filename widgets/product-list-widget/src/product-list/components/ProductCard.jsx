@@ -1,9 +1,9 @@
 import React from "react";
-import { Plus, Minus, ShoppingBag, Trash2 } from "lucide-react";
+import { Plus, Minus, Trash2 } from "lucide-react";
 import { Image } from "@openai/apps-sdk-ui/components/Image";
 
 /**
- * ProductCard - Individual product display with add to cart functionality
+ * ProductCard - Editorial-style product card with minimal aesthetic
  */
 export function ProductCard({
   product,
@@ -14,57 +14,63 @@ export function ProductCard({
   const isMaxQuantity = quantity >= product.stockAvailable;
 
   return (
-    <div className="group flex-shrink-0 w-[200px] sm:w-[220px] flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 snap-start">
-      {/* Product Image */}
-      <div className="aspect-[4/5] bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden">
+    <div className="group flex-shrink-0 w-[280px] sm:w-[320px] flex flex-col">
+      {/* Product Image - Large square with soft rounded corners */}
+      <div className="aspect-square bg-[#e8e6e1] relative overflow-hidden rounded-2xl mb-4">
         <Image
           src={product.thumbnail}
           alt={product.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
         />
 
-        {/* Stock Badge */}
+        {/* Stock Badge - subtle */}
         {product.stockAvailable <= 5 && product.stockAvailable > 0 && (
-          <span className="absolute top-3 left-3 bg-rose-500 text-white text-[10px] font-semibold px-2.5 py-1 rounded-full shadow-md">
+          <span className="absolute top-4 left-4 bg-[#3d3d3d] text-white text-[10px] font-light px-3 py-1.5 rounded-full">
             Only {product.stockAvailable} left
           </span>
-        )}
-
-        {/* Quick Add Overlay - shows on hover when not in cart */}
-        {quantity === 0 && (
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-end justify-center pb-4 opacity-0 group-hover:opacity-100">
-            <button
-              className="bg-black text-white px-5 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2 shadow-lg hover:bg-gray-900 active:scale-95 transition-all transform translate-y-4 group-hover:translate-y-0 duration-300"
-              onClick={() => onAddToCart(product)}
-            >
-              <ShoppingBag className="w-3.5 h-3.5" />
-              Add to Bag
-            </button>
-          </div>
         )}
       </div>
 
       {/* Product Info */}
-      <div className="p-4 flex flex-col flex-1">
+      <div className="flex flex-col gap-3">
         <ProductCategory category={product.category} />
-        <h3 className="font-medium text-gray-900 text-sm leading-snug line-clamp-2 min-h-[2.5rem]">
+        
+        {/* Product name - left-aligned */}
+        <h3 className="font-light text-[#3d3d3d] text-base leading-snug line-clamp-2 min-h-[2.5rem]">
           {product.title}
         </h3>
 
-        <div className="mt-auto pt-3 flex items-end justify-between gap-2">
-          <p className="text-xl font-bold text-gray-900">₹{product.price}</p>
-
-          {/* Quantity Controls */}
+        {/* Price as rounded pill/badge */}
+        <div className="flex items-center gap-2">
+          <span className="inline-block bg-[#3d3d3d] text-white text-sm font-light px-4 py-1.5 rounded-full">
+            ₹{product.price}
+          </span>
+          
+          {/* Quantity indicator if in cart */}
           {quantity > 0 && (
-            <QuantitySelector
-              quantity={quantity}
-              isMaxQuantity={isMaxQuantity}
-              productTitle={product.title}
-              onAdd={() => onAddToCart(product)}
-              onRemove={() => onRemoveFromCart(product.id)}
-            />
+            <span className="inline-block bg-[#8a8a8a] text-white text-xs font-light px-3 py-1.5 rounded-full">
+              {quantity} in bag
+            </span>
           )}
         </div>
+
+        {/* Add to Bag button - solid, earthy/dark CTA */}
+        {quantity === 0 ? (
+          <button
+            className="w-full bg-[#3d3d3d] text-white py-3 rounded-full text-sm font-light hover:bg-[#2a2a2a] active:scale-[0.98] transition-all duration-200"
+            onClick={() => onAddToCart(product)}
+          >
+            Add To Bag
+          </button>
+        ) : (
+          <QuantitySelector
+            quantity={quantity}
+            isMaxQuantity={isMaxQuantity}
+            productTitle={product.title}
+            onAdd={() => onAddToCart(product)}
+            onRemove={() => onRemoveFromCart(product.id)}
+          />
+        )}
       </div>
     </div>
   );
@@ -80,7 +86,7 @@ function ProductCategory({ category }) {
   }
 
   return (
-    <p className="text-[10px] text-gray-500 mb-1 truncate uppercase tracking-wider font-medium">
+    <p className="text-[10px] text-[#8a8a8a] truncate uppercase tracking-widest font-light">
       {category}
     </p>
   );
@@ -94,36 +100,41 @@ function QuantitySelector({
   onRemove,
 }) {
   return (
-    <div className="flex items-center bg-gray-100 rounded-full overflow-hidden">
+    <div className="flex items-center gap-2 w-full">
       <button
         aria-label={
           quantity === 1
             ? `Remove ${productTitle} from cart`
             : `Decrease ${productTitle} quantity`
         }
-        className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 active:bg-gray-300 transition-colors"
+        className="flex-1 bg-[#e8e6e1] text-[#3d3d3d] py-3 rounded-full text-sm font-light hover:bg-[#ddd9d2] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
         onClick={onRemove}
       >
         {quantity === 1 ? (
-          <Trash2 className="w-3.5 h-3.5 text-gray-700" />
+          <>
+            <Trash2 className="w-4 h-4" />
+            <span>Remove</span>
+          </>
         ) : (
-          <Minus className="w-3.5 h-3.5 text-gray-700" strokeWidth={2.5} />
+          <>
+            <Minus className="w-4 h-4" strokeWidth={1.5} />
+            <span>Less</span>
+          </>
         )}
       </button>
-      <span className="w-7 text-center font-semibold text-gray-900 text-sm tabular-nums">
-        {quantity}
-      </span>
+      
       <button
         aria-label={`Increase ${productTitle} quantity`}
-        className={`w-8 h-8 flex items-center justify-center transition-colors ${
+        className={`flex-1 py-3 rounded-full text-sm font-light transition-all duration-200 flex items-center justify-center gap-2 ${
           isMaxQuantity
-            ? "opacity-40 cursor-not-allowed"
-            : "hover:bg-gray-200 active:bg-gray-300"
+            ? "bg-[#e8e6e1] text-[#8a8a8a] opacity-50 cursor-not-allowed"
+            : "bg-[#3d3d3d] text-white hover:bg-[#2a2a2a] active:scale-[0.98]"
         }`}
         onClick={onAdd}
         disabled={isMaxQuantity}
       >
-        <Plus className="w-3.5 h-3.5 text-gray-700" strokeWidth={2.5} />
+        <Plus className="w-4 h-4" strokeWidth={1.5} />
+        <span>More</span>
       </button>
     </div>
   );

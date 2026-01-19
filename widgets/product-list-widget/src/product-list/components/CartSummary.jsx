@@ -1,9 +1,8 @@
 import React from "react";
-import { ShoppingCart } from "lucide-react";
-import { Button } from "@openai/apps-sdk-ui/components/Button";
+import { ShoppingBag } from "lucide-react";
 
 /**
- * CartSummary - Cart total and checkout button
+ * CartSummary - Minimal cart total and checkout button
  */
 export function CartSummary({
   totalItems,
@@ -14,21 +13,17 @@ export function CartSummary({
   onOpenCart,
 }) {
   return (
-    <div className="pt-2 border-t border-black/5">
+    <div className="bg-white rounded-2xl p-6">
       {error && (
-        <div className="mb-3 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
+        <div className="mb-4 text-sm text-[#8a4a4a] bg-[#fef5f5] px-4 py-3 rounded-xl border border-[#f5d5d5]">
           {error}
         </div>
       )}
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium">Cart Summary</span>
-        <span className="text-sm font-medium">₹{totalPrice}</span>
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-sm font-light text-[#8a8a8a]">Your bag</span>
+        <span className="text-lg font-light text-[#3d3d3d]">₹{totalPrice}</span>
       </div>
-      <Button
-        color="primary"
-        variant="solid"
-        size="md"
-        block
+      <button
         onClick={() => {
           if (onOpenCart) {
             onOpenCart();
@@ -37,19 +32,24 @@ export function CartSummary({
           }
         }}
         disabled={isProcessing}
+        className={`w-full py-3.5 rounded-full text-sm font-light flex items-center justify-center gap-2 transition-all duration-200 ${
+          isProcessing
+            ? "bg-[#e8e6e1] text-[#8a8a8a] cursor-not-allowed"
+            : "bg-[#3d3d3d] text-white hover:bg-[#2a2a2a] active:scale-[0.98]"
+        }`}
       >
         {isProcessing ? (
           <>
             <LoadingSpinner />
-            Processing...
+            <span>Processing...</span>
           </>
         ) : (
           <>
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            Checkout ({totalItems} items)
+            <ShoppingBag className="h-4 w-4" />
+            <span>Checkout ({totalItems} {totalItems === 1 ? 'item' : 'items'})</span>
           </>
         )}
-      </Button>
+      </button>
     </div>
   );
 }

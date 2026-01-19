@@ -1,8 +1,8 @@
 import React from "react";
-import { Button } from "@openai/apps-sdk-ui/components/Button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 /**
- * Pagination - Previous/Next controls with page info
+ * Pagination - Minimal previous/next controls
  */
 export function Pagination({ skip, limit, total, onPrevious, onNext }) {
   if (total <= limit) {
@@ -15,28 +15,36 @@ export function Pagination({ skip, limit, total, onPrevious, onNext }) {
   const hasNext = skip + limit < total;
 
   return (
-    <div className="flex gap-2">
-      <Button
-        color="secondary"
-        variant="outline"
-        size="sm"
+    <div className="flex items-center justify-between">
+      <button
         disabled={!hasPrevious}
         onClick={onPrevious}
+        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-light transition-all duration-200 ${
+          hasPrevious
+            ? "bg-[#3d3d3d] text-white hover:bg-[#2a2a2a] active:scale-[0.98]"
+            : "bg-[#e8e6e1] text-[#8a8a8a] cursor-not-allowed"
+        }`}
       >
-        Previous
-      </Button>
-      <Button
-        color="secondary"
-        variant="outline"
-        size="sm"
+        <ChevronLeft className="w-4 h-4" strokeWidth={1.5} />
+        <span>Previous</span>
+      </button>
+      
+      <span className="text-sm text-[#8a8a8a] font-light">
+        {start}–{end} of {total}
+      </span>
+      
+      <button
         disabled={!hasNext}
         onClick={onNext}
+        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-light transition-all duration-200 ${
+          hasNext
+            ? "bg-[#3d3d3d] text-white hover:bg-[#2a2a2a] active:scale-[0.98]"
+            : "bg-[#e8e6e1] text-[#8a8a8a] cursor-not-allowed"
+        }`}
       >
-        Next
-      </Button>
-      <span className="text-sm text-black/60 self-center ml-2">
-        {start}-{end} of {total}
-      </span>
+        <span>Next</span>
+        <ChevronRight className="w-4 h-4" strokeWidth={1.5} />
+      </button>
     </div>
   );
 }

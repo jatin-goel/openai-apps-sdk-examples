@@ -75,52 +75,74 @@ function App() {
   }
 
   return (
-    <div className="antialiased w-full text-black px-4 pb-2 border border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
-      <div className="max-w-full">
-        <StoreHeader 
-          storeName={storeName}
-          query={query}
-          total={total}
-          cartItemCount={totalItems}
-          onCartClick={() => setIsCartOpen(true)}
-        />
+    <div className="antialiased w-full text-black bg-[#faf9f7] p-4 sm:p-6">
+      {/* Centered container with max-width */}
+      <div className="max-w-[1400px] mx-auto bg-[#f5f4f0] rounded-3xl shadow-sm overflow-hidden">
+        {/* Inner container with generous padding */}
+        <div className="px-6 sm:px-10 py-8">
+          {/* Header: Brand/Logo and Search */}
+          <div className="flex items-start justify-between gap-6 mb-8">
+            {/* Brand/Logo area - left */}
+            <div className="flex-shrink-0">
+              <h1 className="text-2xl sm:text-3xl font-light text-[#3d3d3d] tracking-tight mb-1">
+                {storeName || "alder & arc"}
+              </h1>
+              <p className="text-sm text-[#8a8a8a] font-light">
+                {query ? (
+                  <span>{total} results for "{query}"</span>
+                ) : (
+                  <span>{total} pieces</span>
+                )}
+              </p>
+            </div>
 
-        <SearchBar
-          searchInput={searchInput}
-          isSearching={isSearching}
-          onSearchInputChange={setSearchInput}
-          onSearch={handleSearch}
-        />
+            {/* Search input - right */}
+            <div className="flex-1 max-w-md">
+              <SearchBar
+                searchInput={searchInput}
+                isSearching={isSearching}
+                onSearchInputChange={setSearchInput}
+                onSearch={handleSearch}
+                cartItemCount={totalItems}
+                onCartClick={() => setIsCartOpen(true)}
+              />
+            </div>
+          </div>
 
-        <div className="py-4">
-          <ProductList
-            products={products}
-            isSearching={isSearching}
-            getProductQuantity={getProductQuantity}
-            onAddToCart={addToCart}
-            onRemoveFromCart={removeFromCart}
-          />
-        </div>
+          {/* Product strip with overflow */}
+          <div className="relative -mx-6 sm:-mx-10">
+            <div className="px-6 sm:px-10">
+              <ProductList
+                products={products}
+                isSearching={isSearching}
+                getProductQuantity={getProductQuantity}
+                onAddToCart={addToCart}
+                onRemoveFromCart={removeFromCart}
+              />
+            </div>
+          </div>
 
-        <div className="flex flex-col gap-2 pt-2">
-          <Pagination
-            skip={skip}
-            limit={limit}
-            total={total}
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-          />
-
-          {cart.length > 0 && (
-            <CartSummary
-              totalItems={totalItems}
-              totalPrice={totalPrice}
-              isProcessing={isProcessing}
-              error={checkoutError}
-              onCheckout={processCheckout}
-              onOpenCart={() => setIsCartOpen(true)}
+          {/* Bottom section: Pagination and Cart */}
+          <div className="flex flex-col gap-4 mt-8 pt-6 border-t border-[#e0ddd8]">
+            <Pagination
+              skip={skip}
+              limit={limit}
+              total={total}
+              onPrevious={handlePrevious}
+              onNext={handleNext}
             />
-          )}
+
+            {cart.length > 0 && (
+              <CartSummary
+                totalItems={totalItems}
+                totalPrice={totalPrice}
+                isProcessing={isProcessing}
+                error={checkoutError}
+                onCheckout={processCheckout}
+                onOpenCart={() => setIsCartOpen(true)}
+              />
+            )}
+          </div>
         </div>
       </div>
 
