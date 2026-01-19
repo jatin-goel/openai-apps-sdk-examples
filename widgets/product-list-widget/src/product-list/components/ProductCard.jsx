@@ -45,7 +45,7 @@ export function ProductCard({
 
         {/* Description */}
         {product.description && (
-          <p className="text-sm text-[#666666] leading-relaxed mb-4 line-clamp-2">
+          <p className="text-sm text-[#666666] leading-relaxed mb-4 line-clamp-2 overflow-hidden">
             {product.description}
           </p>
         )}
