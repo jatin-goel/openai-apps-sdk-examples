@@ -173,8 +173,45 @@ export function createMcpServer(): Server {
   return server;
 }
 
-// Session storage
+// Session storage with metadata
+interface SessionWithMetadata extends SessionRecord {
+  createdAt: number;
+  lastActivity: number;
+}
+
+const sessionsWithMetadata = new Map<string, SessionWithMetadata>();
+
+// Export sessions for backward compatibility
 export const sessions = new Map<string, SessionRecord>();
+
+// Session timeout: 30 minutes of inactivity
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+
+// Cleanup stale sessions every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  let cleanedCount = 0;
+  
+  for (const [sessionId, session] of sessionsWithMetadata.entries()) {
+    if (now - session.lastActivity > SESSION_TIMEOUT_MS) {
+      console.log(`🧹 Cleaning up stale session: ${sessionId} (inactive for ${Math.round((now - session.lastActivity) / 1000 / 60)} minutes)`);
+      
+      // Close the server
+      session.server.close().catch((err: any) => {
+        console.error(`Error closing stale session ${sessionId}:`, err);
+      });
+      
+      // Remove from both maps
+      sessionsWithMetadata.delete(sessionId);
+      sessions.delete(sessionId);
+      cleanedCount++;
+    }
+  }
+  
+  if (cleanedCount > 0) {
+    console.log(`✅ Cleaned up ${cleanedCount} stale session(s). Active sessions: ${sessions.size}`);
+  }
+}, 5 * 60 * 1000);
 
 /**
  * Handle SSE connection request
@@ -185,30 +222,50 @@ export async function handleSseRequest(res: any, postPath: string) {
   const transport = new SSEServerTransport(postPath, res);
   const sessionId = transport.sessionId;
 
-  sessions.set(sessionId, { server, transport });
+  const now = Date.now();
+  const sessionRecord: SessionRecord = { server, transport };
+  const sessionWithMetadata: SessionWithMetadata = {
+    ...sessionRecord,
+    createdAt: now,
+    lastActivity: now,
+  };
+
+  sessions.set(sessionId, sessionRecord);
+  sessionsWithMetadata.set(sessionId, sessionWithMetadata);
+
+  console.log(`🔌 SSE connection opened: ${sessionId} | Active sessions: ${sessions.size}`);
 
   let isClosing = false;
   transport.onclose = async () => {
     if (isClosing) return; // Prevent recursive calls
     isClosing = true;
     
+    const session = sessionsWithMetadata.get(sessionId);
+    const duration = session ? Math.round((Date.now() - session.createdAt) / 1000) : 0;
+    
     sessions.delete(sessionId);
+    sessionsWithMetadata.delete(sessionId);
+    
+    console.log(`🔌 SSE connection closed: ${sessionId} | Duration: ${duration}s | Active sessions: ${sessions.size}`);
+    
     try {
       await server.close();
     } catch (err) {
-      console.error("Error closing server:", err);
+      console.error(`Error closing server for session ${sessionId}:`, err);
     }
   };
 
   transport.onerror = (error) => {
-    console.error("SSE transport error", error);
+    console.error(`❌ SSE transport error for session ${sessionId}:`, error);
   };
 
   try {
     await server.connect(transport);
+    console.log(`✅ SSE session established: ${sessionId}`);
   } catch (error) {
     sessions.delete(sessionId);
-    console.error("Failed to start SSE session", error);
+    sessionsWithMetadata.delete(sessionId);
+    console.error(`❌ Failed to start SSE session ${sessionId}:`, error);
     if (!res.headersSent) {
       res.writeHead(500).end("Failed to establish SSE connection");
     }
@@ -231,14 +288,21 @@ export async function handlePostMessage(req: any, res: any, url: URL) {
   const session = sessions.get(sessionId);
 
   if (!session) {
+    console.log(`⚠️  Unknown session requested: ${sessionId}`);
     res.writeHead(404).end("Unknown session");
     return;
+  }
+
+  // Update last activity timestamp
+  const sessionWithMetadata = sessionsWithMetadata.get(sessionId);
+  if (sessionWithMetadata) {
+    sessionWithMetadata.lastActivity = Date.now();
   }
 
   try {
     await session.transport.handlePostMessage(req, res);
   } catch (error) {
-    console.error("Failed to process message", error);
+    console.error(`❌ Failed to process message for session ${sessionId}:`, error);
     if (!res.headersSent) {
       res.writeHead(500).end("Failed to process message");
     }
