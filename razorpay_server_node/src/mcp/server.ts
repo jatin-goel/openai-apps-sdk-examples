@@ -31,7 +31,7 @@ const toolInputSchema = {
   properties: {
     query: {
       type: "string",
-      description: "Search query for products (e.g., 'phone', 'laptop')",
+      description: "The product search query or keywords from the user's message. Extract the product name, type, or category the user wants to search for (e.g., 'phone', 'laptop', 'Half Sleeve Cotton Tshirt', 'blue jeans'). If the user asks to search for products, use their exact search terms as the query.",
     },
     skip: {
       type: "number",
@@ -51,7 +51,7 @@ const toolInputParser = z.object({
 // Define tools
 const tools: Tool[] = widgets.map((widget) => ({
   name: widget.id,
-  description: widget.title,
+  description: "Search for products in the Razorpay store. Use this tool when the user wants to find, browse, or search for products. Extract the product name or search keywords from the user's message and pass them as the query parameter.",
   inputSchema: toolInputSchema,
   title: widget.title,
   _meta: widgetDescriptorMeta(widget),

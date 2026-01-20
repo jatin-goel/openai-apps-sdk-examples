@@ -110,12 +110,12 @@ const widgetDomain = config.baseUrl;
 export const widgets: Widget[] = [
   {
     id: "product-search",
-    title: "Search Products",
+    title: "Search and Browse Products",
     templateUri: "ui://widget/product-search.html",
     invoking: "Searching products",
     invoked: "Products found",
     html: readWidgetHtml("product-list"),
-    responseText: "Product search results displayed!",
+    responseText: "Here are the products matching your search. You can browse, add items to cart, and checkout directly from the widget below.",
     csp: widgetCSP,
     domain: widgetDomain,
   },
