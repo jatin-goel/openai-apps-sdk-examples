@@ -5,6 +5,7 @@ import {
   parseJsonBody,
   sendSuccessResponse,
   sendErrorResponse,
+  sanitizeUrl,
 } from "../utils/helpers.js";
 
 const razorpayService = new RazorpayService();
@@ -159,6 +160,12 @@ export class RazorpayRoutes {
         return;
       }
 
+      // Sanitize callbackUrl to prevent javascript: protocol and other XSS vectors
+      const rawCallbackUrl = url.searchParams.get("callbackUrl");
+      const sanitizedCallbackUrl = rawCallbackUrl 
+        ? sanitizeUrl(rawCallbackUrl, "https://example.com/payment-success")
+        : undefined;
+
       const params = {
         orderId,
         name: url.searchParams.get("name") || undefined,
@@ -167,7 +174,7 @@ export class RazorpayRoutes {
         customerEmail: url.searchParams.get("customerEmail") || undefined,
         customerPhone: url.searchParams.get("customerPhone") || undefined,
         couponCode: url.searchParams.get("couponCode") || undefined,
-        callbackUrl: url.searchParams.get("callbackUrl") || undefined,
+        callbackUrl: sanitizedCallbackUrl,
         showCoupons: url.searchParams.get("showCoupons") || undefined,
         address: url.searchParams.get("address") || undefined,
       };

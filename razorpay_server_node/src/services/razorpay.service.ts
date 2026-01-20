@@ -1,4 +1,5 @@
 import config from "../config/index.js";
+import { escapeHtml, escapeJs, sanitizeUrl } from "../utils/helpers.js";
 
 // In-memory store for payment status
 interface PaymentStatus {
@@ -170,13 +171,21 @@ export class RazorpayService {
 
     const businessName = businessNameParam || "Store";
     const name = nameParam || `${businessName} - Checkout`;
+    
+    // Sanitize and escape all user inputs
+    const safeOrderId = escapeJs(orderId);
+    const safeName = escapeHtml(name);
+    const safeBusinessName = escapeJs(businessName);
+    const safeCallbackUrl = sanitizeUrl(callbackUrl, "https://example.com/payment-success");
+    const safeCallbackUrlJs = escapeJs(safeCallbackUrl);
+    const safeShowCoupons = showCoupons === "true" ? "true" : "false";
 
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${name}</title>
+    <title>${safeName}</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50">
@@ -198,21 +207,21 @@ export class RazorpayService {
 
     <script src="https://checkout.razorpay.com/v1/magic-checkout.js"></script>
     <script>
-    const orderId = "${orderId}";
+    const orderId = "${safeOrderId}";
     let pollingInterval = null;
     let paymentWindow = null;
 
     // Razorpay options
-    var callbackUrl = "${callbackUrl}" === "https://example.com/payment-success"
+    var callbackUrl = "${safeCallbackUrlJs}" === "https://example.com/payment-success"
         ? window.location.origin + "/payment-success"
-        : "${callbackUrl}";
+        : "${safeCallbackUrlJs}";
 
     var options = {
         "key": "${config.razorpay.keyId}",
         "one_click_checkout": true,
-        "name": "${businessName}",
+        "name": "${safeBusinessName}",
         "order_id": orderId,
-        "show_coupons": ${showCoupons},
+        "show_coupons": ${safeShowCoupons},
         "callback_url": callbackUrl,
         "redirect": true,
         "handler": function (response) {
@@ -343,9 +352,9 @@ export class RazorpayService {
         document.getElementById('rzp-button1').classList.add('hidden');
 
         // Redirect after 3 seconds if callback URL is set
-        if ("${callbackUrl}" && "${callbackUrl}" !== "https://example.com/payment-success") {
+        if ("${safeCallbackUrlJs}" && "${safeCallbackUrlJs}" !== "https://example.com/payment-success") {
             setTimeout(() => {
-                window.location.href = "${callbackUrl}";
+                window.location.href = "${safeCallbackUrlJs}";
             }, 3000);
         }
     }
@@ -390,6 +399,13 @@ export class RazorpayService {
     errorMessage?: string;
   }): string {
     const { isSuccess, paymentId, orderId, amount, errorMessage } = params;
+    
+    // Sanitize all user inputs
+    const safePaymentId = escapeHtml(paymentId);
+    const safeOrderId = escapeHtml(orderId);
+    const safePaymentIdJs = escapeJs(paymentId);
+    const safeOrderIdJs = escapeJs(orderId);
+    const safeErrorMessage = escapeHtml(errorMessage);
 
     if (isSuccess) {
       return `<!DOCTYPE html>
@@ -429,7 +445,7 @@ export class RazorpayService {
                 ? `
             <div class="flex justify-between text-sm">
                 <span class="text-gray-500">Payment ID</span>
-                <span class="font-mono text-gray-900">${paymentId}</span>
+                <span class="font-mono text-gray-900">${safePaymentId}</span>
             </div>
             `
                 : ""
@@ -439,7 +455,7 @@ export class RazorpayService {
                 ? `
             <div class="flex justify-between text-sm">
                 <span class="text-gray-500">Order ID</span>
-                <span class="font-mono text-gray-900">${orderId}</span>
+                <span class="font-mono text-gray-900">${safeOrderId}</span>
             </div>
             `
                 : ""
@@ -457,8 +473,8 @@ export class RazorpayService {
 
     <script>
     console.log('💳 Payment success page loaded');
-    console.log('Order ID: ${orderId || ""}');
-    console.log('Payment ID: ${paymentId || ""}');
+    console.log('Order ID: ${safeOrderIdJs || ""}');
+    console.log('Payment ID: ${safePaymentIdJs || ""}');
     
     // The payment is already marked as successful on the server side
     // when this page loads (see paymentSuccessPage route)
@@ -472,8 +488,8 @@ export class RazorpayService {
                     await window.opener.chatKit.sendAction({
                         type: 'payment_success',
                         payload: {
-                            orderId: '${orderId || ""}',
-                            paymentId: '${paymentId || ""}',
+                            orderId: '${safeOrderIdJs || ""}',
+                            paymentId: '${safePaymentIdJs || ""}',
                             amount: ${amount || 0}
                         }
                     });
@@ -484,8 +500,8 @@ export class RazorpayService {
                 // Fallback to postMessage
                 const message = {
                     type: 'PAYMENT_SUCCESS',
-                    orderId: '${orderId || ""}',
-                    paymentId: '${paymentId || ""}',
+                    orderId: '${safeOrderIdJs || ""}',
+                    paymentId: '${safePaymentIdJs || ""}',
                     amount: ${amount || 0}
                 };
                 window.opener.postMessage(message, '*');
@@ -533,7 +549,7 @@ export class RazorpayService {
         </div>
         <h1 class="text-2xl font-bold text-gray-900 mb-2">Payment Failed</h1>
         <p class="text-gray-600 mb-6">${
-          errorMessage || "Unfortunately, your payment could not be processed."
+          safeErrorMessage || "Unfortunately, your payment could not be processed."
         }</p>
 
         <div class="bg-red-50 rounded-lg p-4 mb-6">
@@ -546,7 +562,7 @@ export class RazorpayService {
         <div class="border-t border-gray-100 pt-4">
             <div class="flex justify-between text-sm">
                 <span class="text-gray-500">Order ID</span>
-                <span class="font-mono text-gray-900">${orderId}</span>
+                <span class="font-mono text-gray-900">${safeOrderId}</span>
             </div>
         </div>
         `

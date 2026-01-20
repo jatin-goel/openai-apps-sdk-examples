@@ -74,3 +74,77 @@ export const sendSuccessResponse = (
     ...data,
   });
 };
+
+/**
+ * Escapes HTML special characters to prevent XSS attacks
+ */
+export const escapeHtml = (unsafe: string | undefined | null): string => {
+  if (!unsafe) return "";
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;")
+    .replace(/\//g, "&#x2F;");
+};
+
+/**
+ * Validates and sanitizes a URL to prevent javascript: protocol and other malicious schemes
+ * Returns a safe URL or a default safe URL if validation fails
+ */
+export const sanitizeUrl = (
+  url: string | undefined | null,
+  defaultUrl: string = "https://example.com"
+): string => {
+  if (!url) return defaultUrl;
+  
+  try {
+    const trimmedUrl = url.trim();
+    
+    // Check for dangerous protocols
+    const dangerousProtocols = [
+      'javascript:',
+      'data:',
+      'vbscript:',
+      'file:',
+      'about:',
+    ];
+    
+    const lowerUrl = trimmedUrl.toLowerCase();
+    for (const protocol of dangerousProtocols) {
+      if (lowerUrl.startsWith(protocol)) {
+        return defaultUrl;
+      }
+    }
+    
+    // Validate URL structure
+    const urlObj = new URL(trimmedUrl);
+    
+    // Only allow http and https protocols
+    if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+      return defaultUrl;
+    }
+    
+    return trimmedUrl;
+  } catch (e) {
+    // Invalid URL format
+    return defaultUrl;
+  }
+};
+
+/**
+ * Escapes a string for safe use in JavaScript string literals
+ */
+export const escapeJs = (unsafe: string | undefined | null): string => {
+  if (!unsafe) return "";
+  return String(unsafe)
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\t/g, "\\t")
+    .replace(/</g, "\\x3C")
+    .replace(/>/g, "\\x3E");
+};
