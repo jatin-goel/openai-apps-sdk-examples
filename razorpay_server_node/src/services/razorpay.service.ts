@@ -52,13 +52,16 @@ export class RazorpayService {
       throw new Error("Razorpay store URL is required");
     }
 
-    // Validate URL format
-    if (!razorpayUrl.includes("pages.razorpay.com/stores/")) {
-      throw new Error("Invalid Razorpay store URL format");
+    // Strict URL validation with SSRF protection
+    const { validateRazorpayStoreUrl } = await import("../utils/helpers.js");
+    const validation = await validateRazorpayStoreUrl(razorpayUrl);
+    
+    if (!validation.valid) {
+      throw new Error(`Invalid Razorpay store URL: ${validation.error}`);
     }
 
-    // Fetch the HTML page
-    const response = await fetch(razorpayUrl);
+    // Fetch the HTML page using the validated URL
+    const response = await fetch(validation.url!);
     if (!response.ok) {
       throw new Error(`Failed to fetch URL: ${response.statusText}`);
     }
